@@ -17,7 +17,7 @@ import TransferPhone from './src/screens/TransferPhone';
 import QRPay from './src/screens/QRPay';
 import TransferCard from './src/screens/TransferCard';
 import TransfersScreen from './src/screens/TransfersScreen';
-import Pl from './src/screens/PlatinumCardScreen';
+import PlatinumCard from './src/screens/PlatinumCardScreen';
 import Settings from './src/screens/Settings';
 import CardsList from './src/screens/CardsList';
 import TransactionHistory from './src/screens/TransactionHistory';
@@ -141,8 +141,8 @@ export default function App() {
           component={CardDetail} 
         />
         <Stack.Screen 
-          name="Pl" 
-          component={Pl} 
+          name="PlatinumCard" 
+          component={PlatinumCard} 
         />
         
         {/* Transfers & Payments */}

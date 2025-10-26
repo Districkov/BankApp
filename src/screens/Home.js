@@ -1,17 +1,26 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated, Image, RefreshControl } from 'react-native';
 import { Ionicons, Feather, MaterialIcons, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default function Home({navigation}){
   const fade = React.useRef(new Animated.Value(0)).current;
-  
-  React.useEffect(()=>{ 
-    Animated.timing(fade,{toValue:1,duration:400,useNativeDriver:true}).start(); 
-  },[]);
+  const [refreshing, setRefreshing] = useState(false);
 
   const cards = [
-    { name: 'Black', amount: '666 666,66 ₽', color: '#000', number: '5536 91** **** 5678', screen: 'CardDetail' },
-    { name: 'Платинум', amount: '0 ₽', color: '#6A2EE8', number: '5536 91** **** 4321', screen: 'Pl' },
+    { 
+      name: 'Black', 
+      amount: '666 666,66 ₽', 
+      design: require('../../assets/cards/black-card.png'),
+      screen: 'CardDetail',
+      number: '5536 91** **** 5678'
+    },
+    { 
+      name: 'Платинум', 
+      amount: '0 ₽', 
+      design: require('../../assets/cards/platinum-card.png'),
+      screen: 'PlatinumCard',
+      number: '5536 91** **** 4321'
+    },
   ];
 
   const quickActions = [
@@ -20,6 +29,23 @@ export default function Home({navigation}){
     { title: 'Перевести', icon: 'money-transfer', nav: 'TransfersScreen', color: '#6A2EE8' },
     { title: 'Оплатить', icon: 'qrcode-scan', nav: 'QRPay', color: '#FF6B6B' },
   ];
+
+  const recentTransactions = [
+    { id: 1, title: 'Кафе "Вкусно и точка"', amount: '-538 ₽', date: 'Сегодня', type: 'expense' },
+    { id: 2, title: 'Пополнение от Петра', amount: '+8 700 ₽', date: 'Вчера', type: 'income' },
+    { id: 3, title: 'Такси Яндекс', amount: '-320 ₽', date: '2 дня назад', type: 'expense' },
+  ];
+
+  React.useEffect(()=>{ 
+    Animated.timing(fade,{toValue:1,duration:400,useNativeDriver:true}).start(); 
+  },[]);
+
+  const onRefresh = React.useCallback(() => {
+    setRefreshing(true);
+    setTimeout(() => {
+      setRefreshing(false);
+    }, 2000);
+  }, []);
 
   const getIcon = (iconName) => {
     switch(iconName) {
@@ -47,7 +73,7 @@ export default function Home({navigation}){
       <View style={styles.header}>
         <TouchableOpacity style={styles.headerLeft} onPress={handleProfilePress}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>И</Text>
+            <Text style={styles.avatarText}>ИИ</Text>
           </View>
           <View>
             <Text style={styles.greeting}>Добро пожаловать</Text>
@@ -59,23 +85,51 @@ export default function Home({navigation}){
           onPress={() => navigation.navigate('Notifications')}
         >
           <Ionicons name="notifications-outline" size={24} color="#000" />
-          <View style={styles.notificationBadge} />
+          <View style={styles.notificationBadge}>
+            <Text style={styles.notificationBadgeText}>3</Text>
+          </View>
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
+      <ScrollView 
+        style={styles.container} 
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
         
-        {/* Balance Overview - Changed to All Expenses */}
+        {/* Total Balance Card */}
+        <View style={styles.totalBalanceCard}>
+          <View style={styles.balanceHeader}>
+            <Text style={styles.balanceLabel}>Общий баланс</Text>
+            <TouchableOpacity>
+              <Ionicons name="eye-outline" size={20} color="#666" />
+            </TouchableOpacity>
+          </View>
+          <Text style={styles.totalBalanceAmount}>682 132,82 ₽</Text>
+          <View style={styles.balanceTrend}>
+            <Ionicons name="trending-up" size={16} color="#159E3A" />
+            <Text style={styles.trendText}>+5.2% за месяц</Text>
+          </View>
+        </View>
+
+        {/* Monthly Spending Card */}
         <TouchableOpacity 
-          style={styles.balanceCard}
+          style={styles.spendingCard}
           onPress={() => navigation.navigate('Operations')}
         >
-          <Text style={styles.balanceLabel}>Все расходы</Text>
-          <View style={styles.balanceDetails}>
-            <View style={styles.balanceItem}>
-              <Text style={styles.balanceItemLabel}>Траты в октябре</Text>
-              <Text style={[styles.balanceItemValue, styles.expenseValue]}>15 634 521 ₽</Text>
+          <View style={styles.spendingHeader}>
+            <Text style={styles.spendingLabel}>Расходы в октябре</Text>
+            <Text style={styles.spendingAmount}>15 634 ₽</Text>
+          </View>
+          
+          {/* Spending Progress */}
+          <View style={styles.spendingProgress}>
+            <View style={styles.progressBar}>
+              <View style={[styles.progressFill, { width: '65%' }]} />
             </View>
+            <Text style={styles.progressText}>65% от лимита</Text>
           </View>
         </TouchableOpacity>
 
@@ -102,8 +156,12 @@ export default function Home({navigation}){
         <View style={styles.cardsSection}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Мои карты</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('CardsList')}>
+            <TouchableOpacity 
+              style={styles.seeAllButton}
+              onPress={() => navigation.navigate('CardsList')}
+            >
               <Text style={styles.seeAllText}>Все</Text>
+              <Ionicons name="chevron-forward" size={16} color="#6A2EE8" />
             </TouchableOpacity>
           </View>
           
@@ -115,26 +173,30 @@ export default function Home({navigation}){
             {cards.map((card, index) => (
               <TouchableOpacity 
                 key={index}
-                style={[styles.cardItem, { backgroundColor: card.color }]}
+                style={styles.cardItem}
                 onPress={() => handleCardPress(card)}
               >
-                <View style={styles.cardHeader}>
-                  <Text style={styles.cardName}>{card.name}</Text>
-                  <MaterialIcons name="more-vert" size={20} color="#fff" />
-                </View>
-                <Text style={styles.cardAmount}>{card.amount}</Text>
-                <Text style={styles.cardNumber}>{card.number}</Text>
-                <View style={styles.cardFooter}>
-                  <Text style={styles.cardHolder}>IVAN I</Text>
-                  <View style={styles.cardChip}>
-                    <MaterialIcons name="sim-card" size={20} color="rgba(255,255,255,0.7)" />
+                <Image 
+                  source={card.design} 
+                  style={styles.cardImage}
+                  resizeMode="cover"
+                />
+                <View style={styles.cardOverlay}>
+                  <View style={styles.cardHeader}>
+                    <Text style={styles.cardName}>{card.name}</Text>
+                    <MaterialIcons name="more-vert" size={20} color="#fff" />
                   </View>
+                  <Text style={styles.cardAmount}>{card.amount}</Text>
+                  <Text style={styles.cardNumber}>{card.number}</Text>
                 </View>
               </TouchableOpacity>
             ))}
             
             {/* Add Card Button */}
-            <TouchableOpacity style={styles.addCard}>
+            <TouchableOpacity 
+              style={styles.addCard}
+              onPress={() => navigation.navigate('AddCard')}
+            >
               <View style={styles.addCardIcon}>
                 <Ionicons name="add" size={32} color="#6A2EE8" />
               </View>
@@ -142,6 +204,63 @@ export default function Home({navigation}){
             </TouchableOpacity>
           </ScrollView>
         </View>
+
+        {/* Recent Transactions */}
+        <View style={styles.transactionsSection}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Недавние операции</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('Operations')}>
+              <Text style={styles.seeAllText}>Все</Text>
+            </TouchableOpacity>
+          </View>
+          
+          <View style={styles.transactionsList}>
+            {recentTransactions.map((transaction) => (
+              <TouchableOpacity 
+                key={transaction.id} 
+                style={styles.transactionItem}
+              >
+                <View style={styles.transactionLeft}>
+                  <View style={[
+                    styles.transactionIcon,
+                    transaction.type === 'income' ? styles.incomeIcon : styles.expenseIcon
+                  ]}>
+                    <Ionicons 
+                      name={transaction.type === 'income' ? "arrow-down" : "arrow-up"} 
+                      size={20} 
+                      color="#fff" 
+                    />
+                  </View>
+                  <View style={styles.transactionInfo}>
+                    <Text style={styles.transactionTitle}>{transaction.title}</Text>
+                    <Text style={styles.transactionDate}>{transaction.date}</Text>
+                  </View>
+                </View>
+                <Text style={[
+                  styles.transactionAmount,
+                  transaction.type === 'income' ? styles.incomeAmount : styles.expenseAmount
+                ]}>
+                  {transaction.amount}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
+
+        {/* Promo Banner */}
+        <View style={styles.promoBanner}>
+          <View style={styles.promoContent}>
+            <Text style={styles.promoTitle}>Кэшбэк до 10%</Text>
+            <Text style={styles.promoDescription}>На все покупки по картам этого месяца</Text>
+            <TouchableOpacity style={styles.promoButton}>
+              <Text style={styles.promoButtonText}>Подробнее</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.promoIcon}>
+            <Ionicons name="gift" size={40} color="#fff" />
+          </View>
+        </View>
+
         <View style={styles.bottomSpacer} />
       </ScrollView>
     </View>
@@ -178,16 +297,17 @@ const styles = StyleSheet.create({
   },
   avatarText: {
     color: '#fff',
-    fontWeight: '600',
-    fontSize: 18,
+    fontWeight: '700',
+    fontSize: 16,
   },
   greeting: {
     fontSize: 12,
     color: '#666',
+    fontWeight: '500',
   },
   userName: {
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#000',
   },
   notificationButton: {
@@ -199,17 +319,24 @@ const styles = StyleSheet.create({
   },
   notificationBadge: {
     position: 'absolute',
-    top: 10,
-    right: 10,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
+    top: 8,
+    right: 8,
     backgroundColor: '#FF3B30',
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  notificationBadgeText: {
+    fontSize: 10,
+    color: '#fff',
+    fontWeight: '700',
   },
   container: {
     flex: 1,
   },
-  balanceCard: {
+  totalBalanceCard: {
     backgroundColor: '#fff',
     margin: 20,
     padding: 24,
@@ -220,36 +347,80 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 5,
   },
-  balanceLabel: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 8,
+  balanceHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
   },
-  balanceAmount: {
-    fontSize: 32,
+  balanceLabel: {
+    fontSize: 16,
     fontWeight: '700',
     color: '#000',
-    marginBottom: 20,
   },
-  balanceDetails: {
+  totalBalanceAmount: {
+    fontSize: 32,
+    fontWeight: '800',
+    color: '#000',
+    marginBottom: 12,
+  },
+  balanceTrend: {
     flexDirection: 'row',
-    justifyContent: 'flex-start', // Выравнивание по правому краю
+    alignItems: 'center',
+    gap: 6,
   },
-  balanceItem: {
-    alignItems: 'flex-start', // Текст также по правому краю
-  },
-  balanceItemLabel: {
-    fontSize: 12,
-    color: '#666',
-    marginBottom: 4,
-  },
-  balanceItemValue: {
-    fontSize: 16,
+  trendText: {
+    fontSize: 14,
+    color: '#159E3A',
     fontWeight: '600',
+  },
+  spendingCard: {
+    backgroundColor: '#fff',
+    margin: 20,
+    marginTop: 0,
+    padding: 24,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 5,
+  },
+  spendingHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  spendingLabel: {
+    fontSize: 16,
+    fontWeight: '700',
     color: '#000',
   },
-  expenseValue: {
+  spendingAmount: {
+    fontSize: 20,
+    fontWeight: '800',
     color: '#FF3B30',
+  },
+  spendingProgress: {
+    marginBottom: 8,
+  },
+  progressBar: {
+    height: 6,
+    backgroundColor: '#F0F0F0',
+    borderRadius: 3,
+    marginBottom: 8,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: '#6A2EE8',
+    borderRadius: 3,
+  },
+  progressText: {
+    fontSize: 12,
+    color: '#666',
+    fontWeight: '500',
   },
   quickActionsSection: {
     marginBottom: 24,
@@ -299,6 +470,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginBottom: 16,
   },
+  seeAllButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
   seeAllText: {
     fontSize: 14,
     color: '#6A2EE8',
@@ -309,51 +485,56 @@ const styles = StyleSheet.create({
   },
   cardItem: {
     width: 280,
-    padding: 20,
+    height: 160,
     borderRadius: 20,
     marginRight: 16,
+    overflow: 'hidden',
+    position: 'relative',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 6,
   },
+  cardImage: {
+    width: '100%',
+    height: '100%',
+    position: 'absolute',
+  },
+  cardOverlay: {
+    flex: 1,
+    padding: 20,
+    justifyContent: 'space-between',
+  },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
   },
   cardName: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 3,
   },
   cardAmount: {
     color: '#fff',
-    fontSize: 24,
-    fontWeight: '700',
-    marginBottom: 16,
+    fontSize: 22,
+    fontWeight: '800',
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 3,
   },
   cardNumber: {
     color: 'rgba(255,255,255,0.8)',
-    fontSize: 16,
-    fontWeight: '500',
-    letterSpacing: 1,
-    marginBottom: 20,
-  },
-  cardFooter: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  cardHolder: {
-    color: 'rgba(255,255,255,0.8)',
     fontSize: 12,
     fontWeight: '500',
-  },
-  cardChip: {
-    opacity: 0.7,
+    letterSpacing: 1,
+    textShadowColor: 'rgba(0, 0, 0, 0.5)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 3,
   },
   addCard: {
     width: 160,
@@ -386,6 +567,106 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#6A2EE8',
     textAlign: 'center',
+  },
+  transactionsSection: {
+    marginBottom: 24,
+  },
+  transactionsList: {
+    paddingHorizontal: 20,
+    gap: 12,
+  },
+  transactionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#fff',
+    padding: 16,
+    borderRadius: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  transactionLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  transactionIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  incomeIcon: {
+    backgroundColor: '#159E3A',
+  },
+  expenseIcon: {
+    backgroundColor: '#FF3B30',
+  },
+  transactionInfo: {
+    flex: 1,
+  },
+  transactionTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#000',
+    marginBottom: 4,
+  },
+  transactionDate: {
+    fontSize: 14,
+    color: '#666',
+  },
+  transactionAmount: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  incomeAmount: {
+    color: '#159E3A',
+  },
+  expenseAmount: {
+    color: '#FF3B30',
+  },
+  promoBanner: {
+    margin: 20,
+    backgroundColor: '#6A2EE8',
+    borderRadius: 20,
+    padding: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  promoContent: {
+    flex: 1,
+  },
+  promoTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#fff',
+    marginBottom: 8,
+  },
+  promoDescription: {
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.9)',
+    marginBottom: 16,
+  },
+  promoButton: {
+    backgroundColor: '#fff',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+  },
+  promoButtonText: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#6A2EE8',
+  },
+  promoIcon: {
+    marginLeft: 16,
   },
   bottomSpacer: {
     height: 20,

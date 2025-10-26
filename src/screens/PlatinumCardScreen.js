@@ -72,21 +72,30 @@ export default function PlatinumCardScreen({navigation}){
 
         {/* Quick Actions */}
         <View style={styles.quickActions}>
-          <TouchableOpacity style={styles.quickAction}>
+          <TouchableOpacity 
+            style={styles.quickAction}
+            onPress={() => navigation.navigate('QRPay')}
+          >
             <View style={styles.actionIcon}>
               <MaterialIcons name="payment" size={24} color="#6A2EE8" />
             </View>
             <Text style={styles.actionText}>Оплатить</Text>
           </TouchableOpacity>
           
-          <TouchableOpacity style={styles.quickAction}>
+          <TouchableOpacity 
+            style={styles.quickAction}
+            onPress={() => navigation.navigate('TopUp')}
+          >
             <View style={styles.actionIcon}>
               <Feather name="plus" size={24} color="#6A2EE8" />
             </View>
             <Text style={styles.actionText}>Пополнить</Text>
           </TouchableOpacity>
           
-          <TouchableOpacity style={styles.quickAction}>
+          <TouchableOpacity 
+            style={styles.quickAction}
+            onPress={() => navigation.navigate('TransfersScreen')}
+          >
             <View style={styles.actionIcon}>
               <MaterialIcons name="compare-arrows" size={24} color="#6A2EE8" />
             </View>
