@@ -25,6 +25,11 @@ import Support from './src/screens/Support';
 import Notifications from './src/screens/Notifications';
 import PersonalData from './src/screens/PersonalData';
 
+// Partner Screens
+import AstraDetail from './src/screens/partners/AstraDetail';
+import YanimaDetail from './src/screens/partners/YanimaDetail';
+import PartnersList from './src/screens/partners/PartnersList';
+
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
 
@@ -101,97 +106,30 @@ export default function App() {
         }} 
         initialRouteName="Loader"
       >
-        {/* Loader Screen - показывается первым */}
-        <Stack.Screen 
-          name="Loader" 
-          component={SimpleLoader}
-          options={{
-            gestureEnabled: false
-          }}
-        />
+        <Stack.Screen name="Loader" component={SimpleLoader} />
+        <Stack.Screen name="Success" component={SuccessScreen} />
+        <Stack.Screen name="Main" component={Tabs} />
         
-        {/* Success Screen */}
-        <Stack.Screen 
-          name="Success" 
-          component={SuccessScreen}
-          options={{
-            gestureEnabled: false,
-            presentation: 'transparentModal'
-          }}
-        />
+        {/* Основные экраны */}
+        <Stack.Screen name="Operations" component={Operations} />
+        <Stack.Screen name="CardDetail" component={CardDetail} />
+        <Stack.Screen name="PlatinumCard" component={PlatinumCard} />
+        <Stack.Screen name="TopUp" component={TopUp} />
+        <Stack.Screen name="TransferCard" component={TransferCard} />
+        <Stack.Screen name="TransferPhone" component={TransferPhone} />
+        <Stack.Screen name="QRPay" component={QRPay} />
+        <Stack.Screen name="TransfersScreen" component={TransfersScreen} />
+        <Stack.Screen name="Settings" component={Settings} />
+        <Stack.Screen name="PersonalData" component={PersonalData} />
+        <Stack.Screen name="CardsList" component={CardsList} />
+        <Stack.Screen name="TransactionHistory" component={TransactionHistory} />
+        <Stack.Screen name="Support" component={Support} />
+        <Stack.Screen name="Notifications" component={Notifications} />
         
-        {/* Main App Navigation */}
-        <Stack.Screen 
-          name="Main" 
-          component={Tabs}
-          options={{
-            gestureEnabled: false
-          }}
-        />
-        
-        {/* Operations & Analytics */}
-        <Stack.Screen 
-          name="Operations" 
-          component={Operations} 
-        />
-        
-        {/* Cards & Details */}
-        <Stack.Screen 
-          name="CardDetail" 
-          component={CardDetail} 
-        />
-        <Stack.Screen 
-          name="PlatinumCard" 
-          component={PlatinumCard} 
-        />
-        
-        {/* Transfers & Payments */}
-        <Stack.Screen 
-          name="TopUp" 
-          component={TopUp} 
-        />
-        <Stack.Screen 
-          name="TransferCard" 
-          component={TransferCard}
-        />
-        <Stack.Screen 
-          name="TransferPhone" 
-          component={TransferPhone}
-        />
-        <Stack.Screen 
-          name="QRPay" 
-          component={QRPay}
-        />
-        <Stack.Screen 
-          name="TransfersScreen" 
-          component={TransfersScreen}
-        />
-        
-        {/* Settings & Profile */}
-        <Stack.Screen 
-          name="Settings" 
-          component={Settings} 
-        />
-        <Stack.Screen 
-          name="PersonalData" 
-          component={PersonalData} 
-        />
-        <Stack.Screen 
-          name="CardsList" 
-          component={CardsList} 
-        />
-        <Stack.Screen 
-          name="TransactionHistory" 
-          component={TransactionHistory} 
-        />
-        <Stack.Screen 
-          name="Support" 
-          component={Support} 
-        />
-        <Stack.Screen 
-          name="Notifications" 
-          component={Notifications} 
-        />
+        {/* Партнёры */}
+        <Stack.Screen name="AstraDetail" component={AstraDetail} />
+        <Stack.Screen name="YanimaDetail" component={YanimaDetail} />
+        <Stack.Screen name="PartnersList" component={PartnersList} />
       </Stack.Navigator>
     </NavigationContainer>
   );

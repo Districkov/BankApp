@@ -2,6 +2,27 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated, Image, RefreshControl } from 'react-native';
 import { Ionicons, Feather, MaterialIcons, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 
+// Компоненты для логотипов партнёров с черным фоном
+const AstraLogo = ({ width = 50, height = 50 }) => (
+  <View style={[styles.logoContainer, { width, height }]}>
+    <Image 
+      source={require('../../assets/partners/astra-logo.svg')}
+      style={{ width: width - 10, height: height - 10 }}
+      resizeMode="contain"
+    />
+  </View>
+);
+
+const YanimaLogo = ({ width = 50, height = 50 }) => (
+  <View style={[styles.logoContainer, { width, height }]}>
+    <Image 
+      source={require('../../assets/partners/yanima-logo.png')}
+      style={{ width: width - 10, height: height - 10 }}
+      resizeMode="contain"
+    />
+  </View>
+);
+
 export default function Home({navigation}){
   const fade = React.useRef(new Animated.Value(0)).current;
   const [refreshing, setRefreshing] = useState(false);
@@ -11,15 +32,13 @@ export default function Home({navigation}){
       name: 'Black', 
       amount: '666 666,66 ₽', 
       design: require('../../assets/cards/black-card.png'),
-      screen: 'CardDetail',
-      number: '5536 91** **** 5678'
+      screen: 'CardDetail'
     },
     { 
       name: 'Платинум', 
-      amount: '0 ₽', 
+      amount: '222 222 222 ₽', 
       design: require('../../assets/cards/platinum-card.png'),
-      screen: 'PlatinumCard',
-      number: '5536 91** **** 4321'
+      screen: 'PlatinumCard'
     },
   ];
 
@@ -34,6 +53,29 @@ export default function Home({navigation}){
     { id: 1, title: 'Кафе "Вкусно и точка"', amount: '-538 ₽', date: 'Сегодня', type: 'expense' },
     { id: 2, title: 'Пополнение от Петра', amount: '+8 700 ₽', date: 'Вчера', type: 'income' },
     { id: 3, title: 'Такси Яндекс', amount: '-320 ₽', date: '2 дня назад', type: 'expense' },
+  ];
+
+  const partners = [
+    { 
+      id: 1, 
+      name: 'Astra RP', 
+      discount: 'Эксклюзивные бонусы', 
+      description: 'GTA 5 RolePlay проект\nСпециальные условия для клиентов',
+      logo: AstraLogo,
+      screen: 'AstraDetail',
+      color: '#ff0000ff',
+      benefits: ['Игровая валюта', 'Премиум аккаунт', 'Эксклюзивный контент']
+    },
+    { 
+      id: 2, 
+      name: 'Yanima', 
+      discount: 'Подписка в подарок', 
+      description: 'Онлайн-просмотр аниме\nСпециальные предложения',
+      logo: YanimaLogo,
+      screen: 'YanimaDetail',
+      color: '#6e00fdff',
+      benefits: ['Премиум подписка', 'Ранний доступ', 'Эксклюзивные релизы']
+    },
   ];
 
   React.useEffect(()=>{ 
@@ -66,6 +108,16 @@ export default function Home({navigation}){
   const handleProfilePress = () => {
     navigation.navigate('More');
   };
+
+  const handlePartnerPress = (partner) => {
+    navigation.navigate(partner.screen, { partner });
+  };
+
+  const PartnerLogo = ({ logo: LogoComponent, size = 60 }) => (
+    <View style={[styles.partnerLogoContainer, { width: size, height: size }]}>
+      <LogoComponent width={size - 10} height={size - 10} />
+    </View>
+  );
 
   return (
     <View style={styles.page}>
@@ -187,7 +239,6 @@ export default function Home({navigation}){
                     <MaterialIcons name="more-vert" size={20} color="#fff" />
                   </View>
                   <Text style={styles.cardAmount}>{card.amount}</Text>
-                  <Text style={styles.cardNumber}>{card.number}</Text>
                 </View>
               </TouchableOpacity>
             ))}
@@ -195,7 +246,7 @@ export default function Home({navigation}){
             {/* Add Card Button */}
             <TouchableOpacity 
               style={styles.addCard}
-              onPress={() => navigation.navigate('AddCard')}
+              onPress={() => navigation.navigate('CardsList')}
             >
               <View style={styles.addCardIcon}>
                 <Ionicons name="add" size={32} color="#6A2EE8" />
@@ -205,43 +256,48 @@ export default function Home({navigation}){
           </ScrollView>
         </View>
 
-        {/* Recent Transactions */}
-        <View style={styles.transactionsSection}>
+        {/* Our Partners Section */}
+        <View style={styles.partnersSection}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Недавние операции</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('Operations')}>
+            <Text style={styles.sectionTitle}>Наши партнёры</Text>
+            <TouchableOpacity 
+              style={styles.seeAllButton}
+              onPress={() => navigation.navigate('PartnersList')}
+            >
               <Text style={styles.seeAllText}>Все</Text>
+              <Ionicons name="chevron-forward" size={16} color="#6A2EE8" />
             </TouchableOpacity>
           </View>
           
-          <View style={styles.transactionsList}>
-            {recentTransactions.map((transaction) => (
+          <View style={styles.partnersGrid}>
+            {partners.map((partner) => (
               <TouchableOpacity 
-                key={transaction.id} 
-                style={styles.transactionItem}
+                key={partner.id}
+                style={styles.partnerCard}
+                onPress={() => handlePartnerPress(partner)}
               >
-                <View style={styles.transactionLeft}>
-                  <View style={[
-                    styles.transactionIcon,
-                    transaction.type === 'income' ? styles.incomeIcon : styles.expenseIcon
-                  ]}>
-                    <Ionicons 
-                      name={transaction.type === 'income' ? "arrow-down" : "arrow-up"} 
-                      size={20} 
-                      color="#fff" 
-                    />
-                  </View>
-                  <View style={styles.transactionInfo}>
-                    <Text style={styles.transactionTitle}>{transaction.title}</Text>
-                    <Text style={styles.transactionDate}>{transaction.date}</Text>
+                <View style={styles.partnerHeader}>
+                  <PartnerLogo logo={partner.logo} />
+                  <View style={styles.partnerInfo}>
+                    <Text style={styles.partnerName}>{partner.name}</Text>
+                    <Text style={styles.partnerDiscount}>{partner.discount}</Text>
                   </View>
                 </View>
-                <Text style={[
-                  styles.transactionAmount,
-                  transaction.type === 'income' ? styles.incomeAmount : styles.expenseAmount
-                ]}>
-                  {transaction.amount}
-                </Text>
+                <Text style={styles.partnerDescription}>{partner.description}</Text>
+                <View style={styles.partnerBenefits}>
+                  {partner.benefits.map((benefit, index) => (
+                    <View key={index} style={styles.benefitItem}>
+                      <Ionicons name="checkmark-circle" size={16} color="#159E3A" />
+                      <Text style={styles.benefitText}>{benefit}</Text>
+                    </View>
+                  ))}
+                </View>
+                <TouchableOpacity 
+                  style={[styles.partnerButton, { backgroundColor: partner.color }]}
+                  onPress={() => handlePartnerPress(partner)}
+                >
+                  <Text style={styles.partnerButtonText}>Узнать больше</Text>
+                </TouchableOpacity>
               </TouchableOpacity>
             ))}
           </View>
@@ -335,6 +391,14 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
+  },
+  // Новый стиль для логотипов с черным фоном
+  logoContainer: {
+    backgroundColor: '#000000',
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 4,
   },
   totalBalanceCard: {
     backgroundColor: '#fff',
@@ -523,15 +587,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 22,
     fontWeight: '800',
-    textShadowColor: 'rgba(0, 0, 0, 0.5)',
-    textShadowOffset: { width: 1, height: 1 },
-    textShadowRadius: 3,
-  },
-  cardNumber: {
-    color: 'rgba(255,255,255,0.8)',
-    fontSize: 12,
-    fontWeight: '500',
-    letterSpacing: 1,
+    marginBottom: 60,
     textShadowColor: 'rgba(0, 0, 0, 0.5)',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 3,
@@ -629,6 +685,83 @@ const styles = StyleSheet.create({
   },
   expenseAmount: {
     color: '#FF3B30',
+  },
+  partnersSection: {
+    marginBottom: 24,
+  },
+  partnersGrid: {
+    paddingHorizontal: 20,
+    gap: 16,
+  },
+  partnerCard: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+    elevation: 5,
+  },
+  partnerHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  partnerLogoContainer: {
+    width: 60,
+    height: 60,
+    borderRadius: 16,
+    backgroundColor: '#000000', // Черный фон для контейнера логотипа
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+    padding: 4,
+  },
+  partnerInfo: {
+    flex: 1,
+  },
+  partnerName: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#000',
+    marginBottom: 4,
+  },
+  partnerDiscount: {
+    fontSize: 14,
+    color: '#6A2EE8',
+    fontWeight: '600',
+  },
+  partnerDescription: {
+    fontSize: 14,
+    color: '#666',
+    lineHeight: 20,
+    marginBottom: 16,
+  },
+  partnerBenefits: {
+    marginBottom: 16,
+    gap: 8,
+  },
+  benefitItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  benefitText: {
+    fontSize: 14,
+    color: '#000',
+    fontWeight: '500',
+  },
+  partnerButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+  },
+  partnerButtonText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#fff',
   },
   promoBanner: {
     margin: 20,
