@@ -26,6 +26,7 @@ const YanimaLogo = ({ width = 50, height = 50 }) => (
 export default function Home({navigation}){
   const fade = React.useRef(new Animated.Value(0)).current;
   const [refreshing, setRefreshing] = useState(false);
+  const [isBalanceHidden, setIsBalanceHidden] = useState(false); // Состояние для скрытия баланса
 
   const cards = [
     { 
@@ -88,6 +89,11 @@ export default function Home({navigation}){
       setRefreshing(false);
     }, 2000);
   }, []);
+
+  // Функция для переключения видимости баланса
+  const toggleBalanceVisibility = () => {
+    setIsBalanceHidden(!isBalanceHidden);
+  };
 
   const getIcon = (iconName) => {
     switch(iconName) {
@@ -155,11 +161,17 @@ export default function Home({navigation}){
         <View style={styles.totalBalanceCard}>
           <View style={styles.balanceHeader}>
             <Text style={styles.balanceLabel}>Общий баланс</Text>
-            <TouchableOpacity>
-              <Ionicons name="eye-outline" size={20} color="#666" />
+            <TouchableOpacity onPress={toggleBalanceVisibility}>
+              <Ionicons 
+                name={isBalanceHidden ? "eye-off-outline" : "eye-outline"} 
+                size={20} 
+                color="#666" 
+              />
             </TouchableOpacity>
           </View>
-          <Text style={styles.totalBalanceAmount}>682 132,82 ₽</Text>
+          <Text style={styles.totalBalanceAmount}>
+            {isBalanceHidden ? '•••••••' : '682 132,82 ₽'}
+          </Text>
           <View style={styles.balanceTrend}>
             <Ionicons name="trending-up" size={16} color="#159E3A" />
             <Text style={styles.trendText}>+5.2% за месяц</Text>
@@ -173,7 +185,9 @@ export default function Home({navigation}){
         >
           <View style={styles.spendingHeader}>
             <Text style={styles.spendingLabel}>Расходы в октябре</Text>
-            <Text style={styles.spendingAmount}>15 634 ₽</Text>
+            <Text style={styles.spendingAmount}>
+              {'15 634 ₽'}
+            </Text>
           </View>
           
           {/* Spending Progress */}
@@ -238,7 +252,9 @@ export default function Home({navigation}){
                     <Text style={styles.cardName}>{card.name}</Text>
                     <MaterialIcons name="more-vert" size={20} color="#fff" />
                   </View>
-                  <Text style={styles.cardAmount}>{card.amount}</Text>
+                  <Text style={styles.cardAmount}>
+                    {card.amount}
+                  </Text>
                 </View>
               </TouchableOpacity>
             ))}
@@ -302,27 +318,13 @@ export default function Home({navigation}){
             ))}
           </View>
         </View>
-
-        {/* Promo Banner */}
-        <View style={styles.promoBanner}>
-          <View style={styles.promoContent}>
-            <Text style={styles.promoTitle}>Кэшбэк до 10%</Text>
-            <Text style={styles.promoDescription}>На все покупки по картам этого месяца</Text>
-            <TouchableOpacity style={styles.promoButton}>
-              <Text style={styles.promoButtonText}>Подробнее</Text>
-            </TouchableOpacity>
-          </View>
-          <View style={styles.promoIcon}>
-            <Ionicons name="gift" size={40} color="#fff" />
-          </View>
-        </View>
-
         <View style={styles.bottomSpacer} />
       </ScrollView>
     </View>
   );
 }
 
+// Стили остаются без изменений...
 const styles = StyleSheet.create({
   page: {
     flex: 1,
@@ -762,44 +764,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '600',
     color: '#fff',
-  },
-  promoBanner: {
-    margin: 20,
-    backgroundColor: '#6A2EE8',
-    borderRadius: 20,
-    padding: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  promoContent: {
-    flex: 1,
-  },
-  promoTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#fff',
-    marginBottom: 8,
-  },
-  promoDescription: {
-    fontSize: 14,
-    color: 'rgba(255,255,255,0.9)',
-    marginBottom: 16,
-  },
-  promoButton: {
-    backgroundColor: '#fff',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 12,
-    alignSelf: 'flex-start',
-  },
-  promoButtonText: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#6A2EE8',
-  },
-  promoIcon: {
-    marginLeft: 16,
   },
   bottomSpacer: {
     height: 20,
