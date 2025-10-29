@@ -6,7 +6,7 @@ import { Ionicons, Feather, MaterialIcons, FontAwesome5, MaterialCommunityIcons 
 const AstraLogo = ({ width = 50, height = 50 }) => (
   <View style={[styles.logoContainer, { width, height }]}>
     <Image 
-      source={require('../../assets/partners/astra-logo.svg')}
+      source={require('../../../assets/partners/astra-logo.svg')}
       style={{ width: width - 10, height: height - 10 }}
       resizeMode="contain"
     />
@@ -16,7 +16,7 @@ const AstraLogo = ({ width = 50, height = 50 }) => (
 const YanimaLogo = ({ width = 50, height = 50 }) => (
   <View style={[styles.logoContainer, { width, height }]}>
     <Image 
-      source={require('../../assets/partners/yanima-logo.png')}
+      source={require('../../../assets/partners/yanima-logo.png')}
       style={{ width: width - 10, height: height - 10 }}
       resizeMode="contain"
     />
@@ -32,13 +32,13 @@ export default function Home({navigation}){
     { 
       name: 'Black', 
       amount: '666 666,66 ₽', 
-      design: require('../../assets/cards/black-card.png'),
+      design: require('../../../assets/cards/black-card.png'),
       screen: 'CardDetail'
     },
     { 
       name: 'Платинум', 
       amount: '222 222 222 ₽', 
-      design: require('../../assets/cards/platinum-card.png'),
+      design: require('../../../assets/cards/platinum-card.png'),
       screen: 'PlatinumCard'
     },
   ];
@@ -625,68 +625,6 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#6A2EE8',
     textAlign: 'center',
-  },
-  transactionsSection: {
-    marginBottom: 24,
-  },
-  transactionsList: {
-    paddingHorizontal: 20,
-    gap: 12,
-  },
-  transactionItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
-  },
-  transactionLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
-  },
-  transactionIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  incomeIcon: {
-    backgroundColor: '#159E3A',
-  },
-  expenseIcon: {
-    backgroundColor: '#FF3B30',
-  },
-  transactionInfo: {
-    flex: 1,
-  },
-  transactionTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#000',
-    marginBottom: 4,
-  },
-  transactionDate: {
-    fontSize: 14,
-    color: '#666',
-  },
-  transactionAmount: {
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  incomeAmount: {
-    color: '#159E3A',
-  },
-  expenseAmount: {
-    color: '#FF3B30',
   },
   partnersSection: {
     marginBottom: 24,

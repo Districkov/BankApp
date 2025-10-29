@@ -158,7 +158,7 @@ export default function SuccessScreen({ navigation, route }) {
         </TouchableOpacity>
 
         <Text style={styles.autoCloseText}>
-          Автоматически закроется через {secondsLeft} {secondsLeft === 1 ? 'секунду' : secondsLeft < 5 ? 'секунды' : 'секунд'}
+          Автоматически закроется через {secondsLeft} {secondsLeft === 1 ? 'секунду' : secondsLeft < 8 ? 'секунды' : 'секунд'}
         </Text>
       </Animated.View>
     </View>

@@ -1,36 +1,91 @@
-export function formatCardNumber(value){
-  const digits = value.replace(/\D/g,'').slice(0,16);
-  return digits.replace(/(.{4})/g,'$1 ').trim();
-}
-export function plainCardNumber(value){
-  return value.replace(/\D/g,'').slice(0,16);
-}
-export function formatPhone(value){
-  const digits = value.replace(/\D/g,'').slice(0,11);
-  // ensure starts with 7 if user typed 8 convert to 7
-  let d = digits;
-  if(d.startsWith('8')) d = '7' + d.slice(1);
-  if(!d.startsWith('7') && d.length>0) d = '7' + d;
-  let res = d;
-  if(res.length<=1) return '+'+res;
-  if(res.length<=4) return '+'+res[0]+' ('+res.slice(1)+'';
-  if(res.length<=7) return '+'+res[0]+' ('+res.slice(1,4)+') '+res.slice(4);
-  if(res.length<=9) return '+'+res[0]+' ('+res.slice(1,4)+') '+res.slice(4,7)+'-'+res.slice(7);
-  return '+'+res[0]+' ('+res.slice(1,4)+') '+res.slice(4,7)+'-'+res.slice(7,9)+'-'+res.slice(9,11);
-}
-export function plainPhone(value){
-  return value.replace(/\D/g,'');
-}
-export function validateCardNumber(value){
-  return plainCardNumber(value).length===16;
-}
-export function validatePhone(value){
-  const p = plainPhone(value);
-  return (p.length===11) && (p.startsWith('7') || p.startsWith('8'));
-}
-export function validateAmount(value){
-  if(!value) return false;
-  const v = value.toString().replace(',','.');
-  const num = parseFloat(v);
-  return !isNaN(num) && num>0;
-}
+import { CARD_SYSTEMS } from './constants';
+
+// Форматирование денежных сумм
+export const formatAmount = (amount, currency = '₽') => {
+  if (typeof amount !== 'number') {
+    amount = parseFloat(amount) || 0;
+  }
+  return `${amount.toLocaleString('ru-RU')} ${currency}`;
+};
+
+// Форматирование номера карты
+export const formatCardNumber = (number, visible = false) => {
+  if (!number) return '';
+  
+  const cleaned = number.toString().replace(/\s+/g, '');
+  
+  if (visible) {
+    return cleaned.replace(/(.{4})/g, '$1 ').trim();
+  } else {
+    const firstSix = cleaned.slice(0, 6);
+    const lastFour = cleaned.slice(-4);
+    return `${firstSix}******${lastFour}`.replace(/(.{4})/g, '$1 ').trim();
+  }
+};
+
+// Форматирование номера телефона
+export const formatPhoneNumber = (phone) => {
+  if (!phone) return '';
+  
+  const cleaned = phone.toString().replace(/\D/g, '');
+  
+  if (cleaned.length === 11) {
+    return `+7 (${cleaned.slice(1, 4)}) ${cleaned.slice(4, 7)}-${cleaned.slice(7, 9)}-${cleaned.slice(9)}`;
+  }
+  
+  return cleaned;
+};
+
+// Форматирование даты
+export const formatDate = (dateString, format = 'short') => {
+  const date = new Date(dateString);
+  
+  if (format === 'short') {
+    return date.toLocaleDateString('ru-RU', {
+      day: 'numeric',
+      month: 'short',
+    });
+  }
+  
+  if (format === 'long') {
+    return date.toLocaleDateString('ru-RU', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+  }
+  
+  return date.toLocaleDateString('ru-RU');
+};
+
+// Определение платежной системы по номеру карты
+export const getCardSystem = (cardNumber) => {
+  const firstDigit = cardNumber.toString().charAt(0);
+  
+  switch (firstDigit) {
+    case '4':
+      return CARD_SYSTEMS.VISA;
+    case '5':
+      return CARD_SYSTEMS.MASTERCARD;
+    case '2':
+      return CARD_SYSTEMS.MIR;
+    default:
+      return CARD_SYSTEMS.MASTERCARD;
+  }
+};
+
+// Скрытие чувствительных данных
+export const maskSensitiveData = (data, visibleChars = 4) => {
+  if (!data) return '';
+  
+  const str = data.toString();
+  if (str.length <= visibleChars * 2) {
+    return '*'.repeat(str.length);
+  }
+  
+  const firstVisible = str.slice(0, visibleChars);
+  const lastVisible = str.slice(-visibleChars);
+  const maskedLength = str.length - visibleChars * 2;
+  
+  return `${firstVisible}${'*'.repeat(maskedLength)}${lastVisible}`;
+};
