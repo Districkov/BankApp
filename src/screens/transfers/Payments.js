@@ -17,9 +17,6 @@ export default function Payments({ navigation }){
     { id: 1, title: 'Между', subtitle: 'счетами', screen: 'TransfersScreen' },
     { id: 2, title: 'По номеру', subtitle: 'телефона', screen: 'TransferPhone' },
     { id: 3, title: 'По номеру', subtitle: 'карты', screen: 'TransferCard' },
-    { id: 4, title: 'В другой', subtitle: 'банк', screen: 'TransferBank' },
-    { id: 5, title: 'По QR', subtitle: 'коду', screen: 'QRPay' },
-    { id: 6, title: 'На карту', subtitle: 'Tinkoff', screen: 'TransferTinkoff' },
   ];
 
   // Форматирование номера телефона
@@ -97,70 +94,9 @@ export default function Payments({ navigation }){
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Платежи</Text>
-        <TouchableOpacity style={styles.searchButton}>
-          <Feather name="search" size={20} color="#000" />
-        </TouchableOpacity>
       </View>
 
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        {/* Search Input */}
-        <View style={styles.searchContainer}>
-          <Feather name="search" size={20} color="#666" style={styles.searchIcon} />
-          <TextInput 
-            placeholder="Поиск услуг и переводов" 
-            placeholderTextColor="#666"
-            style={styles.searchInput} 
-          />
-        </View>
-
-        {/* Favorites Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Избранное</Text>
-          <View style={styles.favoritesGrid}>
-            <TouchableOpacity 
-              style={styles.favoriteItem}
-              onPress={() => navigation.navigate('MyPhone')}
-            >
-              <View style={[styles.favoriteIcon, { backgroundColor: '#E8F5E8' }]}>
-                <Ionicons name="phone-portrait-outline" size={24} color="#16A34A"/>
-              </View>
-              <Text style={styles.favoriteText}>Мой телефон</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={styles.favoriteItem}
-              onPress={() => navigation.navigate('AddFavorite')}
-            >
-              <View style={[styles.favoriteIcon, { backgroundColor: '#F0EBFF' }]}>
-                <Ionicons name="add-circle-outline" size={24} color="#6A2EE8"/>
-              </View>
-              <Text style={[styles.favoriteText, { color: '#6A2EE8' }]}>Добавить</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Quick Actions */}
-        <View style={styles.quickActions}>
-          <TouchableOpacity 
-            style={styles.quickAction}
-            onPress={() => navigation.navigate('PaymentsList')}
-          >
-            <View style={[styles.quickActionIcon, { backgroundColor: '#F0EBFF' }]}>
-              <Ionicons name="document-text-outline" size={20} color="#6A2EE8"/>
-            </View>
-            <Text style={styles.quickActionText}>На оплату</Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={styles.quickAction}
-            onPress={() => navigation.navigate('QRPay')}
-          >
-            <View style={[styles.quickActionIcon, { backgroundColor: '#F0EBFF' }]}>
-              <Ionicons name="qr-code-outline" size={20} color="#6A2EE8"/>
-            </View>
-            <Text style={styles.quickActionText}>Сканировать</Text>
-          </TouchableOpacity>
-        </View>
 
         {/* Phone Transfer Section */}
         <View style={styles.section}>
@@ -212,9 +148,6 @@ export default function Payments({ navigation }){
         <View style={styles.section}>
           <View style={styles.transfersHeader}>
             <Text style={styles.sectionTitle}>Переводы</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('AllTransfers')}>
-              <Text style={styles.allButton}>Все</Text>
-            </TouchableOpacity>
           </View>
           
           <ScrollView 

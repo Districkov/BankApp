@@ -20,14 +20,13 @@ import Payments from './src/screens/transfers/Payments';
 import TransfersScreen from './src/screens/transfers/TransfersScreen';
 import TransferCard from './src/screens/transfers/TransferCard';
 import TransferPhone from './src/screens/transfers/TransferPhone';
-import TopUpScreen from './src/screens/transfers/TopUpScreen';
-import QRPay from './src/screens/transfers/QRPay';
 
 // Profile Screens
 import More from './src/screens/profile/More';
 import Settings from './src/screens/profile/Settings';
 import PersonalData from './src/screens/profile/PersonalData';
 import Notifications from './src/screens/profile/Notifications';
+import Notifications1 from './src/screens/profile/Notifications1';
 import Support from './src/screens/profile/Support';
 
 // History Screens
@@ -127,10 +126,8 @@ export default function App() {
         <Stack.Screen name="CardsList" component={CardsList} />
         
         {/* Переводы и платежи */}
-        <Stack.Screen name="TopUp" component={TopUpScreen} />
         <Stack.Screen name="TransferCard" component={TransferCard} />
         <Stack.Screen name="TransferPhone" component={TransferPhone} />
-        <Stack.Screen name="QRPay" component={QRPay} />
         <Stack.Screen name="TransfersScreen" component={TransfersScreen} />
         
         {/* Профиль и настройки */}
@@ -138,6 +135,7 @@ export default function App() {
         <Stack.Screen name="PersonalData" component={PersonalData} />
         <Stack.Screen name="Support" component={Support} />
         <Stack.Screen name="Notifications" component={Notifications} />
+        <Stack.Screen name="Notifications1" component={Notifications1} />
         
         {/* История операций */}
         <Stack.Screen name="TransactionHistory" component={TransactionHistory} />

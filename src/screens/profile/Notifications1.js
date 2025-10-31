@@ -11,6 +11,40 @@ export default function Notifications({ navigation }) {
     system: true
   });
 
+  const notificationList = [
+    {
+      id: 1,
+      title: 'Поступление средств',
+      message: 'На ваш счет поступил перевод от Алексея Петрова',
+      time: '2 минуты назад',
+      type: 'transaction',
+      read: false
+    },
+    {
+      id: 2,
+      title: 'Завершена операция',
+      message: 'Оплата в кофейне "Бодрость" на 350 ₽',
+      time: '1 час назад',
+      type: 'transaction',
+      read: true
+    },
+    {
+      id: 3,
+      title: 'Вход в приложение',
+      message: 'Выполнен вход с нового устройства',
+      time: 'Сегодня, 10:30',
+      type: 'security',
+      read: true
+    },
+    {
+      id: 4,
+      title: 'Специальное предложение',
+      message: 'Кэшбэк 10% в ресторанах-партнерах',
+      time: 'Вчера',
+      type: 'promotion',
+      read: true
+    }
+  ];
 
   const toggleNotification = (type) => {
     setNotifications(prev => ({
@@ -52,73 +86,48 @@ export default function Notifications({ navigation }) {
       </View>
 
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        
-        {/* Settings Section */}
-        <View style={styles.settingsSection}>
-          <Text style={styles.sectionTitle}>Настройки уведомлений</Text>
+
+        {/* Notifications List */}
+        <View style={styles.notificationsSection}>
+          <Text style={styles.sectionTitle}>Последние уведомления</Text>
           
-          <View style={styles.settingsCard}>
-            <View style={styles.settingItem}>
-              <View style={styles.settingLeft}>
-                <Ionicons name="cash-outline" size={22} color="#159E3A" />
-                <View style={styles.settingTexts}>
-                  <Text style={styles.settingTitle}>Операции по счетам</Text>
-                  <Text style={styles.settingDescription}>Поступления и списания</Text>
-                </View>
-              </View>
-              <Switch
-                value={notifications.transactions}
-                onValueChange={() => toggleNotification('transactions')}
-                trackColor={{ false: '#E5E5E5', true: '#6A2EE8' }}
-              />
+          {notificationList.length === 0 ? (
+            <View style={styles.emptyState}>
+              <Ionicons name="notifications-off-outline" size={48} color="#999" />
+              <Text style={styles.emptyStateTitle}>Уведомлений нет</Text>
+              <Text style={styles.emptyStateText}>
+                Здесь будут появляться ваши уведомления
+              </Text>
             </View>
-
-            <View style={styles.settingItem}>
-              <View style={styles.settingLeft}>
-                <Ionicons name="shield-checkmark-outline" size={22} color="#FFA726" />
-                <View style={styles.settingTexts}>
-                  <Text style={styles.settingTitle}>Безопасность</Text>
-                  <Text style={styles.settingDescription}>Входы и подозрительные действия</Text>
-                </View>
-              </View>
-              <Switch
-                value={notifications.security}
-                onValueChange={() => toggleNotification('security')}
-                trackColor={{ false: '#E5E5E5', true: '#6A2EE8' }}
-              />
+          ) : (
+            <View style={styles.notificationsList}>
+              {notificationList.map((notification) => {
+                const { icon, color } = getNotificationIcon(notification.type);
+                
+                return (
+                  <TouchableOpacity
+                    key={notification.id}
+                    style={[
+                      styles.notificationItem,
+                      !notification.read && styles.notificationItemUnread
+                    ]}
+                  >
+                    <View style={[styles.notificationIcon, { backgroundColor: color + '20' }]}>
+                      <Ionicons name={icon} size={20} color={color} />
+                    </View>
+                    <View style={styles.notificationContent}>
+                      <Text style={styles.notificationTitle}>{notification.title}</Text>
+                      <Text style={styles.notificationMessage}>{notification.message}</Text>
+                      <Text style={styles.notificationTime}>{notification.time}</Text>
+                    </View>
+                    {!notification.read && <View style={styles.unreadDot} />}
+                  </TouchableOpacity>
+                );
+              })}
             </View>
-
-            <View style={styles.settingItem}>
-              <View style={styles.settingLeft}>
-                <Ionicons name="gift-outline" size={22} color="#FF6B6B" />
-                <View style={styles.settingTexts}>
-                  <Text style={styles.settingTitle}>Акции и предложения</Text>
-                  <Text style={styles.settingDescription}>Специальные условия и кэшбэк</Text>
-                </View>
-              </View>
-              <Switch
-                value={notifications.promotions}
-                onValueChange={() => toggleNotification('promotions')}
-                trackColor={{ false: '#E5E5E5', true: '#6A2EE8' }}
-              />
-            </View>
-
-            <View style={styles.settingItem}>
-              <View style={styles.settingLeft}>
-                <Ionicons name="megaphone-outline" size={22} color="#6A2EE8" />
-                <View style={styles.settingTexts}>
-                  <Text style={styles.settingTitle}>Новости банка</Text>
-                  <Text style={styles.settingDescription}>Обновления и важные объявления</Text>
-                </View>
-              </View>
-              <Switch
-                value={notifications.news}
-                onValueChange={() => toggleNotification('news')}
-                trackColor={{ false: '#E5E5E5', true: '#6A2EE8' }}
-              />
-            </View>
-          </View>
+          )}
         </View>
+
         <View style={styles.bottomSpacer} />
       </ScrollView>
     </View>

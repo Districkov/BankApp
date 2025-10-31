@@ -92,10 +92,6 @@ export default function More({ navigation }) {
               </View>
               <View style={styles.profileInfo}>
                 <Text style={styles.profileName}>Иван</Text>
-                <View style={styles.profileBadge}>
-                  <Ionicons name="diamond" size={12} color="#fff" />
-                  <Text style={styles.profileBadgeText}>PRO</Text>
-                </View>
               </View>
             </View>
             

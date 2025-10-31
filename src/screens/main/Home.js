@@ -45,9 +45,7 @@ export default function Home({navigation}){
 
   const quickActions = [
     { title: 'Перевод по номеру', icon: 'phone-portrait', nav: 'TransferPhone', color: '#159E3A' },
-    { title: 'Пополнить', icon: 'download', nav: 'TopUp', color: '#FF6B6B' },
     { title: 'Перевести', icon: 'money-transfer', nav: 'TransfersScreen', color: '#6A2EE8' },
-    { title: 'Оплатить', icon: 'qrcode-scan', nav: 'QRPay', color: '#FF6B6B' },
   ];
 
   const recentTransactions = [
@@ -140,7 +138,7 @@ export default function Home({navigation}){
         </TouchableOpacity>
         <TouchableOpacity 
           style={styles.notificationButton}
-          onPress={() => navigation.navigate('Notifications')}
+          onPress={() => navigation.navigate('Notifications1')}
         >
           <Ionicons name="notifications-outline" size={24} color="#000" />
           <View style={styles.notificationBadge}>

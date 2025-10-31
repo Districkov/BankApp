@@ -84,11 +84,6 @@ export default function PersonalData({ navigation }) {
           <Ionicons name="arrow-back" size={24} color="#000" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Личная информация</Text>
-        <TouchableOpacity onPress={isEditing ? handleCancel : handleEdit}>
-          <Text style={styles.editButton}>
-            {isEditing ? 'Отмена' : 'Редактировать'}
-          </Text>
-        </TouchableOpacity>
       </View>
 
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -149,17 +144,6 @@ export default function PersonalData({ navigation }) {
           </TouchableOpacity>
         )}
 
-        {/* Additional Info */}
-        {!isEditing && (
-          <View style={styles.infoSection}>
-            <View style={styles.infoCard}>
-              <Ionicons name="information-circle-outline" size={20} color="#666" />
-              <Text style={styles.infoText}>
-                Для изменения данных нажмите кнопку "Редактировать"
-              </Text>
-            </View>
-          </View>
-        )}
 
         <View style={styles.bottomSpacer} />
       </ScrollView>
