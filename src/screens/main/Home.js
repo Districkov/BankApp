@@ -5,28 +5,20 @@ import { Ionicons, Feather, MaterialIcons, FontAwesome5, MaterialCommunityIcons 
 // Компоненты для логотипов партнёров с черным фоном
 const AstraLogo = ({ width = 50, height = 50 }) => (
   <View style={[styles.logoContainer, { width, height }]}>
-    <Image 
-      source={require('../../../assets/partners/astra-logo.svg')}
-      style={{ width: width - 10, height: height - 10 }}
-      resizeMode="contain"
-    />
+    <Text style={[styles.logoText, { fontSize: width * 0.3 }]}>Astra</Text>
   </View>
 );
 
 const YanimaLogo = ({ width = 50, height = 50 }) => (
   <View style={[styles.logoContainer, { width, height }]}>
-    <Image 
-      source={require('../../../assets/partners/yanima-logo.png')}
-      style={{ width: width - 10, height: height - 10 }}
-      resizeMode="contain"
-    />
+    <Text style={[styles.logoText, { fontSize: width * 0.3 }]}>Yanima</Text>
   </View>
 );
 
 export default function Home({navigation}){
   const fade = React.useRef(new Animated.Value(0)).current;
   const [refreshing, setRefreshing] = useState(false);
-  const [isBalanceHidden, setIsBalanceHidden] = useState(false); // Состояние для скрытия баланса
+  const [isBalanceHidden, setIsBalanceHidden] = useState(false);
 
   const cards = [
     { 
@@ -48,12 +40,6 @@ export default function Home({navigation}){
     { title: 'Перевести', icon: 'money-transfer', nav: 'TransfersScreen', color: '#6A2EE8' },
   ];
 
-  const recentTransactions = [
-    { id: 1, title: 'Кафе "Вкусно и точка"', amount: '-538 ₽', date: 'Сегодня', type: 'expense' },
-    { id: 2, title: 'Пополнение от Петра', amount: '+8 700 ₽', date: 'Вчера', type: 'income' },
-    { id: 3, title: 'Такси Яндекс', amount: '-320 ₽', date: '2 дня назад', type: 'expense' },
-  ];
-
   const partners = [
     { 
       id: 1, 
@@ -62,7 +48,7 @@ export default function Home({navigation}){
       description: 'GTA 5 RolePlay проект\nСпециальные условия для клиентов',
       logo: AstraLogo,
       screen: 'AstraDetail',
-      color: '#ff0000ff',
+      color: '#FF0000',
       benefits: ['Игровая валюта', 'Премиум аккаунт', 'Эксклюзивный контент']
     },
     { 
@@ -72,7 +58,7 @@ export default function Home({navigation}){
       description: 'Онлайн-просмотр аниме\nСпециальные предложения',
       logo: YanimaLogo,
       screen: 'YanimaDetail',
-      color: '#6e00fdff',
+      color: '#6A2EE8',
       benefits: ['Премиум подписка', 'Ранний доступ', 'Эксклюзивные релизы']
     },
   ];
@@ -88,7 +74,6 @@ export default function Home({navigation}){
     }, 2000);
   }, []);
 
-  // Функция для переключения видимости баланса
   const toggleBalanceVisibility = () => {
     setIsBalanceHidden(!isBalanceHidden);
   };
@@ -322,11 +307,10 @@ export default function Home({navigation}){
   );
 }
 
-// Стили остаются без изменений...
 const styles = StyleSheet.create({
   page: {
     flex: 1,
-    backgroundColor: '#F7F7FB'
+    backgroundColor: '#F8FAFD'
   },
   header: {
     flexDirection: 'row',
@@ -336,7 +320,7 @@ const styles = StyleSheet.create({
     paddingVertical: 16,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5'
+    borderBottomColor: '#F0F0F5'
   },
   headerLeft: {
     flexDirection: 'row',
@@ -364,7 +348,7 @@ const styles = StyleSheet.create({
   userName: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#000',
+    color: '#1A1A1A',
   },
   notificationButton: {
     width: 44,
@@ -392,7 +376,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  // Новый стиль для логотипов с черным фоном
   logoContainer: {
     backgroundColor: '#000000',
     borderRadius: 12,
@@ -400,16 +383,22 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     padding: 4,
   },
+  logoText: {
+    color: '#fff',
+    fontWeight: '700',
+  },
   totalBalanceCard: {
     backgroundColor: '#fff',
     margin: 20,
     padding: 24,
     borderRadius: 20,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.1,
     shadowRadius: 12,
-    elevation: 5,
+    elevation: 8,
+    borderWidth: 1,
+    borderColor: '#F0F0F5'
   },
   balanceHeader: {
     flexDirection: 'row',
@@ -420,13 +409,14 @@ const styles = StyleSheet.create({
   balanceLabel: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#000',
+    color: '#666',
   },
   totalBalanceAmount: {
     fontSize: 32,
     fontWeight: '800',
-    color: '#000',
+    color: '#1A1A1A',
     marginBottom: 12,
+    letterSpacing: 0.5,
   },
   balanceTrend: {
     flexDirection: 'row',
@@ -445,10 +435,12 @@ const styles = StyleSheet.create({
     padding: 24,
     borderRadius: 20,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.1,
     shadowRadius: 12,
-    elevation: 5,
+    elevation: 8,
+    borderWidth: 1,
+    borderColor: '#F0F0F5'
   },
   spendingHeader: {
     flexDirection: 'row',
@@ -459,7 +451,7 @@ const styles = StyleSheet.create({
   spendingLabel: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#000',
+    color: '#666',
   },
   spendingAmount: {
     fontSize: 20,
@@ -491,14 +483,14 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#000',
+    fontWeight: '700',
+    color: '#1A1A1A',
     marginBottom: 16,
     paddingHorizontal: 20,
   },
   quickActionsGrid: {
     flexDirection: 'row',
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     gap: 12,
   },
   quickAction: {
@@ -513,15 +505,15 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 8,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
   actionText: {
     fontSize: 12,
-    fontWeight: '500',
-    color: '#000',
+    fontWeight: '600',
+    color: '#1A1A1A',
     textAlign: 'center',
   },
   cardsSection: {
@@ -542,10 +534,10 @@ const styles = StyleSheet.create({
   seeAllText: {
     fontSize: 14,
     color: '#6A2EE8',
-    fontWeight: '500',
+    fontWeight: '600',
   },
   cardsScroll: {
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
   },
   cardItem: {
     width: 280,
@@ -555,10 +547,10 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     position: 'relative',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
+    shadowRadius: 12,
+    elevation: 8,
   },
   cardImage: {
     width: '100%',
@@ -601,12 +593,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowRadius: 8,
+    elevation: 4,
     borderWidth: 2,
-    borderColor: '#F0F0F0',
+    borderColor: '#F0F0F5',
     borderStyle: 'dashed',
   },
   addCardIcon: {
@@ -620,7 +612,7 @@ const styles = StyleSheet.create({
   },
   addCardText: {
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '600',
     color: '#6A2EE8',
     textAlign: 'center',
   },
@@ -636,10 +628,12 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 20,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
+    shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.1,
     shadowRadius: 12,
-    elevation: 5,
+    elevation: 8,
+    borderWidth: 1,
+    borderColor: '#F0F0F5'
   },
   partnerHeader: {
     flexDirection: 'row',
@@ -650,11 +644,16 @@ const styles = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 16,
-    backgroundColor: '#000000', // Черный фон для контейнера логотипа
+    backgroundColor: '#000000',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 12,
     padding: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
   partnerInfo: {
     flex: 1,
@@ -662,7 +661,7 @@ const styles = StyleSheet.create({
   partnerName: {
     fontSize: 18,
     fontWeight: '700',
-    color: '#000',
+    color: '#1A1A1A',
     marginBottom: 4,
   },
   partnerDiscount: {
@@ -675,6 +674,7 @@ const styles = StyleSheet.create({
     color: '#666',
     lineHeight: 20,
     marginBottom: 16,
+    fontWeight: '500',
   },
   partnerBenefits: {
     marginBottom: 16,
@@ -687,7 +687,7 @@ const styles = StyleSheet.create({
   },
   benefitText: {
     fontSize: 14,
-    color: '#000',
+    color: '#1A1A1A',
     fontWeight: '500',
   },
   partnerButton: {
@@ -695,6 +695,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     borderRadius: 12,
     alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
   partnerButtonText: {
     fontSize: 16,
@@ -702,6 +707,6 @@ const styles = StyleSheet.create({
     color: '#fff',
   },
   bottomSpacer: {
-    height: 20,
+    height: 30,
   },
 });

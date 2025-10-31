@@ -75,12 +75,6 @@ export default function Payments({ navigation }){
     }
   };
 
-  const handleSearchSubmit = () => {
-    if (phoneNumber && validatePhone(phoneNumber)) {
-      navigation.navigate('TransferPhone', { phone: phoneNumber });
-    }
-  };
-
   const handlePhoneTransfer = () => {
     if (phoneNumber && validatePhone(phoneNumber)) {
       navigation.navigate('TransferPhone', { phone: phoneNumber });
@@ -93,7 +87,11 @@ export default function Payments({ navigation }){
     <View style={styles.page}>
       {/* Header */}
       <View style={styles.header}>
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Ionicons name="arrow-back" size={24} color="#000" />
+        </TouchableOpacity>
         <Text style={styles.headerTitle}>Платежи</Text>
+        <View style={{ width: 24 }} />
       </View>
 
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -182,132 +180,47 @@ export default function Payments({ navigation }){
 const styles = StyleSheet.create({
   page: {
     flex: 1,
-    backgroundColor: '#F7F7FB'
+    backgroundColor: '#F8FAFD'
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     paddingVertical: 16,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5'
+    borderBottomColor: '#F0F0F5'
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#000'
-  },
-  searchButton: {
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center'
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#1A1A1A',
   },
   container: {
     flex: 1,
   },
-  searchContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    margin: 16,
-    paddingHorizontal: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#E5E5E5'
-  },
-  searchIcon: {
-    marginRight: 8
-  },
-  searchInput: {
-    flex: 1,
-    paddingVertical: 14,
-    fontSize: 16,
-    color: '#000'
-  },
   section: {
-    marginHorizontal: 16,
-    marginBottom: 20
+    marginHorizontal: 20,
+    marginBottom: 24
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#000',
-    marginBottom: 12
-  },
-  favoritesGrid: {
-    flexDirection: 'row',
-    gap: 12
-  },
-  favoriteItem: {
-    flex: 1,
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  favoriteIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 8
-  },
-  favoriteText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#000',
-    textAlign: 'center'
-  },
-  quickActions: {
-    flexDirection: 'row',
-    marginHorizontal: 16,
-    marginBottom: 20,
-    gap: 12
-  },
-  quickAction: {
-    flex: 1,
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  quickActionIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 8
-  },
-  quickActionText: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#000',
-    textAlign: 'center'
+    fontWeight: '700',
+    color: '#1A1A1A',
+    marginBottom: 16
   },
   phoneTransferCard: {
     backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 12,
+    padding: 20,
+    borderRadius: 20,
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: '#F0F0F5'
   },
   phoneInputContainer: {
     flexDirection: 'row',
@@ -316,37 +229,44 @@ const styles = StyleSheet.create({
   },
   phoneInput: {
     flex: 1,
-    backgroundColor: '#F7F7FB',
+    backgroundColor: '#F8FAFD',
     paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderRadius: 10,
+    paddingVertical: 16,
+    borderRadius: 12,
     fontSize: 16,
-    color: '#000',
+    color: '#1A1A1A',
     marginRight: 12,
     borderWidth: 1,
-    borderColor: '#E5E5E5'
+    borderColor: '#E5E5EA',
+    fontWeight: '500'
   },
   transferButton: {
     backgroundColor: '#6A2EE8',
     paddingHorizontal: 20,
-    paddingVertical: 14,
-    borderRadius: 10,
-    minWidth: 100
+    paddingVertical: 16,
+    borderRadius: 12,
+    minWidth: 100,
+    shadowColor: '#6A2EE8',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   transferButtonDisabled: {
-    backgroundColor: '#B9B6FF'
+    backgroundColor: '#C4B5FD',
+    shadowOpacity: 0.1,
   },
   transferButtonText: {
     color: '#fff',
-    fontWeight: '600',
+    fontWeight: '700',
     fontSize: 14,
     textAlign: 'center'
   },
   contactsTitle: {
-    fontSize: 14,
-    fontWeight: '500',
+    fontSize: 15,
+    fontWeight: '600',
     color: '#666',
-    marginTop: 16,
+    marginTop: 20,
     marginBottom: 12
   },
   contactsScroll: {
@@ -354,33 +274,40 @@ const styles = StyleSheet.create({
   },
   contactItem: {
     alignItems: 'center',
-    marginRight: 16,
-    width: 60
+    marginRight: 20,
+    width: 64
   },
   contactAvatar: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     backgroundColor: '#6A2EE8',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 6
+    marginBottom: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2,
   },
   contactInitial: {
     color: '#fff',
-    fontWeight: '600',
+    fontWeight: '700',
     fontSize: 16
   },
   contactName: {
-    fontSize: 12,
-    color: '#000',
-    textAlign: 'center'
+    fontSize: 13,
+    color: '#1A1A1A',
+    textAlign: 'center',
+    fontWeight: '500'
   },
   errorText: {
     color: '#FF3B30',
-    fontSize: 12,
+    fontSize: 13,
     marginBottom: 8,
-    marginLeft: 4
+    marginLeft: 4,
+    fontWeight: '500'
   },
   transfersHeader: {
     flexDirection: 'row',
@@ -388,53 +315,56 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 12
   },
-  allButton: {
-    fontSize: 14,
-    color: '#6A2EE8',
-    fontWeight: '500'
-  },
   transfersHorizontalScroll: {
-    marginHorizontal: -16,
+    marginHorizontal: -20,
   },
   transfersRow: {
     flexDirection: 'row',
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     gap: 12
   },
   transferType: {
-    width: 100,
+    width: 110,
     backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 12,
+    padding: 20,
+    borderRadius: 16,
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.08,
+    shadowRadius: 12,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: '#F0F0F5'
   },
   transferIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 44,
+    height: 44,
+    borderRadius: 22,
     backgroundColor: '#6A2EE8',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 8
+    marginBottom: 12,
+    shadowColor: '#6A2EE8',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
   transferTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#000',
-    marginBottom: 2,
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#1A1A1A',
+    marginBottom: 4,
     textAlign: 'center'
   },
   transferSubtitle: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#666',
-    textAlign: 'center'
+    textAlign: 'center',
+    fontWeight: '500'
   },
   bottomSpacer: {
-    height: 20
+    height: 30
   }
 });

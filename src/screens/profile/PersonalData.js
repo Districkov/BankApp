@@ -1,77 +1,40 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert } from 'react-native';
+import React from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 export default function PersonalData({ navigation }) {
-  const [userData, setUserData] = useState({
+  const userData = {
     firstName: 'Иван',
     lastName: 'Иванов',
     email: 'ivan@example.com',
     phone: '+7 (999) 123-45-67',
     birthDate: '15.05.1990'
-  });
-
-  const [isEditing, setIsEditing] = useState(false);
-  const [editedData, setEditedData] = useState({...userData});
-
-  const handleSave = () => {
-    // Валидация данных
-    if (!editedData.firstName.trim() || !editedData.lastName.trim()) {
-      Alert.alert('Ошибка', 'Имя и фамилия обязательны для заполнения');
-      return;
-    }
-
-    if (!editedData.email.includes('@')) {
-      Alert.alert('Ошибка', 'Введите корректный email');
-      return;
-    }
-
-    setUserData({...editedData});
-    setIsEditing(false);
-    Alert.alert('Успешно', 'Данные сохранены');
-  };
-
-  const handleCancel = () => {
-    setEditedData({...userData});
-    setIsEditing(false);
-  };
-
-  const handleEdit = () => {
-    setEditedData({...userData});
-    setIsEditing(true);
   };
 
   const fields = [
     {
       key: 'firstName',
       label: 'Имя',
-      placeholder: 'Введите имя',
       icon: 'person-outline'
     },
     {
       key: 'lastName',
       label: 'Фамилия',
-      placeholder: 'Введите фамилию',
       icon: 'person-outline'
     },
     {
       key: 'email',
       label: 'Email',
-      placeholder: 'Введите email',
-      icon: 'mail-outline',
-      keyboardType: 'email-address'
+      icon: 'mail-outline'
     },
     {
       key: 'phone',
       label: 'Телефон',
-      placeholder: 'Введите телефон',
-      icon: 'call-outline',
-      keyboardType: 'phone-pad'
+      icon: 'call-outline'
     },
     {
       key: 'birthDate',
       label: 'Дата рождения',
-      placeholder: 'ДД.ММ.ГГГГ',
       icon: 'calendar-outline'
     }
   ];
@@ -84,6 +47,7 @@ export default function PersonalData({ navigation }) {
           <Ionicons name="arrow-back" size={24} color="#000" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Личная информация</Text>
+        <View style={{ width: 24 }} />
       </View>
 
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -95,55 +59,27 @@ export default function PersonalData({ navigation }) {
               {userData.firstName[0]}{userData.lastName[0]}
             </Text>
           </View>
-          {isEditing && (
-            <TouchableOpacity style={styles.changePhotoButton}>
-              <Text style={styles.changePhotoText}>Сменить фото</Text>
-            </TouchableOpacity>
-          )}
         </View>
 
-        {/* Personal Data Form */}
+        {/* Personal Data Display */}
         <View style={styles.formSection}>
           {fields.map((field, index) => (
             <View key={field.key} style={styles.field}>
               <Text style={styles.fieldLabel}>{field.label}</Text>
-              <View style={styles.inputContainer}>
+              <View style={styles.dataContainer}>
                 <Ionicons 
                   name={field.icon} 
                   size={20} 
                   color="#666" 
-                  style={styles.inputIcon}
+                  style={styles.dataIcon}
                 />
-                {isEditing ? (
-                  <TextInput
-                    style={styles.input}
-                    value={editedData[field.key]}
-                    onChangeText={(text) => setEditedData({
-                      ...editedData,
-                      [field.key]: text
-                    })}
-                    placeholder={field.placeholder}
-                    placeholderTextColor="#999"
-                    editable={isEditing}
-                    keyboardType={field.keyboardType || 'default'}
-                  />
-                ) : (
-                  <Text style={styles.displayText}>
-                    {userData[field.key]}
-                  </Text>
-                )}
+                <Text style={styles.dataText}>
+                  {userData[field.key]}
+                </Text>
               </View>
             </View>
           ))}
         </View>
-
-        {/* Save Button */}
-        {isEditing && (
-          <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-            <Text style={styles.saveButtonText}>Сохранить изменения</Text>
-          </TouchableOpacity>
-        )}
-
 
         <View style={styles.bottomSpacer} />
       </ScrollView>
@@ -154,131 +90,85 @@ export default function PersonalData({ navigation }) {
 const styles = StyleSheet.create({
   page: {
     flex: 1,
-    backgroundColor: '#F7F7FB'
+    backgroundColor: '#F8FAFD'
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
     paddingVertical: 16,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: '#E5E5E5'
+    borderBottomColor: '#F0F0F5'
   },
   headerTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#000'
-  },
-  editButton: {
-    fontSize: 16,
-    color: '#6A2EE8',
-    fontWeight: '500'
+    fontSize: 20,
+    fontWeight: '700',
+    color: '#1A1A1A',
   },
   container: {
     flex: 1,
   },
   photoSection: {
     alignItems: 'center',
-    paddingVertical: 24,
+    paddingVertical: 32,
     backgroundColor: '#fff',
     marginBottom: 8,
   },
   avatar: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
+    width: 100,
+    height: 100,
+    borderRadius: 50,
     backgroundColor: '#6A2EE8',
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 12,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 8,
+    elevation: 4,
   },
   avatarText: {
     color: '#fff',
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  changePhotoButton: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: '#F0EBFF',
-    borderRadius: 20,
-  },
-  changePhotoText: {
-    color: '#6A2EE8',
-    fontSize: 14,
-    fontWeight: '500',
+    fontSize: 32,
+    fontWeight: '700',
   },
   formSection: {
     backgroundColor: '#fff',
-    paddingHorizontal: 16,
+    paddingHorizontal: 20,
+    paddingVertical: 8,
   },
   field: {
-    marginBottom: 20,
+    marginBottom: 24,
   },
   fieldLabel: {
     fontSize: 14,
     color: '#666',
     marginBottom: 8,
-    fontWeight: '500',
+    fontWeight: '600',
   },
-  inputContainer: {
+  dataContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#E5E5E5',
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    backgroundColor: '#F7F7FB',
+    borderColor: '#F0F0F5',
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    backgroundColor: '#F8FAFD',
   },
-  inputIcon: {
+  dataIcon: {
     marginRight: 12,
   },
-  input: {
+  dataText: {
     flex: 1,
     fontSize: 16,
-    color: '#000',
-    paddingVertical: 14,
-  },
-  displayText: {
-    flex: 1,
-    fontSize: 16,
-    color: '#000',
-    paddingVertical: 14,
-  },
-  saveButton: {
-    backgroundColor: '#6A2EE8',
-    marginHorizontal: 16,
-    marginTop: 24,
-    paddingVertical: 16,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  saveButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  infoSection: {
-    paddingHorizontal: 16,
-    marginTop: 24,
-  },
-  infoCard: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    backgroundColor: '#F0F0F0',
-    padding: 16,
-    borderRadius: 12,
-    gap: 12,
-  },
-  infoText: {
-    flex: 1,
-    fontSize: 14,
-    color: '#666',
-    lineHeight: 20,
+    color: '#1A1A1A',
+    fontWeight: '500',
   },
   bottomSpacer: {
-    height: 20,
+    height: 30,
   },
 });
