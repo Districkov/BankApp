@@ -46,9 +46,6 @@ export default function Notifications({ navigation }) {
           <Ionicons name="arrow-back" size={24} color="#000" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Уведомления</Text>
-        <TouchableOpacity onPress={markAllAsRead}>
-          <Text style={styles.markReadText}>Прочитать все</Text>
-        </TouchableOpacity>
       </View>
 
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
