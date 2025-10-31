@@ -73,9 +73,6 @@ export default function More({ navigation }) {
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Ещё</Text>
-        <TouchableOpacity style={styles.searchButton}>
-          <Feather name="search" size={20} color="#000" />
-        </TouchableOpacity>
       </View>
 
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
