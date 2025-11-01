@@ -1,7 +1,7 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
 
-export default function TransferPhone({navigation}){
+export default function TransferPhone({navigation, route}){
   const [phone, setPhone] = useState('');
   const [amount, setAmount] = useState('');
   const [message, setMessage] = useState('');
@@ -9,9 +9,50 @@ export default function TransferPhone({navigation}){
 
   const userBalance = 22717.98;
 
-  const contacts = [
-    { id: 1, name: 'Когzik', phone: '+7 902 207-72-41', bank: '' },
+  // Контакты из Payments.js для поиска имени по номеру
+  const allContacts = [
+    { id: 1, name: 'Борис Иван', phone: '+7 (900) 123-45-67', initial: 'Б' },
+    { id: 2, name: 'Руслан Диа', phone: '+7 (900) 123-45-68', initial: 'Р' },
+    { id: 3, name: 'Му Angel♥', phone: '+7 (900) 123-45-69', initial: 'М' },
+    { id: 4, name: 'Иван Соломин', phone: '+7 (900) 123-45-60', initial: 'ИС' },
+    { id: 5, name: 'Когzik', phone: '+7 (902) 207-72-41', initial: 'К' },
   ];
+
+  // Находим контакт по номеру телефона
+  const findContactByPhone = (phoneNumber) => {
+    const cleanPhone = phoneNumber.replace(/\D/g, '');
+    return allContacts.find(contact => {
+      const cleanContactPhone = contact.phone.replace(/\D/g, '');
+      return cleanContactPhone === cleanPhone;
+    });
+  };
+
+  // Получаем контакт для отображения
+  const getContactToDisplay = () => {
+    if (!phone) return [];
+    
+    const foundContact = findContactByPhone(phone);
+    if (foundContact) {
+      return [foundContact];
+    }
+    
+    // Если контакт не найден в списке, создаем временный контакт
+    return [{
+      id: 0,
+      name: 'Новый контакт',
+      phone: phone,
+      initial: phone.replace(/\D/g, '').charAt(0) || '?'
+    }];
+  };
+
+  const contactsToDisplay = getContactToDisplay();
+
+  // Эффект для установки номера телефона из параметров
+  useEffect(() => {
+    if (route.params?.phone) {
+      setPhone(route.params.phone);
+    }
+  }, [route.params?.phone]);
 
   function onChangePhone(text){
     const v = formatPhone(text);
@@ -38,20 +79,19 @@ export default function TransferPhone({navigation}){
     navigation.goBack();
   }
 
-// В TransferPhone.js и TransferCard.js замените функцию onSend:
-function onSend(){
-  const e = {};
-  if(!validatePhone(phone)) e.phone = 'Неверный номер';
-  if(!validateAmount(amount)) e.amount = 'Введите сумму > 0';
-  setErrors(e);
-  if(Object.keys(e).length===0){
-    // Вместо Alert переходим на SuccessScreen
-    navigation.navigate('Success', { 
-      amount: parseFloat(amount).toFixed(2), 
-      type: 'Перевод' 
-    });
+  function onSend(){
+    const e = {};
+    if(!validatePhone(phone)) e.phone = 'Неверный номер';
+    if(!validateAmount(amount)) e.amount = 'Введите сумму > 0';
+    setErrors(e);
+    if(Object.keys(e).length===0){
+      // Вместо Alert переходим на SuccessScreen
+      navigation.navigate('Success', { 
+        amount: parseFloat(amount).toFixed(2), 
+        type: 'Перевод' 
+      });
+    }
   }
-}
 
   function formatPhone(text) {
     let cleaned = text.replace(/\D/g, '');
@@ -93,28 +133,30 @@ function onSend(){
           <Text style={styles.balanceAmount}>22 717,98 ₽</Text>
         </View>
 
-        {/* Контакты */}
-        <View style={styles.contactsSection}>
-          <Text style={styles.sectionTitle}>Контакты</Text>
-          {contacts.map((contact) => (
-            <TouchableOpacity 
-              key={contact.id} 
-              style={styles.contactItem}
-              onPress={() => setPhone(contact.phone)}
-            >
-              <View style={styles.contactAvatar}>
-                <Text style={styles.avatarText}>
-                  {contact.name.charAt(0)}
-                </Text>
-              </View>
-              <View style={styles.contactInfo}>
-                <Text style={styles.contactName}>{contact.name}</Text>
-                <Text style={styles.contactPhone}>{contact.phone}</Text>
-              </View>
-              <Text style={styles.contactBank}>{contact.bank}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+        {/* Контакты - отображаем только соответствующий номеру */}
+        {phone && (
+          <View style={styles.contactsSection}>
+            <Text style={styles.sectionTitle}>Контакт</Text>
+            {contactsToDisplay.map((contact) => (
+              <TouchableOpacity 
+                key={contact.id} 
+                style={styles.contactItem}
+                onPress={() => setPhone(contact.phone)}
+              >
+                <View style={styles.contactAvatar}>
+                  <Text style={styles.avatarText}>
+                    {contact.initial}
+                  </Text>
+                </View>
+                <View style={styles.contactInfo}>
+                  <Text style={styles.contactName}>{contact.name}</Text>
+                  <Text style={styles.contactPhone}>{contact.phone}</Text>
+                </View>
+                <Text style={styles.contactBank}></Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
 
         {/* Форма перевода */}
         <View style={styles.transferSection}>
