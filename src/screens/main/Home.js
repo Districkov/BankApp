@@ -20,21 +20,6 @@ export default function Home({navigation}){
   const [refreshing, setRefreshing] = useState(false);
   const [isBalanceHidden, setIsBalanceHidden] = useState(false);
 
-  const cards = [
-    { 
-      name: 'Black', 
-      amount: '666 666,66 ₽', 
-      design: require('../../../assets/cards/black-card.png'),
-      screen: 'CardDetail'
-    },
-    { 
-      name: 'Платинум', 
-      amount: '222 222 222 ₽', 
-      design: require('../../../assets/cards/platinum-card.png'),
-      screen: 'PlatinumCard'
-    },
-  ];
-
   const quickActions = [
     { title: 'Перевод по номеру', icon: 'phone-portrait', nav: 'TransferPhone', color: '#159E3A' },
     { title: 'Перевести', icon: 'money-transfer', nav: 'TransfersScreen', color: '#6A2EE8' },
@@ -90,10 +75,6 @@ export default function Home({navigation}){
     }
   };
 
-  const handleCardPress = (card) => {
-    navigation.navigate(card.screen);
-  };
-
   const handleProfilePress = () => {
     navigation.navigate('More');
   };
@@ -119,15 +100,6 @@ export default function Home({navigation}){
           <View>
             <Text style={styles.greeting}>Добро пожаловать</Text>
             <Text style={styles.userName}>Иван</Text>
-          </View>
-        </TouchableOpacity>
-        <TouchableOpacity 
-          style={styles.notificationButton}
-          onPress={() => navigation.navigate('Notifications1')}
-        >
-          <Ionicons name="notifications-outline" size={24} color="#000" />
-          <View style={styles.notificationBadge}>
-            <Text style={styles.notificationBadgeText}>3</Text>
           </View>
         </TouchableOpacity>
       </View>
@@ -199,60 +171,6 @@ export default function Home({navigation}){
               </TouchableOpacity>
             ))}
           </View>
-        </View>
-
-        {/* Cards Section */}
-        <View style={styles.cardsSection}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Мои карты</Text>
-            <TouchableOpacity 
-              style={styles.seeAllButton}
-              onPress={() => navigation.navigate('CardsList')}
-            >
-              <Text style={styles.seeAllText}>Все</Text>
-              <Ionicons name="chevron-forward" size={16} color="#6A2EE8" />
-            </TouchableOpacity>
-          </View>
-          
-          <ScrollView 
-            horizontal 
-            showsHorizontalScrollIndicator={false}
-            style={styles.cardsScroll}
-          >
-            {cards.map((card, index) => (
-              <TouchableOpacity 
-                key={index}
-                style={styles.cardItem}
-                onPress={() => handleCardPress(card)}
-              >
-                <Image 
-                  source={card.design} 
-                  style={styles.cardImage}
-                  resizeMode="cover"
-                />
-                <View style={styles.cardOverlay}>
-                  <View style={styles.cardHeader}>
-                    <Text style={styles.cardName}>{card.name}</Text>
-                    <MaterialIcons name="more-vert" size={20} color="#fff" />
-                  </View>
-                  <Text style={styles.cardAmount}>
-                    {card.amount}
-                  </Text>
-                </View>
-              </TouchableOpacity>
-            ))}
-            
-            {/* Add Card Button */}
-            <TouchableOpacity 
-              style={styles.addCard}
-              onPress={() => navigation.navigate('CardsList')}
-            >
-              <View style={styles.addCardIcon}>
-                <Ionicons name="add" size={32} color="#6A2EE8" />
-              </View>
-              <Text style={styles.addCardText}>Добавить карту</Text>
-            </TouchableOpacity>
-          </ScrollView>
         </View>
 
         {/* Our Partners Section */}

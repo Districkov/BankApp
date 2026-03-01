@@ -27,30 +27,11 @@ export default function More({ navigation }) {
           screen: 'Settings'
         },
         {
-          icon: 'card-outline',
-          title: 'Мои карты',
-          description: 'Управление картами и счетами',
-          color: '#FF6B6B',
-          screen: 'CardsList'
-        },
-        {
           icon: 'document-text-outline',
           title: 'История операций',
           description: 'Все транзакции и выписки',
           color: '#4ECDC4',
           screen: 'TransactionHistory'
-        }
-      ]
-    },
-    {
-      title: 'Безопасность',
-      items: [
-        {
-          icon: 'notifications-outline',
-          title: 'Уведомления',
-          description: 'Настройка оповещений',
-          color: '#96CEB4',
-          screen: 'Notifications'
         }
       ]
     },
