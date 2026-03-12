@@ -1,8 +1,19 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
-import { Ionicons, Feather, MaterialIcons } from '@expo/vector-icons';
+import { Ionicons, Feather } from '@expo/vector-icons';
+import { useAuth } from '../../context/AuthContext';
+
+// Константы для профиля
+const PROFILE_DATA = {
+  name: 'Иван',
+  avatar: 'И',
+  phone: '+7 926 718-55-52',
+  email: 'ert34vh@gmail.com',
+  balance: '27 466,16 ₽',
+};
 
 export default function More({ navigation }) {
+  const { logout } = useAuth();
   
   const handleLogout = () => {
     Alert.alert(
@@ -10,7 +21,18 @@ export default function More({ navigation }) {
       'Вы уверены, что хотите выйти?',
       [
         { text: 'Отмена', style: 'cancel' },
-        { text: 'Выйти', style: 'destructive', onPress: () => console.log('Logout pressed') }
+        {
+          text: 'Выйти',
+          style: 'destructive',
+          onPress: async () => {
+            try {
+              await logout();
+              // Навигация произойдет автоматически через AuthContext
+            } catch (error) {
+              Alert.alert('Ошибка', 'Не удалось выйти. Попробуйте еще раз.');
+            }
+          }
+        }
       ]
     );
   };
@@ -27,13 +49,6 @@ export default function More({ navigation }) {
           screen: 'Settings'
         },
         {
-          icon: 'card-outline',
-          title: 'Мои карты',
-          description: 'Управление картами и счетами',
-          color: '#FF6B6B',
-          screen: 'CardsList'
-        },
-        {
           icon: 'document-text-outline',
           title: 'История операций',
           description: 'Все транзакции и выписки',
@@ -43,23 +58,11 @@ export default function More({ navigation }) {
       ]
     },
     {
-      title: 'Безопасность',
-      items: [
-        {
-          icon: 'notifications-outline',
-          title: 'Уведомления',
-          description: 'Настройка оповещений',
-          color: '#96CEB4',
-          screen: 'Notifications'
-        }
-      ]
-    },
-    {
       title: 'Помощь',
       items: [
         {
           icon: 'help-circle-outline',
-          title: 'Помощь',
+          title: 'Служба поддержки',
           description: 'Частые вопросы и поддержка',
           color: '#AB47BC',
           screen: 'Support'
@@ -85,28 +88,28 @@ export default function More({ navigation }) {
           >
             <View style={styles.profileHeader}>
               <View style={styles.avatar}>
-                <Text style={styles.avatarText}>И</Text>
+                <Text style={styles.avatarText}>{PROFILE_DATA.avatar}</Text>
               </View>
               <View style={styles.profileInfo}>
-                <Text style={styles.profileName}>Иван</Text>
+                <Text style={styles.profileName}>{PROFILE_DATA.name}</Text>
               </View>
             </View>
             
             <View style={styles.contactInfo}>
               <View style={styles.contactItem}>
                 <Feather name="phone" size={16} color="#666" />
-                <Text style={styles.contactText}>+7 926 718-55-52</Text>
+                <Text style={styles.contactText}>{PROFILE_DATA.phone}</Text>
               </View>
               
               <View style={styles.contactItem}>
                 <Feather name="mail" size={16} color="#666" />
-                <Text style={styles.contactText}>ert34vh@gmail.com</Text>
+                <Text style={styles.contactText}>{PROFILE_DATA.email}</Text>
               </View>
             </View>
             
             <View style={styles.profileFooter}>
               <Text style={styles.balanceLabel}>Общий баланс</Text>
-              <Text style={styles.balanceAmount}>27 466,16 ₽</Text>
+              <Text style={styles.balanceAmount}>{PROFILE_DATA.balance}</Text>
             </View>
           </TouchableOpacity>
         </View>

@@ -6,19 +6,6 @@ export const APP_CONSTANTS = {
   SUPPORT_PHONE: '+7 (800) 123-45-67',
 };
 
-// Константы для карт
-export const CARD_TYPES = {
-  BLACK: 'Black',
-  PLATINUM: 'Platinum',
-  VIRTUAL: 'Virtual',
-};
-
-export const CARD_SYSTEMS = {
-  VISA: 'Visa',
-  MASTERCARD: 'Mastercard',
-  MIR: 'Mir',
-};
-
 // Константы для операций
 export const TRANSACTION_TYPES = {
   INCOME: 'income',
@@ -36,27 +23,16 @@ export const TRANSACTION_CATEGORIES = {
   OTHER: 'other',
 };
 
-// Константы для переводов
-export const TRANSFER_TYPES = {
-  PHONE: 'phone',
-  CARD: 'card',
-  ACCOUNT: 'account',
-  QR: 'qr',
-};
-
 // Лимиты и ограничения
 export const LIMITS = {
   MIN_TRANSFER_AMOUNT: 1,
   MAX_TRANSFER_AMOUNT: 1000000,
   DAILY_TRANSFER_LIMIT: 500000,
-  CARD_NUMBER_LENGTH: 16,
-  PHONE_NUMBER_LENGTH: 11,
 };
 
 // Сообщения об ошибках
 export const ERROR_MESSAGES = {
   NETWORK_ERROR: 'Ошибка сети. Проверьте подключение к интернету.',
-  INVALID_CARD_NUMBER: 'Неверный номер карты',
   INVALID_PHONE_NUMBER: 'Неверный номер телефона',
   INVALID_AMOUNT: 'Неверная сумма',
   INSUFFICIENT_FUNDS: 'Недостаточно средств',

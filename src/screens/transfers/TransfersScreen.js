@@ -1,42 +1,34 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
-
-const { width: screenWidth } = Dimensions.get('window');
 
 export default function TransferBetween({ navigation }) {
   const [amount, setAmount] = useState('');
-  const [fromAccount, setFromAccount] = useState('black');
-  const [toAccount, setToAccount] = useState('platinum');
+  const [fromAccount, setFromAccount] = useState('account1');
+  const [toAccount, setToAccount] = useState('account2');
 
   const accounts = {
-    black: {
-      id: 'black',
-      name: 'Black',
+    account1: {
+      id: 'account1',
+      name: 'Основной счёт',
       amount: '22 717,98 ₽',
-      color: '#000'
-    },
-    platinum: {
-      id: 'platinum',
-      name: 'Платинум',
-      amount: '0 ₽',
       color: '#6A2EE8'
+    },
+    account2: {
+      id: 'account2',
+      name: 'Накопительный счёт',
+      amount: '50 000,00 ₽',
+      color: '#159E3A'
     }
   };
 
   const onChangeAmount = (text) => {
-    // Убираем все нецифровые символы кроме точки и запятой
     let cleaned = text.replace(/[^\d,.]/g, '');
-    
-    // Заменяем запятую на точку для корректного парсинга
     cleaned = cleaned.replace(',', '.');
-    
-    // Оставляем только цифры и одну точку
     const parts = cleaned.split('.');
     if (parts.length > 2) {
       cleaned = parts[0] + '.' + parts[1];
     }
-    
     setAmount(cleaned);
   };
 
@@ -54,10 +46,9 @@ export default function TransferBetween({ navigation }) {
       return;
     }
 
-    // Переходим на экран успеха
-    navigation.navigate('Success', { 
-      amount: amountNum.toFixed(2), 
-      type: 'Перевод между счетами' 
+    navigation.navigate('Success', {
+      amount: amountNum.toFixed(2),
+      type: 'Перевод между счетами'
     });
   };
 
@@ -65,9 +56,8 @@ export default function TransferBetween({ navigation }) {
 
   return (
     <View style={styles.page}>
-      {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.closeButton} onPress={() => navigation.goBack()}>
+        <TouchableOpacity testID="close-button" style={styles.closeButton} onPress={() => navigation.goBack()}>
           <Feather name="x" size={24} color="#000" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Между счетами</Text>
@@ -75,43 +65,40 @@ export default function TransferBetween({ navigation }) {
       </View>
 
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        {/* From Account */}
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>Списать с</Text>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[
               styles.accountCard,
-              fromAccount === 'black' && styles.accountCardSelected
+              fromAccount === 'account1' && styles.accountCardSelected
             ]}
-            onPress={() => setFromAccount('black')}
+            onPress={() => setFromAccount('account1')}
           >
             <View style={styles.accountHeader}>
-              <View style={[styles.accountDot, { backgroundColor: accounts.black.color }]} />
-              <Text style={styles.accountName}>{accounts.black.name}</Text>
+              <View style={[styles.accountDot, { backgroundColor: accounts.account1.color }]} />
+              <Text style={styles.accountName}>{accounts.account1.name}</Text>
             </View>
-            <Text style={styles.accountAmount}>{accounts.black.amount}</Text>
+            <Text style={styles.accountAmount}>{accounts.account1.amount}</Text>
           </TouchableOpacity>
         </View>
 
-        {/* To Account */}
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>Зачислить на</Text>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[
               styles.accountCard,
-              toAccount === 'platinum' && styles.accountCardSelected
+              toAccount === 'account2' && styles.accountCardSelected
             ]}
-            onPress={() => setToAccount('platinum')}
+            onPress={() => setToAccount('account2')}
           >
             <View style={styles.accountHeader}>
-              <View style={[styles.accountDot, { backgroundColor: accounts.platinum.color }]} />
-              <Text style={styles.accountName}>{accounts.platinum.name}</Text>
+              <View style={[styles.accountDot, { backgroundColor: accounts.account2.color }]} />
+              <Text style={styles.accountName}>{accounts.account2.name}</Text>
             </View>
-            <Text style={styles.accountAmount}>{accounts.platinum.amount}</Text>
+            <Text style={styles.accountAmount}>{accounts.account2.amount}</Text>
           </TouchableOpacity>
         </View>
 
-        {/* Amount Input */}
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>Сумма перевода</Text>
           <View style={styles.amountSection}>
@@ -130,7 +117,6 @@ export default function TransferBetween({ navigation }) {
           </View>
         </View>
 
-        {/* Transfer Button */}
         <TouchableOpacity
           style={[
             styles.transferButton,
@@ -189,7 +175,7 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     color: '#666',
     marginBottom: 12,
-    paddingHorizontal: 4, // Такие же отступы как у карточек
+    paddingHorizontal: 4
   },
   accountCard: {
     backgroundColor: '#fff',
@@ -201,7 +187,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 3,
+    elevation: 3
   },
   accountCardSelected: {
     borderColor: '#6A2EE8',
@@ -231,7 +217,7 @@ const styles = StyleSheet.create({
   amountSection: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 12
   },
   amountInputContainer: {
     flex: 1,
@@ -243,7 +229,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
     shadowRadius: 4,
-    elevation: 3,
+    elevation: 3
   },
   amountInput: {
     fontSize: 32,
@@ -251,13 +237,13 @@ const styles = StyleSheet.create({
     color: '#000',
     textAlign: 'center',
     padding: 0,
-    margin: 0,
+    margin: 0
   },
   currencySymbol: {
     fontSize: 24,
     fontWeight: '700',
     color: '#000',
-    width: 30,
+    width: 30
   },
   transferButton: {
     backgroundColor: '#6A2EE8',

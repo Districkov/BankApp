@@ -1,16 +1,43 @@
 import React from 'react';
 import { TouchableOpacity, Text, StyleSheet, View } from 'react-native';
 
-export default function IconButton({icon, label, onPress, style}) {
+/**
+ * IconButton - переиспользуемая кнопка с иконкой
+ * Мемоизирован для оптимизации перерендеров
+ */
+const IconButton = ({ icon, label, onPress, style, testID }) => {
   return (
-    <TouchableOpacity style={[styles.btn, style]} onPress={onPress}>
-      <View style={styles.circle}>{icon}</View>
+    <TouchableOpacity 
+      testID={testID} 
+      style={[styles.button, style]} 
+      onPress={onPress}
+      accessibilityLabel={label}
+    >
+      <View style={styles.circleBackground}>{icon}</View>
       <Text style={styles.label}>{label}</Text>
     </TouchableOpacity>
   );
-}
+};
+
+export default React.memo(IconButton);
+
 const styles = StyleSheet.create({
-  btn: { alignItems:'center', width:80 },
-  circle: { width:56, height:56, borderRadius:28, backgroundColor:'#F0EEFD', alignItems:'center', justifyContent:'center' },
-  label: { marginTop:8, fontSize:12, textAlign:'center' }
+  button: {
+    alignItems: 'center',
+    width: 80,
+  },
+  circleBackground: {
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: '#F0EEFD',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  label: {
+    marginTop: 8,
+    fontSize: 12,
+    textAlign: 'center',
+    fontWeight: '500',
+  },
 });

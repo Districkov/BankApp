@@ -1,17 +1,38 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-export default function Header({name, onPress}){
+
+/**
+ * Header - компонент заголовка с мемоизацией
+ * Предотвращает ненужные перерендеры
+ */
+const Header = ({ name, onPress }) => {
   return (
-    <View style={s.header}>
-      <TouchableOpacity onPress={onPress} style={{paddingVertical:8}}>
-        <Text style={s.name}>{name}</Text>
+    <View style={styles.header}>
+      <TouchableOpacity onPress={onPress} style={styles.touchable}>
+        <Text style={styles.name}>{name}</Text>
       </TouchableOpacity>
-      <View style={s.sep}/>
+      <View style={styles.separator} />
     </View>
   );
-}
-const s = StyleSheet.create({
-  header:{paddingTop:18,paddingHorizontal:16,backgroundColor:'#F7F7FB'},
-  name:{fontSize:28,fontWeight:'800',color:'#0B0B0B'},
-  sep:{height:12}
+};
+
+export default React.memo(Header);
+
+const styles = StyleSheet.create({
+  header: {
+    paddingTop: 18,
+    paddingHorizontal: 16,
+    backgroundColor: '#F7F7FB',
+  },
+  name: {
+    fontSize: 28,
+    fontWeight: '800',
+    color: '#0B0B0B',
+  },
+  touchable: {
+    paddingVertical: 8,
+  },
+  separator: {
+    height: 12,
+  },
 });

@@ -17,7 +17,6 @@ export default function Payments({ navigation }){
   const transferTypes = [
     { id: 1, title: 'Между', subtitle: 'счетами', screen: 'TransfersScreen' },
     { id: 2, title: 'По номеру', subtitle: 'телефона', screen: 'TransferPhone' },
-    { id: 3, title: 'По номеру', subtitle: 'карты', screen: 'TransferCard' },
   ];
 
   // Форматирование номера телефона
