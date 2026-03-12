@@ -122,6 +122,10 @@ export default function App() {
           <Stack.Screen name="Operations" component={Operations} />
 
           {/* Переводы и платежи */}
+<<<<<<< HEAD
+=======
+          <Stack.Screen name="TransferCard" component={TransferCard} />
+>>>>>>> 01403a62e3c3e10a942cd2afda1e6be28a8c0d3b
           <Stack.Screen name="TransferPhone" component={TransferPhone} />
           <Stack.Screen name="TransfersScreen" component={TransfersScreen} />
 
