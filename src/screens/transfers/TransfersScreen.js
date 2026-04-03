@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import { notifyTransferSuccess, requestNotificationPermission } from '../../utils/notifications';
 
 export default function TransferBetween({ navigation }) {
   const [amount, setAmount] = useState('');
@@ -32,7 +33,7 @@ export default function TransferBetween({ navigation }) {
     setAmount(cleaned);
   };
 
-  const handleTransfer = () => {
+  const handleTransfer = async () => {
     if (!amount || parseFloat(amount) <= 0) {
       Alert.alert('Ошибка', 'Введите сумму для перевода');
       return;
@@ -45,6 +46,10 @@ export default function TransferBetween({ navigation }) {
       Alert.alert('Ошибка', 'Недостаточно средств на счете');
       return;
     }
+
+    // Запрашиваем разрешение и отправляем уведомление
+    await requestNotificationPermission();
+    notifyTransferSuccess(amountNum.toFixed(2), 'Перевод между счетами');
 
     navigation.navigate('Success', {
       amount: amountNum.toFixed(2),

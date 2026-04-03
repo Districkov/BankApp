@@ -1,15 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Linking } from 'react-native';
-<<<<<<< HEAD
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, Linking, Platform } from 'react-native';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
-=======
-import { Ionicons } from '@expo/vector-icons';
->>>>>>> 01403a62e3c3e10a942cd2afda1e6be28a8c0d3b
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAuth } from '../../context/AuthContext';
 
-const API_URL = 'https://auth.korzik.space/api/auth/v1';
-const REDIRECT_PATH = '/code/telegram';
+const API_URL = 'https://bank.korzik.space/api/auth/v1';
+const REDIRECT_PATHS = ['/code/telegram', '/auth/telegram/callback'];
 
 export default function TelegramAuthScreen({ navigation }) {
   const [isLoading, setIsLoading] = useState(false);
@@ -27,26 +23,27 @@ export default function TelegramAuthScreen({ navigation }) {
     // Обработка URL при запуске приложения
     const handleDeepLink = async () => {
       try {
+        // Для web проверяем текущий URL
+        if (Platform.OS === 'web' && typeof window !== 'undefined') {
+          const currentUrl = window.location.href;
+          if (REDIRECT_PATHS.some(path => currentUrl.includes(path))) {
+            const code = extractCodeFromUrl(currentUrl);
+            if (code) {
+              navigation.navigate('CodeInput', { code });
+              return;
+            }
+          }
+        }
+
         const url = await Linking.getInitialURL();
-<<<<<<< HEAD
-        if (url && url.includes(REDIRECT_PATH)) {
+        if (url && REDIRECT_PATHS.some(path => url.includes(path))) {
           const code = extractCodeFromUrl(url);
-=======
-        console.log('Initial URL:', url);
-        if (url && url.includes(REDIRECT_PATH)) {
-          const code = extractCodeFromUrl(url);
-          console.log('Extracted code:', code);
->>>>>>> 01403a62e3c3e10a942cd2afda1e6be28a8c0d3b
           if (code) {
             navigation.navigate('CodeInput', { code });
           }
         }
       } catch (err) {
-<<<<<<< HEAD
         // Handle error silently
-=======
-        console.error('Error handling initial URL:', err);
->>>>>>> 01403a62e3c3e10a942cd2afda1e6be28a8c0d3b
       }
     };
 
@@ -54,15 +51,8 @@ export default function TelegramAuthScreen({ navigation }) {
 
     // Обработка URL когда приложение уже открыто
     const subscription = Linking.addEventListener('url', (event) => {
-<<<<<<< HEAD
-      if (event.url && event.url.includes(REDIRECT_PATH)) {
+      if (event.url && REDIRECT_PATHS.some(path => event.url.includes(path))) {
         const code = extractCodeFromUrl(event.url);
-=======
-      console.log('URL event:', event.url);
-      if (event.url && event.url.includes(REDIRECT_PATH)) {
-        const code = extractCodeFromUrl(event.url);
-        console.log('Extracted code from event:', code);
->>>>>>> 01403a62e3c3e10a942cd2afda1e6be28a8c0d3b
         if (code) {
           navigation.navigate('CodeInput', { code });
         }
@@ -73,29 +63,17 @@ export default function TelegramAuthScreen({ navigation }) {
   }, [navigation]);
 
   const extractCodeFromUrl = (url) => {
-<<<<<<< HEAD
-=======
-    console.log('Parsing URL:', url);
->>>>>>> 01403a62e3c3e10a942cd2afda1e6be28a8c0d3b
     try {
       // Для URL вида http://localhost:19006//code/telegram#tgAuthResult=...
       // или bankapp://auth/code/telegram#tgAuthResult=...
-      
+
       // 1. Пробуем получить tgAuthResult из hash фрагмента
       const hashIndex = url.indexOf('#');
       if (hashIndex !== -1) {
         const hash = url.substring(hashIndex + 1);
-<<<<<<< HEAD
         const hashParams = new URLSearchParams(hash);
         const tgAuthResult = hashParams.get('tgAuthResult');
         if (tgAuthResult) {
-=======
-        console.log('Hash:', hash);
-        const hashParams = new URLSearchParams(hash);
-        const tgAuthResult = hashParams.get('tgAuthResult');
-        if (tgAuthResult) {
-          console.log('Found tgAuthResult:', tgAuthResult);
->>>>>>> 01403a62e3c3e10a942cd2afda1e6be28a8c0d3b
           return tgAuthResult;
         }
       }
@@ -121,10 +99,6 @@ export default function TelegramAuthScreen({ navigation }) {
       
       return null;
     } catch (e) {
-<<<<<<< HEAD
-=======
-      console.error('Error parsing URL:', e);
->>>>>>> 01403a62e3c3e10a942cd2afda1e6be28a8c0d3b
       // Фолбэк: пробуем найти tgAuthResult в hash через regex
       const hashMatch = url.match(/#tgAuthResult=([^&]+)/);
       if (hashMatch) return hashMatch[1];
@@ -185,10 +159,7 @@ export default function TelegramAuthScreen({ navigation }) {
         ) : null}
 
         <TouchableOpacity
-<<<<<<< HEAD
           testID="login-button"
-=======
->>>>>>> 01403a62e3c3e10a942cd2afda1e6be28a8c0d3b
           style={[styles.telegramButton, isLoading && styles.telegramButtonDisabled]}
           onPress={handleTelegramAuth}
           disabled={isLoading}
@@ -197,11 +168,7 @@ export default function TelegramAuthScreen({ navigation }) {
             <ActivityIndicator color="#fff" />
           ) : (
             <>
-<<<<<<< HEAD
               <MaterialCommunityIcons name="send" size={24} color="#fff" />
-=======
-              <Ionicons name="logo-telegram" size={24} color="#fff" />
->>>>>>> 01403a62e3c3e10a942cd2afda1e6be28a8c0d3b
               <Text style={styles.telegramButtonText}>Войти через Telegram</Text>
             </>
           )}
@@ -216,11 +183,15 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    width: '100%',
+    minHeight: '100%',
   },
   content: {
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 32,
+    width: '100%',
+    maxWidth: 400,
   },
   title: {
     fontSize: 28,

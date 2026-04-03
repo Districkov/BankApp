@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 
-const API_BASE_URL = 'https://auth.korzik.space/api/auth/v1';
+const API_BASE_URL = 'https://bank.korzik.space/api/auth/v1';
 
 /**
  * Получает токен сессии из AsyncStorage
@@ -33,7 +34,7 @@ const apiFetch = async (endpoint, options = {}) => {
   
   const headers = {
     'Content-Type': 'application/json',
-    ...(token && { 'Cookie': `YAA_SESS_ID=${token}` }),
+    ...(Platform.OS !== 'web' && token && { 'Cookie': `YAA_SESS_ID=${token}` }),
     ...options.headers,
   };
 
@@ -41,6 +42,7 @@ const apiFetch = async (endpoint, options = {}) => {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       ...options,
       headers,
+      credentials: 'include',
     });
 
     // Обработка 300 статуса (Multiple Choices / Session Limit)

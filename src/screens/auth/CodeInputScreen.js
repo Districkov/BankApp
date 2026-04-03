@@ -13,7 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '../../context/AuthContext';
 
-const API_URL = 'https://auth.korzik.space/api/auth/v1';
+const API_URL = 'https://bank.korzik.space/api/auth/v1';
 
 export default function CodeInputScreen({ navigation, route }) {
   const [code, setCode] = useState(['', '', '', '', '', '']);
@@ -78,6 +78,7 @@ export default function CodeInputScreen({ navigation, route }) {
         headers: {
           'Content-Type': 'application/json',
         },
+        credentials: 'include',
         body: JSON.stringify({
           code: codeToVerify,
         }),

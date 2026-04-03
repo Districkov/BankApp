@@ -1,5 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import { notifyTransferSuccess, requestNotificationPermission } from '../../utils/notifications';
 
 export default function TransferPhone({navigation, route}){
   const [phone, setPhone] = useState('');
@@ -79,13 +80,17 @@ export default function TransferPhone({navigation, route}){
     navigation.goBack();
   }
 
-  function onSend(){
+  async function onSend(){
     const e = {};
     if(!validatePhone(phone)) e.phone = 'Неверный номер';
     if(!validateAmount(amount)) e.amount = 'Введите сумму > 0';
     setErrors(e);
     if(Object.keys(e).length===0){
-      // Вместо Alert переходим на SuccessScreen
+      // Запрашиваем разрешение и отправляем уведомление
+      await requestNotificationPermission();
+      notifyTransferSuccess(parseFloat(amount).toFixed(2), 'Перевод по номеру телефона');
+
+      // Переходим на SuccessScreen
       navigation.navigate('Success', { 
         amount: parseFloat(amount).toFixed(2), 
         type: 'Перевод' 

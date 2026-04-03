@@ -43,7 +43,19 @@
       ]
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro",
+      "output": "single",
+      "name": "BankApp",
+      "shortName": "BankApp",
+      "description": "Банковское приложение для управления финансами",
+      "lang": "ru",
+      "themeColor": "#6A2EE8",
+      "backgroundColor": "#ffffff",
+      "display": "standalone",
+      "orientation": "portrait",
+      "startUrl": "/",
+      "scope": "/"
     }
   }
 }
