@@ -1,6 +1,8 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated, Image, RefreshControl } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Animated, RefreshControl, ActivityIndicator } from 'react-native';
 import { Ionicons, Feather, MaterialIcons, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
+import { useAuth } from '../../context/AuthContext';
+import { accountsAPI, transactionsAPI, statsAPI } from '../../utils/api';
 
 // Компоненты для логотипов партнёров с черным фоном
 const AstraLogo = ({ width = 50, height = 50 }) => (
@@ -16,9 +18,14 @@ const YanimaLogo = ({ width = 50, height = 50 }) => (
 );
 
 export default function Home({navigation}){
+  const { user, refreshUser } = useAuth();
   const fade = React.useRef(new Animated.Value(0)).current;
   const [refreshing, setRefreshing] = useState(false);
   const [isBalanceHidden, setIsBalanceHidden] = useState(false);
+  const [accounts, setAccounts] = useState([]);
+  const [totalBalance, setTotalBalance] = useState(0);
+  const [monthlySpending, setMonthlySpending] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
 
   const quickActions = [
     { title: 'Перевод по номеру', icon: 'phone-portrait', nav: 'TransferPhone', color: '#159E3A' },
@@ -26,20 +33,20 @@ export default function Home({navigation}){
   ];
 
   const partners = [
-    { 
-      id: 1, 
-      name: 'Astra RP', 
-      discount: 'Эксклюзивные бонусы', 
+    {
+      id: 1,
+      name: 'Astra RP',
+      discount: 'Эксклюзивные бонусы',
       description: 'GTA 5 RolePlay проект\nСпециальные условия для клиентов',
       logo: AstraLogo,
       screen: 'AstraDetail',
       color: '#FF0000',
       benefits: ['Игровая валюта', 'Премиум аккаунт', 'Эксклюзивный контент']
     },
-    { 
-      id: 2, 
-      name: 'Yanima', 
-      discount: 'Подписка в подарок', 
+    {
+      id: 2,
+      name: 'Yanima',
+      discount: 'Подписка в подарок',
       description: 'Онлайн-просмотр аниме\nСпециальные предложения',
       logo: YanimaLogo,
       screen: 'YanimaDetail',
@@ -48,16 +55,59 @@ export default function Home({navigation}){
     },
   ];
 
-  React.useEffect(()=>{ 
-    Animated.timing(fade,{toValue:1,duration:400,useNativeDriver:true}).start(); 
+  React.useEffect(()=>{
+    Animated.timing(fade,{toValue:1,duration:400,useNativeDriver:true}).start();
+    loadData();
   },[]);
 
-  const onRefresh = React.useCallback(() => {
+  const loadData = async () => {
+    try {
+      setIsLoading(true);
+      // Загружаем счета
+      const accountsResponse = await accountsAPI.getAccounts();
+      const accountsList = accountsResponse.accounts || accountsResponse.data || [];
+      setAccounts(accountsList);
+      
+      // Считаем общий баланс
+      const total = accountsList.reduce((sum, acc) => {
+        return sum + parseFloat(acc.balance || acc.amount || 0);
+      }, 0);
+      setTotalBalance(total);
+
+      // Загружаем статистику расходов
+      try {
+        const spendingStats = await statsAPI.getSpendingStats({ period: 'month' });
+        setMonthlySpending(parseFloat(spendingStats.total || spendingStats.amount || 0));
+      } catch (error) {
+        console.error('Error loading spending stats:', error);
+        // Если API недоступен, считаем из транзакций
+        const transactions = await transactionsAPI.getTransactions({ limit: 100 });
+        const txList = transactions.transactions || transactions.data || [];
+        const spending = txList
+          .filter(tx => tx.amount < 0)
+          .reduce((sum, tx) => sum + Math.abs(tx.amount), 0);
+        setMonthlySpending(spending);
+      }
+    } catch (error) {
+      console.error('Error loading data:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const onRefresh = React.useCallback(async () => {
     setRefreshing(true);
-    setTimeout(() => {
+    try {
+      await Promise.all([
+        refreshUser(),
+        loadData(),
+      ]);
+    } catch (error) {
+      console.error('Error refreshing:', error);
+    } finally {
       setRefreshing(false);
-    }, 2000);
-  }, []);
+    }
+  }, [refreshUser]);
 
   const toggleBalanceVisibility = () => {
     setIsBalanceHidden(!isBalanceHidden);
@@ -89,68 +139,91 @@ export default function Home({navigation}){
     </View>
   );
 
+  // Получаем имя пользователя из AuthContext
+  const userName = user?.username || user?.firstName || user?.name || 'Пользователь';
+  const userInitials = userName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || userName[0].toUpperCase();
+
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#6A2EE8" />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.page}>
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity style={styles.headerLeft} onPress={handleProfilePress}>
           <View style={styles.avatar}>
-            <Text style={styles.avatarText}>ИИ</Text>
+            <Text style={styles.avatarText}>{userInitials}</Text>
           </View>
           <View>
             <Text style={styles.greeting}>Добро пожаловать</Text>
-            <Text style={styles.userName}>Иван</Text>
+            <Text style={styles.userName}>{userName}</Text>
           </View>
         </TouchableOpacity>
       </View>
 
-      <ScrollView 
-        style={styles.container} 
+      <ScrollView
+        style={styles.container}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        
+
         {/* Total Balance Card */}
         <View style={styles.totalBalanceCard}>
           <View style={styles.balanceHeader}>
             <Text style={styles.balanceLabel}>Общий баланс</Text>
             <TouchableOpacity onPress={toggleBalanceVisibility}>
-              <Ionicons 
-                name={isBalanceHidden ? "eye-off-outline" : "eye-outline"} 
-                size={20} 
-                color="#666" 
+              <Ionicons
+                name={isBalanceHidden ? "eye-off-outline" : "eye-outline"}
+                size={20}
+                color="#666"
               />
             </TouchableOpacity>
           </View>
           <Text style={styles.totalBalanceAmount}>
-            {isBalanceHidden ? '•••••••' : '682 132,82 ₽'}
+            {isBalanceHidden ? '•••••••' : new Intl.NumberFormat('ru-RU', { 
+              style: 'currency', 
+              currency: 'RUB',
+              minimumFractionDigits: 2 
+            }).format(totalBalance)}
           </Text>
           <View style={styles.balanceTrend}>
-            <Ionicons name="trending-up" size={16} color="#159E3A" />
-            <Text style={styles.trendText}>+5.2% за месяц</Text>
+            <Ionicons name="account-balance" size={16} color="#159E3A" />
+            <Text style={styles.trendText}>{accounts.length} {accounts.length === 1 ? 'счёт' : accounts.length < 5 ? 'счёта' : 'счётов'}</Text>
           </View>
         </View>
 
         {/* Monthly Spending Card */}
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.spendingCard}
           onPress={() => navigation.navigate('Operations')}
         >
           <View style={styles.spendingHeader}>
-            <Text style={styles.spendingLabel}>Расходы в октябре</Text>
+            <Text style={styles.spendingLabel}>Расходы в этом месяце</Text>
             <Text style={styles.spendingAmount}>
-              {'15 634 ₽'}
+              {new Intl.NumberFormat('ru-RU', { 
+                style: 'currency', 
+                currency: 'RUB',
+                minimumFractionDigits: 0 
+              }).format(monthlySpending)}
             </Text>
           </View>
-          
+
           {/* Spending Progress */}
           <View style={styles.spendingProgress}>
-            <View style={styles.progressBar}>
-              <View style={[styles.progressFill, { width: '65%' }]} />
-            </View>
-            <Text style={styles.progressText}>65% от лимита</Text>
+            <TouchableOpacity 
+              style={styles.viewDetailsButton}
+              onPress={() => navigation.navigate('Operations')}
+            >
+              <Text style={styles.viewDetailsText}>Подробнее</Text>
+              <Ionicons name="chevron-forward" size={16} color="#6A2EE8" />
+            </TouchableOpacity>
           </View>
         </TouchableOpacity>
 
@@ -229,6 +302,12 @@ const styles = StyleSheet.create({
   page: {
     flex: 1,
     backgroundColor: '#F8FAFD'
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F8FAFD',
   },
   header: {
     flexDirection: 'row',
@@ -395,6 +474,18 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#666',
     fontWeight: '500',
+  },
+  viewDetailsButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 8,
+  },
+  viewDetailsText: {
+    fontSize: 14,
+    color: '#6A2EE8',
+    fontWeight: '600',
+    marginRight: 4,
   },
   quickActionsSection: {
     marginBottom: 24,

@@ -10,6 +10,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '../../context/AuthContext';
+import { authAPI } from '../../utils/api';
 
 const API_URL = 'https://auth.korzik.space/api/auth/v1';
 
@@ -48,11 +49,19 @@ export default function SessionLimitScreen({ navigation, route }) {
         await AsyncStorage.setItem('session_cookie', setCookieHeader);
       }
 
+      // Получаем данные пользователя через whoami API
       let userData = {};
       try {
-        userData = await preauthResponse.json();
+        userData = await authAPI.whoami();
       } catch (e) {
-        // Response может быть пустым
+        console.error('Error fetching user data after login:', e);
+        // Пробуем получить данные из response
+        try {
+          userData = await preauthResponse.json();
+        } catch (e2) {
+          // Response может быть пустым
+          userData = {};
+        }
       }
 
       await login(setCookieHeader || 'session_cookie', userData);

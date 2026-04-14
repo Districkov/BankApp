@@ -1,20 +1,37 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { Ionicons, Feather } from '@expo/vector-icons';
 import { useAuth } from '../../context/AuthContext';
-
-// Константы для профиля
-const PROFILE_DATA = {
-  name: 'Иван',
-  avatar: 'И',
-  phone: '+7 926 718-55-52',
-  email: 'ert34vh@gmail.com',
-  balance: '27 466,16 ₽',
-};
+import { accountsAPI } from '../../utils/api';
 
 export default function More({ navigation }) {
-  const { logout } = useAuth();
-  
+  const { user, logout } = useAuth();
+  const [accounts, setAccounts] = useState([]);
+  const [totalBalance, setTotalBalance] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    loadAccounts();
+  }, []);
+
+  const loadAccounts = async () => {
+    try {
+      setIsLoading(true);
+      const accountsResponse = await accountsAPI.getAccounts();
+      const accountsList = accountsResponse.accounts || accountsResponse.data || [];
+      setAccounts(accountsList);
+      
+      const total = accountsList.reduce((sum, acc) => {
+        return sum + parseFloat(acc.balance || acc.amount || 0);
+      }, 0);
+      setTotalBalance(total);
+    } catch (error) {
+      console.error('Error loading accounts:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleLogout = () => {
     Alert.alert(
       'Выход',
@@ -36,6 +53,12 @@ export default function More({ navigation }) {
       ]
     );
   };
+
+  // Получаем данные пользователя из AuthContext
+  const userName = user?.username || user?.firstName || user?.name || 'Пользователь';
+  const userPhone = user?.phone || 'Телефон не указан';
+  const userEmail = user?.email || 'Email не указан';
+  const userInitial = userName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 1) || userName[0].toUpperCase();
 
   const menuSections = [
     {
@@ -71,6 +94,14 @@ export default function More({ navigation }) {
     }
   ];
 
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#6A2EE8" />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.page}>
       {/* Header */}
@@ -79,37 +110,43 @@ export default function More({ navigation }) {
       </View>
 
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-        
+
         {/* Profile Card */}
         <View style={styles.profileSection}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.profileCard}
             onPress={() => navigation.navigate('Settings')}
           >
             <View style={styles.profileHeader}>
               <View style={styles.avatar}>
-                <Text style={styles.avatarText}>{PROFILE_DATA.avatar}</Text>
+                <Text style={styles.avatarText}>{userInitial}</Text>
               </View>
               <View style={styles.profileInfo}>
-                <Text style={styles.profileName}>{PROFILE_DATA.name}</Text>
+                <Text style={styles.profileName}>{userName}</Text>
               </View>
             </View>
-            
+
             <View style={styles.contactInfo}>
               <View style={styles.contactItem}>
                 <Feather name="phone" size={16} color="#666" />
-                <Text style={styles.contactText}>{PROFILE_DATA.phone}</Text>
+                <Text style={styles.contactText}>{userPhone}</Text>
               </View>
-              
+
               <View style={styles.contactItem}>
                 <Feather name="mail" size={16} color="#666" />
-                <Text style={styles.contactText}>{PROFILE_DATA.email}</Text>
+                <Text style={styles.contactText}>{userEmail}</Text>
               </View>
             </View>
-            
+
             <View style={styles.profileFooter}>
               <Text style={styles.balanceLabel}>Общий баланс</Text>
-              <Text style={styles.balanceAmount}>{PROFILE_DATA.balance}</Text>
+              <Text style={styles.balanceAmount}>
+                {new Intl.NumberFormat('ru-RU', { 
+                  style: 'currency', 
+                  currency: 'RUB',
+                  minimumFractionDigits: 2 
+                }).format(totalBalance)}
+              </Text>
             </View>
           </TouchableOpacity>
         </View>
@@ -160,6 +197,12 @@ const styles = StyleSheet.create({
   page: {
     flex: 1,
     backgroundColor: '#F7F7FB'
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F7F7FB',
   },
   header: {
     flexDirection: 'row',

@@ -15,41 +15,102 @@ export const AuthProvider = ({ children }) => {
 
   const checkSession = async () => {
     try {
+      console.log('AuthContext.checkSession - Checking session...');
       const sessionCookie = await AsyncStorage.getItem('session_cookie');
+      console.log('AuthContext.checkSession - sessionCookie exists:', !!sessionCookie);
 
       if (sessionCookie) {
         const userData = await authAPI.whoami();
-        if (userData) {
-          setUser(userData);
-          setIsAuthenticated(true);
+        console.log('AuthContext.checkSession - whoami raw result:', JSON.stringify(userData));
+        
+        // Извлекаем данные из разных уровней
+        let processedData = userData;
+        if (userData && userData.user) {
+          processedData = userData.user;
+        } else if (userData && userData.data) {
+          processedData = userData.data;
         }
+        console.log('AuthContext.checkSession - whoami processed:', JSON.stringify(processedData));
+        
+        if (processedData && Object.keys(processedData).length > 0) {
+          setUser(processedData);
+          setIsAuthenticated(true);
+          console.log('AuthContext.checkSession - User authenticated:', JSON.stringify(processedData));
+        } else {
+          console.log('AuthContext.checkSession - whoami returned empty data, clearing session');
+          // Если whoami вернул пустоту, очищаем сессию
+          await AsyncStorage.removeItem('session_cookie');
+          await AsyncStorage.removeItem('user_data');
+        }
+      } else {
+        console.log('AuthContext.checkSession - No session cookie found');
       }
     } catch (error) {
-      console.error('Error checking session:', error);
+      console.error('AuthContext.checkSession - Error:', error.message, error.stack);
       // Очищаем невалидную сессию
       await AsyncStorage.removeItem('session_cookie');
       await AsyncStorage.removeItem('user_data');
     } finally {
       setIsLoading(false);
+      console.log('AuthContext.checkSession - isLoading set to false, final isAuthenticated:', isAuthenticated);
     }
   };
 
   const login = async (sessionCookie, userData) => {
     try {
+      console.log('AuthContext.login - Starting login with userData:', JSON.stringify(userData));
       await AsyncStorage.setItem('session_cookie', sessionCookie);
       await AsyncStorage.setItem('user_data', JSON.stringify(userData));
-      
+
       // Получаем актуальные данные пользователя из API
+      let profileData = null;
       try {
-        const profileData = await userAPI.getProfile();
-        setUser(profileData || userData);
+        profileData = await userAPI.getProfile();
+        console.log('AuthContext.login - Profile data raw:', JSON.stringify(profileData));
+        
+        // Извлекаем данные из разных уровней ответа
+        if (profileData.user) {
+          profileData = profileData.user;
+        } else if (profileData.data) {
+          profileData = profileData.data;
+        }
+        console.log('AuthContext.login - Profile data processed:', JSON.stringify(profileData));
       } catch (e) {
-        setUser(userData);
+        console.error('AuthContext.login - Error fetching profile:', e.message);
       }
-      
+
+      // Используем данные из profile, если получили, иначе из userData
+      if (profileData && Object.keys(profileData).length > 0) {
+        console.log('AuthContext.login - Setting user from profileData');
+        setUser(profileData);
+      } else if (userData && Object.keys(userData).length > 0) {
+        console.log('AuthContext.login - Setting user from userData');
+        setUser(userData);
+      } else {
+        // Если все пусто, пытаемся получить через whoami
+        try {
+          console.log('AuthContext.login - Trying whoami as fallback');
+          const whoamiData = await authAPI.whoami();
+          console.log('AuthContext.login - whoami data raw:', JSON.stringify(whoamiData));
+          
+          let processedData = whoamiData;
+          if (whoamiData.user) {
+            processedData = whoamiData.user;
+          } else if (whoamiData.data) {
+            processedData = whoamiData.data;
+          }
+          console.log('AuthContext.login - whoami data processed:', JSON.stringify(processedData));
+          setUser(processedData);
+        } catch (e) {
+          console.error('AuthContext.login - Error fetching whoami:', e.message);
+          setUser(userData || {});
+        }
+      }
+
       setIsAuthenticated(true);
+      console.log('AuthContext.login - Login complete, isAuthenticated = true');
     } catch (error) {
-      console.error('Error saving session:', error);
+      console.error('AuthContext.login - Error:', error.message);
       throw error;
     }
   };

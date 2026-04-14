@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Animated, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { notifyTransferSuccess, requestNotificationPermission } from '../../utils/notifications';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
 export default function SuccessScreen({ navigation, route }) {
-  const { amount, type = 'перевод' } = route.params || {};
+  const { amount, type = 'перевод', showNotification = false } = route.params || {};
   const [secondsLeft, setSecondsLeft] = useState(6);
   const [showContent, setShowContent] = useState(false);
 
@@ -65,7 +66,7 @@ export default function SuccessScreen({ navigation, route }) {
 
     // Автоматическое закрытие через 6 секунд
     const closeTimer = setTimeout(() => {
-      navigation.replace('Main');
+      handleClose();
     }, 6000);
 
     return () => {
@@ -73,6 +74,16 @@ export default function SuccessScreen({ navigation, route }) {
       clearInterval(countdownTimer);
     };
   }, [navigation, expandAnim, fadeAnim, contentFadeAnim, staticIconFadeAnim]);
+
+  const handleClose = async () => {
+    // Показываем уведомление после закрытия экрана
+    if (showNotification && amount) {
+      await requestNotificationPermission();
+      notifyTransferSuccess(amount, type);
+    }
+    
+    navigation.replace('Main');
+  };
 
   // Интерполяции для анимации расширения круга
   const expandScale = expandAnim.interpolate({
@@ -106,7 +117,7 @@ export default function SuccessScreen({ navigation, route }) {
   return (
     <View style={styles.container}>
       {/* Статичная галочка (быстро исчезает в начале анимации) */}
-      <Animated.View 
+      <Animated.View
         style={[
           styles.staticIcon,
           {
@@ -118,7 +129,7 @@ export default function SuccessScreen({ navigation, route }) {
       </Animated.View>
 
       {/* Анимированный расширяющийся зеленый круг */}
-      <Animated.View 
+      <Animated.View
         style={[
           styles.expandingCircle,
           {
@@ -129,7 +140,7 @@ export default function SuccessScreen({ navigation, route }) {
       />
 
       {/* Контент (появляется через 350ms) */}
-      <Animated.View 
+      <Animated.View
         style={[
           styles.content,
           {
@@ -141,18 +152,18 @@ export default function SuccessScreen({ navigation, route }) {
         <View style={styles.successIcon}>
           <Ionicons name="checkmark" size={48} color="#fff" />
         </View>
-        
+
         <Text style={styles.successTitle}>Успешно!</Text>
-        
+
         <Text style={styles.successText}>
           {type} на сумму{'\n'}
           <Text style={styles.amountText}>{amount} ₽</Text>{'\n'}
           выполнен успешно
         </Text>
 
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.closeButton}
-          onPress={() => navigation.replace('Main')}
+          onPress={handleClose}
         >
           <Text style={styles.closeButtonText}>Закрыть</Text>
         </TouchableOpacity>

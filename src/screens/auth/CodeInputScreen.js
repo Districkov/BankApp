@@ -12,6 +12,7 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuth } from '../../context/AuthContext';
+import { authAPI } from '../../utils/api';
 
 const API_URL = 'https://bank.korzik.space/api/auth/v1';
 
@@ -62,7 +63,7 @@ export default function CodeInputScreen({ navigation, route }) {
 
   const handleSubmit = async (verificationCode) => {
     const codeToVerify = verificationCode || code.join('');
-    
+
     if (!codeToVerify || codeToVerify.length < 6) {
       setError('Введите код авторизации');
       return;
@@ -105,23 +106,55 @@ export default function CodeInputScreen({ navigation, route }) {
 
       // Получаем сессионную куку из заголовков
       const setCookieHeader = response.headers.get('set-cookie');
+      console.log('CodeInputScreen - set-cookie header:', setCookieHeader);
+      
       if (setCookieHeader) {
         // Сохраняем куку в AsyncStorage
         await AsyncStorage.setItem('session_cookie', setCookieHeader);
       }
-      
-      // Пробуем получить данные пользователя из response
+
+      // Получаем данные пользователя через whoami API
       let userData = {};
       try {
-        userData = await response.json();
+        console.log('CodeInputScreen - Fetching user data via whoami...');
+        userData = await authAPI.whoami();
+        console.log('CodeInputScreen - User data from whoami:', JSON.stringify(userData));
+        
+        // whoami может вернуть данные в разных форматах
+        // Проверяем разные варианты структуры ответа
+        if (userData.user) {
+          userData = userData.user;
+        } else if (userData.data) {
+          userData = userData.data;
+        }
+        
+        console.log('CodeInputScreen - Processed userData:', JSON.stringify(userData));
       } catch (e) {
-        // Response может быть пустым при успешном входе
+        console.error('CodeInputScreen - Error fetching whoami:', e.message);
+        // Пробуем получить данные из response callback
+        try {
+          const responseData = await response.clone().json();
+          console.log('CodeInputScreen - Response data:', JSON.stringify(responseData));
+          
+          if (responseData.user) {
+            userData = responseData.user;
+          } else if (responseData.data) {
+            userData = responseData.data;
+          } else {
+            userData = responseData;
+          }
+        } catch (e2) {
+          console.log('CodeInputScreen - Could not parse response, using empty object');
+          userData = {};
+        }
       }
-      
+
       // Сохраняем сессию через AuthContext
+      console.log('CodeInputScreen - Final userData before login:', JSON.stringify(userData));
       await login(setCookieHeader || 'session_cookie', userData);
 
       // Переход на экран приветствия
+      console.log('CodeInputScreen - Navigating to Welcome');
       navigation.replace('Welcome');
     } catch (err) {
       setError(err.message || 'Ошибка при проверке кода');

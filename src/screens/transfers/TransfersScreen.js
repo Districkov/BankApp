@@ -1,25 +1,43 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, TextInput, Alert, ActivityIndicator } from 'react-native';
 import { Feather } from '@expo/vector-icons';
+import { transfersAPI, accountsAPI } from '../../utils/api';
 import { notifyTransferSuccess, requestNotificationPermission } from '../../utils/notifications';
 
 export default function TransferBetween({ navigation }) {
   const [amount, setAmount] = useState('');
-  const [fromAccount, setFromAccount] = useState('account1');
-  const [toAccount, setToAccount] = useState('account2');
+  const [fromAccount, setFromAccount] = useState('');
+  const [toAccount, setToAccount] = useState('');
+  const [accounts, setAccounts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isTransferring, setIsTransferring] = useState(false);
 
-  const accounts = {
-    account1: {
-      id: 'account1',
-      name: 'Основной счёт',
-      amount: '22 717,98 ₽',
-      color: '#6A2EE8'
-    },
-    account2: {
-      id: 'account2',
-      name: 'Накопительный счёт',
-      amount: '50 000,00 ₽',
-      color: '#159E3A'
+  // Загрузка счетов с API
+  useEffect(() => {
+    loadAccounts();
+  }, []);
+
+  const loadAccounts = async () => {
+    try {
+      setIsLoading(true);
+      const response = await accountsAPI.getAccounts();
+      const accountsList = response.accounts || response.data || [];
+      setAccounts(accountsList);
+      
+      // Устанавливаем счета по умолчанию
+      if (accountsList.length > 0) {
+        setFromAccount(accountsList[0].id);
+        if (accountsList.length > 1) {
+          setToAccount(accountsList[1].id);
+        } else {
+          setToAccount(accountsList[0].id);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading accounts:', error);
+      Alert.alert('Ошибка', 'Не удалось загрузить счета. Попробуйте позже.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -40,24 +58,61 @@ export default function TransferBetween({ navigation }) {
     }
 
     const amountNum = parseFloat(amount);
-    const fromAmount = parseFloat(accounts[fromAccount].amount.replace(/[^\d,.]/g, '').replace(',', '.'));
+    const fromAcc = accounts.find(acc => acc.id === fromAccount);
+    
+    if (!fromAcc) {
+      Alert.alert('Ошибка', 'Выберите счет списания');
+      return;
+    }
+
+    const fromAmount = parseFloat(fromAcc.balance || fromAcc.amount || 0);
 
     if (amountNum > fromAmount) {
       Alert.alert('Ошибка', 'Недостаточно средств на счете');
       return;
     }
 
-    // Запрашиваем разрешение и отправляем уведомление
-    await requestNotificationPermission();
-    notifyTransferSuccess(amountNum.toFixed(2), 'Перевод между счетами');
+    if (fromAccount === toAccount) {
+      Alert.alert('Ошибка', 'Выберите разные счета для перевода');
+      return;
+    }
 
-    navigation.navigate('Success', {
-      amount: amountNum.toFixed(2),
-      type: 'Перевод между счетами'
-    });
+    try {
+      setIsTransferring(true);
+      
+      // Выполняем перевод через API
+      await transfersAPI.transferBetweenAccounts({
+        fromAccountId: fromAccount,
+        toAccountId: toAccount,
+        amount: amountNum,
+      });
+
+      navigation.navigate('Success', {
+        amount: amountNum.toFixed(2),
+        type: 'Перевод между счетами',
+        showNotification: true,
+      });
+    } catch (error) {
+      console.error('Transfer error:', error);
+      Alert.alert(
+        'Ошибка перевода',
+        error.message || 'Не удалось выполнить перевод. Попробуйте позже.'
+      );
+    } finally {
+      setIsTransferring(false);
+    }
   };
 
-  const isFormValid = amount && parseFloat(amount) > 0;
+  const isFormValid = amount && parseFloat(amount) > 0 && fromAccount && toAccount && fromAccount !== toAccount;
+
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#6A2EE8" />
+        <Text style={styles.loadingText}>Загрузка счетов...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.page}>
@@ -72,36 +127,52 @@ export default function TransferBetween({ navigation }) {
       <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>Списать с</Text>
-          <TouchableOpacity
-            style={[
-              styles.accountCard,
-              fromAccount === 'account1' && styles.accountCardSelected
-            ]}
-            onPress={() => setFromAccount('account1')}
-          >
-            <View style={styles.accountHeader}>
-              <View style={[styles.accountDot, { backgroundColor: accounts.account1.color }]} />
-              <Text style={styles.accountName}>{accounts.account1.name}</Text>
-            </View>
-            <Text style={styles.accountAmount}>{accounts.account1.amount}</Text>
-          </TouchableOpacity>
+          {accounts.map((account) => (
+            <TouchableOpacity
+              key={account.id}
+              style={[
+                styles.accountCard,
+                fromAccount === account.id && styles.accountCardSelected
+              ]}
+              onPress={() => setFromAccount(account.id)}
+            >
+              <View style={styles.accountHeader}>
+                <View style={[styles.accountDot, { backgroundColor: account.color || '#6A2EE8' }]} />
+                <Text style={styles.accountName}>{account.name}</Text>
+              </View>
+              <Text style={styles.accountAmount}>
+                {new Intl.NumberFormat('ru-RU', { 
+                  style: 'currency', 
+                  currency: 'RUB' 
+                }).format(parseFloat(account.balance || account.amount || 0))}
+              </Text>
+            </TouchableOpacity>
+          ))}
         </View>
 
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>Зачислить на</Text>
-          <TouchableOpacity
-            style={[
-              styles.accountCard,
-              toAccount === 'account2' && styles.accountCardSelected
-            ]}
-            onPress={() => setToAccount('account2')}
-          >
-            <View style={styles.accountHeader}>
-              <View style={[styles.accountDot, { backgroundColor: accounts.account2.color }]} />
-              <Text style={styles.accountName}>{accounts.account2.name}</Text>
-            </View>
-            <Text style={styles.accountAmount}>{accounts.account2.amount}</Text>
-          </TouchableOpacity>
+          {accounts.map((account) => (
+            <TouchableOpacity
+              key={account.id}
+              style={[
+                styles.accountCard,
+                toAccount === account.id && styles.accountCardSelected
+              ]}
+              onPress={() => setToAccount(account.id)}
+            >
+              <View style={styles.accountHeader}>
+                <View style={[styles.accountDot, { backgroundColor: account.color || '#159E3A' }]} />
+                <Text style={styles.accountName}>{account.name}</Text>
+              </View>
+              <Text style={styles.accountAmount}>
+                {new Intl.NumberFormat('ru-RU', { 
+                  style: 'currency', 
+                  currency: 'RUB' 
+                }).format(parseFloat(account.balance || account.amount || 0))}
+              </Text>
+            </TouchableOpacity>
+          ))}
         </View>
 
         <View style={styles.section}>
@@ -128,11 +199,15 @@ export default function TransferBetween({ navigation }) {
             !isFormValid && styles.transferButtonDisabled
           ]}
           onPress={handleTransfer}
-          disabled={!isFormValid}
+          disabled={!isFormValid || isTransferring}
         >
-          <Text style={styles.transferButtonText}>
-            Перевести {amount ? parseFloat(amount).toFixed(2) + ' ₽' : ''}
-          </Text>
+          {isTransferring ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.transferButtonText}>
+              Перевести {amount ? parseFloat(amount).toFixed(2) + ' ₽' : ''}
+            </Text>
+          )}
         </TouchableOpacity>
       </ScrollView>
     </View>
@@ -143,6 +218,16 @@ const styles = StyleSheet.create({
   page: {
     flex: 1,
     backgroundColor: '#F7F7FB'
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#666',
   },
   header: {
     flexDirection: 'row',

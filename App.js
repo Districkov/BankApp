@@ -12,8 +12,6 @@ import WelcomeScreen from './src/screens/main/WelcomeScreen';
 
 // Auth Screens
 import TelegramAuthScreen from './src/screens/auth/TelegramAuthScreen';
-import CodeInputScreen from './src/screens/auth/CodeInputScreen';
-import SessionLimitScreen from './src/screens/auth/SessionLimitScreen';
 
 // Transfers Screens
 import Payments from './src/screens/transfers/Payments';
@@ -113,8 +111,6 @@ export default function App() {
         >
           {/* Auth Screens */}
           <Stack.Screen name="TelegramAuth" component={TelegramAuthScreen} />
-          <Stack.Screen name="CodeInput" component={CodeInputScreen} />
-          <Stack.Screen name="SessionLimit" component={SessionLimitScreen} />
 
           {/* Main App */}
           <Stack.Screen name="Welcome" component={WelcomeScreen} />

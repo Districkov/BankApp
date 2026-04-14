@@ -1,5 +1,6 @@
 import React, {useState, useEffect} from 'react';
-import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import { View, Text, TextInput, StyleSheet, TouchableOpacity, Alert, ScrollView, ActivityIndicator } from 'react-native';
+import { transfersAPI, accountsAPI } from '../../utils/api';
 import { notifyTransferSuccess, requestNotificationPermission } from '../../utils/notifications';
 
 export default function TransferPhone({navigation, route}){
@@ -7,46 +8,18 @@ export default function TransferPhone({navigation, route}){
   const [amount, setAmount] = useState('');
   const [message, setMessage] = useState('');
   const [errors, setErrors] = useState({});
+  const [accounts, setAccounts] = useState([]);
+  const [selectedAccount, setSelectedAccount] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [isTransferring, setIsTransferring] = useState(false);
 
-  const userBalance = 22717.98;
+  // Контакты из API
+  const [contacts, setContacts] = useState([]);
 
-  // Контакты из Payments.js для поиска имени по номеру
-  const allContacts = [
-    { id: 1, name: 'Борис Иван', phone: '+7 (900) 123-45-67', initial: 'Б' },
-    { id: 2, name: 'Руслан Диа', phone: '+7 (900) 123-45-68', initial: 'Р' },
-    { id: 3, name: 'Му Angel♥', phone: '+7 (900) 123-45-69', initial: 'М' },
-    { id: 4, name: 'Иван Соломин', phone: '+7 (900) 123-45-60', initial: 'ИС' },
-    { id: 5, name: 'Когzik', phone: '+7 (902) 207-72-41', initial: 'К' },
-  ];
-
-  // Находим контакт по номеру телефона
-  const findContactByPhone = (phoneNumber) => {
-    const cleanPhone = phoneNumber.replace(/\D/g, '');
-    return allContacts.find(contact => {
-      const cleanContactPhone = contact.phone.replace(/\D/g, '');
-      return cleanContactPhone === cleanPhone;
-    });
-  };
-
-  // Получаем контакт для отображения
-  const getContactToDisplay = () => {
-    if (!phone) return [];
-    
-    const foundContact = findContactByPhone(phone);
-    if (foundContact) {
-      return [foundContact];
-    }
-    
-    // Если контакт не найден в списке, создаем временный контакт
-    return [{
-      id: 0,
-      name: 'Новый контакт',
-      phone: phone,
-      initial: phone.replace(/\D/g, '').charAt(0) || '?'
-    }];
-  };
-
-  const contactsToDisplay = getContactToDisplay();
+  // Загрузка счетов и контактов с API
+  useEffect(() => {
+    loadData();
+  }, []);
 
   // Эффект для установки номера телефона из параметров
   useEffect(() => {
@@ -54,6 +27,30 @@ export default function TransferPhone({navigation, route}){
       setPhone(route.params.phone);
     }
   }, [route.params?.phone]);
+
+  const loadData = async () => {
+    try {
+      setIsLoading(true);
+      // Загружаем счета
+      const accountsResponse = await accountsAPI.getAccounts();
+      const accountsList = accountsResponse.accounts || accountsResponse.data || [];
+      setAccounts(accountsList);
+      if (accountsList.length > 0) {
+        setSelectedAccount(accountsList[0].id);
+      }
+
+      // Загружаем контакты
+      const { contactsAPI } = require('../../utils/api');
+      const contactsResponse = await contactsAPI.getContacts();
+      const contactsList = contactsResponse.contacts || contactsResponse.data || [];
+      setContacts(contactsList);
+    } catch (error) {
+      console.error('Error loading data:', error);
+      Alert.alert('Ошибка', 'Не удалось загрузить данные. Попробуйте позже.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   function onChangePhone(text){
     const v = formatPhone(text);
@@ -63,16 +60,16 @@ export default function TransferPhone({navigation, route}){
   function onChangeAmount(text) {
     // Убираем все нецифровые символы кроме точки и запятой
     let cleaned = text.replace(/[^\d,.]/g, '');
-    
+
     // Заменяем запятую на точку для корректного парсинга
     cleaned = cleaned.replace(',', '.');
-    
+
     // Оставляем только цифры и одну точку
     const parts = cleaned.split('.');
     if (parts.length > 2) {
       cleaned = parts[0] + '.' + parts[1];
     }
-    
+
     setAmount(cleaned);
   }
 
@@ -85,16 +82,35 @@ export default function TransferPhone({navigation, route}){
     if(!validatePhone(phone)) e.phone = 'Неверный номер';
     if(!validateAmount(amount)) e.amount = 'Введите сумму > 0';
     setErrors(e);
-    if(Object.keys(e).length===0){
-      // Запрашиваем разрешение и отправляем уведомление
-      await requestNotificationPermission();
-      notifyTransferSuccess(parseFloat(amount).toFixed(2), 'Перевод по номеру телефона');
+    
+    if(Object.keys(e).length === 0){
+      try {
+        setIsTransferring(true);
+        const amountNum = parseFloat(amount);
 
-      // Переходим на SuccessScreen
-      navigation.navigate('Success', { 
-        amount: parseFloat(amount).toFixed(2), 
-        type: 'Перевод' 
-      });
+        // Выполняем перевод через API
+        await transfersAPI.transferToPhone({
+          toPhone: phone.replace(/\D/g, ''),
+          amount: amountNum,
+          fromAccountId: selectedAccount,
+          message: message || undefined,
+        });
+
+        // Переходим на SuccessScreen
+        navigation.navigate('Success', {
+          amount: amountNum.toFixed(2),
+          type: 'Перевод',
+          showNotification: true,
+        });
+      } catch (error) {
+        console.error('Transfer error:', error);
+        Alert.alert(
+          'Ошибка перевода',
+          error.message || 'Не удалось выполнить перевод. Попробуйте позже.'
+        );
+      } finally {
+        setIsTransferring(false);
+      }
     }
   }
 
@@ -115,10 +131,21 @@ export default function TransferPhone({navigation, route}){
 
   function validateAmount(amount) {
     const num = parseFloat(amount);
-    return !isNaN(num) && num > 0 && num <= userBalance;
+    const selectedAcc = accounts.find(acc => acc.id === selectedAccount);
+    const balance = parseFloat(selectedAcc?.balance || selectedAcc?.amount || 0);
+    return !isNaN(num) && num > 0 && num <= balance;
   }
 
   const isFormValid = validatePhone(phone) && validateAmount(amount);
+
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#6A2EE8" />
+        <Text style={styles.loadingText}>Загрузка данных...</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.page}>
@@ -132,49 +159,56 @@ export default function TransferPhone({navigation, route}){
       </View>
 
       <ScrollView style={styles.container}>
-        {/* Баланс */}
-        <View style={styles.balanceSection}>
-          <Text style={styles.balanceLabel}>с Black</Text>
-          <Text style={styles.balanceAmount}>22 717,98 ₽</Text>
-        </View>
-
-        {/* Контакты - отображаем только соответствующий номеру */}
-        {phone && (
-          <View style={styles.contactsSection}>
-            <Text style={styles.sectionTitle}>Контакт</Text>
-            {contactsToDisplay.map((contact) => (
-              <TouchableOpacity 
-                key={contact.id} 
-                style={styles.contactItem}
-                onPress={() => setPhone(contact.phone)}
+        {/* Выбор счета */}
+        <View style={styles.accountSelector}>
+          <Text style={styles.sectionTitle}>Счет для списания</Text>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {accounts.map((account) => (
+              <TouchableOpacity
+                key={account.id}
+                style={[
+                  styles.accountChip,
+                  selectedAccount === account.id && styles.accountChipSelected
+                ]}
+                onPress={() => setSelectedAccount(account.id)}
               >
-                <View style={styles.contactAvatar}>
-                  <Text style={styles.avatarText}>
-                    {contact.initial}
-                  </Text>
-                </View>
-                <View style={styles.contactInfo}>
-                  <Text style={styles.contactName}>{contact.name}</Text>
-                  <Text style={styles.contactPhone}>{contact.phone}</Text>
-                </View>
-                <Text style={styles.contactBank}></Text>
+                <Text style={styles.accountChipName}>{account.name}</Text>
+                <Text style={styles.accountChipBalance}>
+                  {new Intl.NumberFormat('ru-RU', { 
+                    style: 'currency', 
+                    currency: 'RUB',
+                    maximumFractionDigits: 2
+                  }).format(parseFloat(account.balance || account.amount || 0))}
+                </Text>
               </TouchableOpacity>
             ))}
-          </View>
-        )}
+          </ScrollView>
+        </View>
+
+        {/* Баланс */}
+        <View style={styles.balanceSection}>
+          <Text style={styles.balanceLabel}>Доступно</Text>
+          <Text style={styles.balanceAmount}>
+            {new Intl.NumberFormat('ru-RU', { 
+              style: 'currency', 
+              currency: 'RUB',
+              maximumFractionDigits: 2
+            }).format(parseFloat(accounts.find(acc => acc.id === selectedAccount)?.balance || 0))}
+          </Text>
+        </View>
 
         {/* Форма перевода */}
         <View style={styles.transferSection}>
           <Text style={styles.sectionTitle}>Перевод</Text>
-          
+
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Номер телефона</Text>
-            <TextInput 
-              value={phone} 
-              onChangeText={onChangePhone} 
-              keyboardType="phone-pad" 
-              style={styles.input} 
-              placeholder="+7 (___) ___-__-__" 
+            <TextInput
+              value={phone}
+              onChangeText={onChangePhone}
+              keyboardType="phone-pad"
+              style={styles.input}
+              placeholder="+7 (___) ___-__-__"
             />
             {errors.phone ? <Text style={styles.err}>{errors.phone}</Text> : null}
           </View>
@@ -182,12 +216,12 @@ export default function TransferPhone({navigation, route}){
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Сумма перевода</Text>
             <View style={styles.amountContainer}>
-              <TextInput 
-                value={amount} 
-                onChangeText={onChangeAmount} 
-                keyboardType="numeric" 
-                style={styles.amountInput} 
-                placeholder="0" 
+              <TextInput
+                value={amount}
+                onChangeText={onChangeAmount}
+                keyboardType="numeric"
+                style={styles.amountInput}
+                placeholder="0"
               />
               <Text style={styles.currencySymbol}>₽</Text>
             </View>
@@ -196,23 +230,27 @@ export default function TransferPhone({navigation, route}){
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Сообщение получателю</Text>
-            <TextInput 
-              value={message} 
-              onChangeText={setMessage} 
-              style={styles.input} 
-              placeholder="Введите сообщение" 
+            <TextInput
+              value={message}
+              onChangeText={setMessage}
+              style={styles.input}
+              placeholder="Введите сообщение"
             />
           </View>
 
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[
-              styles.btn, 
+              styles.btn,
               !isFormValid && styles.btnDisabled
-            ]} 
-            disabled={!isFormValid} 
+            ]}
+            disabled={!isFormValid || isTransferring}
             onPress={onSend}
           >
-            <Text style={styles.btnText}>Перевести {amount ? parseFloat(amount).toFixed(2) + ' ₽' : ''}</Text>
+            {isTransferring ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.btnText}>Перевести {amount ? parseFloat(amount).toFixed(2) + ' ₽' : ''}</Text>
+            )}
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -224,6 +262,49 @@ const styles = StyleSheet.create({
   page: {
     flex: 1,
     backgroundColor: '#F7F7FB'
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#666',
+  },
+  accountSelector: {
+    backgroundColor: '#fff',
+    marginHorizontal: 16,
+    marginTop: 16,
+    borderRadius: 12,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+  },
+  accountChip: {
+    backgroundColor: '#F7F7FB',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 12,
+    marginRight: 12,
+    borderWidth: 2,
+    borderColor: 'transparent',
+    minWidth: 180,
+  },
+  accountChipSelected: {
+    borderColor: '#6A2EE8',
+    backgroundColor: '#F8F5FF',
+  },
+  accountChipName: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#000',
+    marginBottom: 4,
+  },
+  accountChipBalance: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#000',
   },
   header: {
     flexDirection: 'row',

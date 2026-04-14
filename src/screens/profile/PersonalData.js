@@ -1,40 +1,48 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useAuth } from '../../context/AuthContext';
 
 export default function PersonalData({ navigation }) {
-  const userData = {
-    firstName: 'Иван',
-    lastName: 'Иванов',
-    email: 'ivan@example.com',
-    phone: '+7 (999) 123-45-67',
-    birthDate: '15.05.1990'
-  };
+  const { user } = useAuth();
+
+  // Получаем данные пользователя из AuthContext
+  const firstName = user?.firstName || user?.name || 'Не указано';
+  const lastName = user?.lastName || '';
+  const email = user?.email || 'Не указано';
+  const phone = user?.phone || 'Не указано';
+  const birthDate = user?.birthDate || 'Не указано';
+  const initials = `${firstName[0] || ''}${lastName[0] || ''}`.toUpperCase() || firstName[0].toUpperCase();
 
   const fields = [
     {
       key: 'firstName',
       label: 'Имя',
+      value: firstName,
       icon: 'person-outline'
     },
     {
       key: 'lastName',
       label: 'Фамилия',
+      value: lastName || 'Не указано',
       icon: 'person-outline'
     },
     {
       key: 'email',
       label: 'Email',
+      value: email,
       icon: 'mail-outline'
     },
     {
       key: 'phone',
       label: 'Телефон',
+      value: phone,
       icon: 'call-outline'
     },
     {
       key: 'birthDate',
       label: 'Дата рождения',
+      value: birthDate,
       icon: 'calendar-outline'
     }
   ];
@@ -56,7 +64,7 @@ export default function PersonalData({ navigation }) {
         <View style={styles.photoSection}>
           <View style={styles.avatar}>
             <Text style={styles.avatarText}>
-              {userData.firstName[0]}{userData.lastName[0]}
+              {initials}
             </Text>
           </View>
         </View>
@@ -67,14 +75,14 @@ export default function PersonalData({ navigation }) {
             <View key={field.key} style={styles.field}>
               <Text style={styles.fieldLabel}>{field.label}</Text>
               <View style={styles.dataContainer}>
-                <Ionicons 
-                  name={field.icon} 
-                  size={20} 
-                  color="#666" 
+                <Ionicons
+                  name={field.icon}
+                  size={20}
+                  color="#666"
                   style={styles.dataIcon}
                 />
                 <Text style={styles.dataText}>
-                  {userData[field.key]}
+                  {field.value}
                 </Text>
               </View>
             </View>

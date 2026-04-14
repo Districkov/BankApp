@@ -3,6 +3,12 @@ import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import TelegramAuthScreen from '../../src/screens/auth/TelegramAuthScreen';
 import * as RNLinking from 'react-native/Libraries/Linking/Linking';
 
+// Мокируем useFocusEffect
+jest.mock('@react-navigation/native', () => ({
+  ...jest.requireActual('@react-navigation/native'),
+  useFocusEffect: jest.fn(),
+}));
+
 // Мокируем только необходимые части
 jest.mock('react-native/Libraries/Linking/Linking', () => ({
   getInitialURL: jest.fn().mockResolvedValue(null),
@@ -16,6 +22,7 @@ jest.mock('../../src/context/AuthContext', () => ({
   useAuth: () => ({
     isAuthenticated: false,
     isLoading: false,
+    checkSession: jest.fn(),
   }),
 }));
 

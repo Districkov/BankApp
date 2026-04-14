@@ -2,6 +2,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
 
 const API_BASE_URL = 'https://bank.korzik.space/api/auth/v1';
+const ACCOUNTS_BASE_URL = 'https://bank.korzik.space/api/accounts/v1';
+const TRANSFERS_BASE_URL = 'https://bank.korzik.space/api/transfers/v1';
 
 /**
  * Получает токен сессии из AsyncStorage
@@ -13,11 +15,11 @@ const getSessionToken = async () => {
 
     const cookieName = 'YAA_SESS_ID=';
     const cookieValue = sessionCookie.split(';').find(c => c.trim().startsWith(cookieName));
-    
+
     if (cookieValue) {
       return cookieValue.substring(cookieName.length);
     }
-    
+
     // Если токен сохранён без имени куки
     return sessionCookie.replace('YAA_SESS_ID=', '').split(';')[0].trim();
   } catch (error) {
@@ -29,9 +31,9 @@ const getSessionToken = async () => {
 /**
  * Базовый fetch с автоматической подстановкой заголовков и токена
  */
-const apiFetch = async (endpoint, options = {}) => {
+const apiFetch = async (endpoint, options = {}, baseUrl = API_BASE_URL) => {
   const token = await getSessionToken();
-  
+
   const headers = {
     'Content-Type': 'application/json',
     ...(Platform.OS !== 'web' && token && { 'Cookie': `YAA_SESS_ID=${token}` }),
@@ -39,7 +41,7 @@ const apiFetch = async (endpoint, options = {}) => {
   };
 
   try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    const response = await fetch(`${baseUrl}${endpoint}`, {
       ...options,
       headers,
       credentials: 'include',
@@ -53,9 +55,9 @@ const apiFetch = async (endpoint, options = {}) => {
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw { 
-        status: response.status, 
-        message: errorData.message || 'Ошибка запроса' 
+      throw {
+        status: response.status,
+        message: errorData.message || 'Ошибка запроса'
       };
     }
 
@@ -70,9 +72,9 @@ const apiFetch = async (endpoint, options = {}) => {
       throw error;
     }
     // Сетевая ошибка
-    throw { 
-      status: 0, 
-      message: 'Ошибка сети. Проверьте подключение к интернету.' 
+    throw {
+      status: 0,
+      message: 'Ошибка сети. Проверьте подключение к интернету.'
     };
   }
 };
@@ -80,35 +82,35 @@ const apiFetch = async (endpoint, options = {}) => {
 /**
  * GET запрос
  */
-export const get = async (endpoint) => {
-  return apiFetch(endpoint, { method: 'GET' });
+export const get = async (endpoint, baseUrl = API_BASE_URL) => {
+  return apiFetch(endpoint, { method: 'GET' }, baseUrl);
 };
 
 /**
  * POST запрос
  */
-export const post = async (endpoint, body) => {
+export const post = async (endpoint, body, baseUrl = API_BASE_URL) => {
   return apiFetch(endpoint, {
     method: 'POST',
     body: JSON.stringify(body),
-  });
+  }, baseUrl);
 };
 
 /**
  * PUT запрос
  */
-export const put = async (endpoint, body) => {
+export const put = async (endpoint, body, baseUrl = API_BASE_URL) => {
   return apiFetch(endpoint, {
     method: 'PUT',
     body: JSON.stringify(body),
-  });
+  }, baseUrl);
 };
 
 /**
  * DELETE запрос
  */
-export const del = async (endpoint) => {
-  return apiFetch(endpoint, { method: 'DELETE' });
+export const del = async (endpoint, baseUrl = API_BASE_URL) => {
+  return apiFetch(endpoint, { method: 'DELETE' }, baseUrl);
 };
 
 // ==================== API методы ====================
@@ -176,22 +178,22 @@ export const userAPI = {
 export const accountsAPI = {
   // Получить все счета пользователя
   getAccounts: async () => {
-    return get('/accounts');
+    return get('/accounts', ACCOUNTS_BASE_URL);
   },
 
   // Получить счёт по ID
   getAccount: async (accountId) => {
-    return get(`/accounts/${accountId}`);
+    return get(`/accounts/${accountId}`, ACCOUNTS_BASE_URL);
   },
 
   // Получить баланс счёта
   getBalance: async (accountId) => {
-    return get(`/accounts/${accountId}/balance`);
+    return get(`/accounts/${accountId}/balance`, ACCOUNTS_BASE_URL);
   },
 
   // Создать новый счёт
   createAccount: async (data) => {
-    return post('/accounts', data);
+    return post('/accounts', data, ACCOUNTS_BASE_URL);
   },
 };
 
@@ -220,24 +222,29 @@ export const transactionsAPI = {
  * Переводы
  */
 export const transfersAPI = {
+  // Проверка доступности сервиса переводов
+  ping: async () => {
+    return get('/ping', TRANSFERS_BASE_URL);
+  },
+
   // Перевод по номеру карты
   transferToCard: async (data) => {
-    return post('/transfers/card', data);
+    return post('/transfers/card', data, TRANSFERS_BASE_URL);
   },
 
   // Перевод по номеру телефона
   transferToPhone: async (data) => {
-    return post('/transfers/phone', data);
+    return post('/transfers/phone', data, TRANSFERS_BASE_URL);
   },
 
   // Перевод между своими счетами
   transferBetweenAccounts: async (data) => {
-    return post('/transfers/internal', data);
+    return post('/transfers/internal', data, TRANSFERS_BASE_URL);
   },
 
   // Получить лимиты на переводы
   getLimits: async () => {
-    return get('/transfers/limits');
+    return get('/transfers/limits', TRANSFERS_BASE_URL);
   },
 };
 

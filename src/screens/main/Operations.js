@@ -1,19 +1,9 @@
-import React, {useState} from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, ScrollView, Dimensions } from 'react-native';
+import React, {useState, useEffect} from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, ScrollView, Dimensions, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { transactionsAPI, statsAPI } from '../../utils/api';
 
 const { width } = Dimensions.get('window');
-
-const data = [
-  {id:'1', title:'BMW Motors', subtitle:'Покупка', amount:'-14 743 211 ₽', type:'expense', date:'20 окт 2024', time:'14:30', category: 'transport'},
-  {id:'2', title:'Перевод от Петя', subtitle:'Перевод', amount:'+8 700 ₽', type:'income', date:'13 сент 2024', time:'11:15', category: 'transfer'},
-  {id:'3', title:'Вкусно — и точка', subtitle:'Еда', amount:'-538 ₽', type:'expense', date:'12 сент 2024', time:'18:45', category: 'food'},
-  {id:'4', title:'Аптека', subtitle:'Здоровье', amount:'-1 240 ₽', type:'expense', date:'11 сент 2024', time:'09:20', category: 'health'},
-  {id:'5', title:'Зарплата', subtitle:'Начисление', amount:'+45 000 ₽', type:'income', date:'10 сент 2024', time:'08:00', category: 'salary'},
-  {id:'6', title:'Такси', subtitle:'Транспорт', amount:'-320 ₽', type:'expense', date:'9 сент 2024', time:'22:10', category: 'transport'},
-  {id:'7', title:'Супермаркет', subtitle:'Продукты', amount:'-2 150 ₽', type:'expense', date:'8 сент 2024', time:'16:30', category: 'food'},
-  {id:'8', title:'Кино', subtitle:'Развлечения', amount:'-800 ₽', type:'expense', date:'7 сент 2024', time:'20:15', category: 'entertainment'},
-];
 
 const categoryIcons = {
   transport: 'car-outline',
@@ -39,85 +29,151 @@ const categoryColors = {
 
 export default function Operations({navigation}){
   const [filter, setFilter] = useState('all');
-  const [activeTab, setActiveTab] = useState('transactions'); // 'transactions' или 'analytics'
-  
-  const filtered = data.filter(d => 
-    filter === 'all' ? true : (filter === 'income' ? d.type === 'income' : d.type === 'expense')
-  );
+  const [activeTab, setActiveTab] = useState('transactions');
+  const [transactions, setTransactions] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [stats, setStats] = useState({ expenses: 0, incomes: 0, total: 0 });
+  const [categoryStats, setCategoryStats] = useState([]);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      setIsLoading(true);
+      // Загружаем транзакции
+      const txResponse = await transactionsAPI.getTransactions({ limit: 100 });
+      const txList = txResponse.transactions || txResponse.data || [];
+      setTransactions(txList);
+
+      // Считаем статистику
+      const expenses = txList
+        .filter(tx => tx.amount < 0)
+        .reduce((sum, tx) => sum + Math.abs(tx.amount), 0);
+      const incomes = txList
+        .filter(tx => tx.amount > 0)
+        .reduce((sum, tx) => sum + tx.amount, 0);
+      
+      setStats({ expenses, incomes, total: incomes - expenses });
+
+      // Статистика по категориям
+      const expensesByCategory = txList
+        .filter(tx => tx.amount < 0)
+        .reduce((acc, tx) => {
+          const category = tx.category || 'other';
+          acc[category] = (acc[category] || 0) + Math.abs(tx.amount);
+          return acc;
+        }, {});
+
+      const totalExpenses = Object.values(expensesByCategory).reduce((sum, amount) => sum + amount, 0);
+
+      const categoryStatsData = Object.entries(expensesByCategory).map(([category, amount]) => ({
+        category,
+        amount,
+        percentage: totalExpenses > 0 ? (amount / totalExpenses * 100).toFixed(1) : 0,
+        icon: categoryIcons[category] || 'ellipse-outline',
+        color: categoryColors[category] || '#BDBDBD'
+      })).sort((a, b) => b.amount - a.amount);
+
+      setCategoryStats(categoryStatsData);
+    } catch (error) {
+      console.error('Error loading transactions:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   function onClose() {
     navigation.goBack();
   }
 
-  const getTotalAmount = () => {
-    const expenses = data.filter(d => d.type === 'expense')
-      .reduce((sum, item) => sum + parseFloat(item.amount.replace(/[^\d.-]/g, '')), 0);
-    const incomes = data.filter(d => d.type === 'income')
-      .reduce((sum, item) => sum + parseFloat(item.amount.replace(/[^\d.-]/g, '')), 0);
-    return { expenses, incomes, total: incomes - expenses };
+  const filtered = transactions.filter(tx => {
+    const type = tx.amount >= 0 ? 'income' : 'expense';
+    return filter === 'all' ? true : type === filter;
+  });
+
+  const formatAmount = (amount) => {
+    const num = parseFloat(amount);
+    const formatted = new Intl.NumberFormat('ru-RU', { 
+      style: 'currency', 
+      currency: 'RUB',
+      minimumFractionDigits: 0 
+    }).format(Math.abs(num));
+    return num >= 0 ? `+${formatted}` : `-${formatted}`;
   };
 
-  const getCategoryStats = () => {
-    const expensesByCategory = data
-      .filter(d => d.type === 'expense')
-      .reduce((acc, item) => {
-        const amount = parseFloat(item.amount.replace(/[^\d.-]/g, ''));
-        acc[item.category] = (acc[item.category] || 0) + amount;
-        return acc;
-      }, {});
+  const formatDate = (dateStr) => {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' });
+  };
 
-    const totalExpenses = Object.values(expensesByCategory).reduce((sum, amount) => sum + amount, 0);
+  const formatTime = (dateStr) => {
+    const date = new Date(dateStr);
+    return date.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
+  };
+
+  const getCategoryName = (category) => {
+    const names = {
+      transport: 'Транспорт',
+      food: 'Еда',
+      health: 'Здоровье',
+      salary: 'Зарплата',
+      transfer: 'Перевод',
+      entertainment: 'Развлечения',
+      shopping: 'Покупки',
+      other: 'Другое'
+    };
+    return names[category] || category;
+  };
+
+  const renderTransactionItem = ({item}) => {
+    const type = item.amount >= 0 ? 'income' : 'expense';
+    const category = item.category || 'other';
     
-    return Object.entries(expensesByCategory).map(([category, amount]) => ({
-      category,
-      amount,
-      percentage: (amount / totalExpenses * 100).toFixed(1),
-      icon: categoryIcons[category] || 'ellipse-outline',
-      color: categoryColors[category] || '#BDBDBD'
-    })).sort((a, b) => b.amount - a.amount);
-  };
-
-  const totals = getTotalAmount();
-  const categoryStats = getCategoryStats();
-
-  const renderTransactionItem = ({item}) => (
-    <View style={styles.transactionCard}>
-      <View style={styles.transactionContent}>
-        <View style={[styles.icon, { backgroundColor: categoryColors[item.category] }]}>
-          <Ionicons name={categoryIcons[item.category]} size={18} color="#fff" />
-        </View>
-        <View style={styles.transactionInfo}>
-          <Text style={styles.transactionTitle}>{item.title}</Text>
-          <Text style={styles.transactionSubtitle}>{item.subtitle}</Text>
-          <Text style={styles.transactionDate}>{item.date} в {item.time}</Text>
-        </View>
-        <View style={styles.amountContainer}>
-          <Text style={[
-            styles.amount,
-            item.type === 'income' ? styles.incomeAmount : styles.expenseAmount
-          ]}>
-            {item.amount}
-          </Text>
+    return (
+      <View style={styles.transactionCard}>
+        <View style={styles.transactionContent}>
+          <View style={[styles.icon, { backgroundColor: categoryColors[category] }]}>
+            <Ionicons name={categoryIcons[category]} size={18} color="#fff" />
+          </View>
+          <View style={styles.transactionInfo}>
+            <Text style={styles.transactionTitle}>{item.title || item.merchant || 'Перевод'}</Text>
+            <Text style={styles.transactionSubtitle}>{getCategoryName(category)}</Text>
+            <Text style={styles.transactionDate}>{formatDate(item.date || item.createdAt)} в {formatTime(item.date || item.createdAt)}</Text>
+          </View>
+          <View style={styles.amountContainer}>
+            <Text style={[
+              styles.amount,
+              type === 'income' ? styles.incomeAmount : styles.expenseAmount
+            ]}>
+              {formatAmount(item.amount)}
+            </Text>
+          </View>
         </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   const renderAnalytics = () => (
     <View style={styles.analyticsContainer}>
       {/* Общая статистика */}
       <View style={styles.statsGrid}>
         <View style={styles.statItem}>
-          <Text style={styles.statValue}>+{totals.incomes.toLocaleString()} ₽</Text>
+          <Text style={styles.statValue}>
+            {new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB' }).format(stats.incomes)}
+          </Text>
           <Text style={styles.statLabel}>Доходы</Text>
         </View>
         <View style={styles.statItem}>
-          <Text style={styles.statValue}>-{totals.expenses.toLocaleString()} ₽</Text>
+          <Text style={styles.statValue}>
+            {new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB' }).format(stats.expenses)}
+          </Text>
           <Text style={styles.statLabel}>Расходы</Text>
         </View>
         <View style={styles.statItem}>
-          <Text style={[styles.statValue, totals.total >= 0 ? styles.incomeAmount : styles.expenseAmount]}>
-            {totals.total >= 0 ? '+' : ''}{totals.total.toLocaleString()} ₽
+          <Text style={[styles.statValue, stats.total >= 0 ? styles.incomeAmount : styles.expenseAmount]}>
+            {new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB' }).format(stats.total)}
           </Text>
           <Text style={styles.statLabel}>Итого</Text>
         </View>
@@ -132,48 +188,36 @@ export default function Operations({navigation}){
               <View style={[styles.categoryIcon, { backgroundColor: stat.color }]}>
                 <Ionicons name={stat.icon} size={16} color="#fff" />
               </View>
-              <Text style={styles.categoryName}>
-                {stat.category === 'transport' ? 'Транспорт' :
-                 stat.category === 'food' ? 'Еда' :
-                 stat.category === 'health' ? 'Здоровье' :
-                 stat.category === 'entertainment' ? 'Развлечения' : stat.category}
+              <Text style={styles.categoryName}>{getCategoryName(stat.category)}</Text>
+              <Text style={styles.categoryAmount}>
+                {new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB' }).format(stat.amount)}
               </Text>
-              <Text style={styles.categoryAmount}>-{stat.amount.toLocaleString()} ₽</Text>
             </View>
             <View style={styles.progressBar}>
-              <View 
+              <View
                 style={[
-                  styles.progressFill, 
-                  { 
+                  styles.progressFill,
+                  {
                     backgroundColor: stat.color,
                     width: `${stat.percentage}%`
                   }
-                ]} 
+                ]}
               />
             </View>
             <Text style={styles.categoryPercentage}>{stat.percentage}%</Text>
           </View>
         ))}
       </View>
-
-      {/* Ежемесячная статистика */}
-      <Text style={styles.sectionTitle}>Статистика за месяц</Text>
-      <View style={styles.monthlyStats}>
-        <View style={styles.monthlyItem}>
-          <Text style={styles.monthlyValue}>24</Text>
-          <Text style={styles.monthlyLabel}>Операций</Text>
-        </View>
-        <View style={styles.monthlyItem}>
-          <Text style={styles.monthlyValue}>8 740 ₽</Text>
-          <Text style={styles.monthlyLabel}>Средний чек</Text>
-        </View>
-        <View style={styles.monthlyItem}>
-          <Text style={styles.monthlyValue}>12</Text>
-          <Text style={styles.monthlyLabel}>Дней с тратами</Text>
-        </View>
-      </View>
     </View>
   );
+
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#6A2EE8" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.page}>
@@ -273,6 +317,12 @@ const styles = StyleSheet.create({
   page: {
     flex: 1,
     backgroundColor: '#F7F7FB'
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F7F7FB',
   },
   header: {
     flexDirection: 'row',
