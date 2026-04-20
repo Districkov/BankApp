@@ -1,4 +1,0 @@
-dev.bank.korzik.space {
-    tls ./dev.bank.korzik.space+2.pem ./dev.bank.korzik.space+2-key.pem
-    reverse_proxy localhost:8081
-}
