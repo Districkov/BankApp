@@ -1,85 +1,43 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { IoArrowDown, IoArrowUp, IoSwapHorizontal } from 'react-icons/io5';
 
-const TransactionItem = ({ transaction, onPress }) => {
+const TransactionItem = ({ transaction, onClick }) => {
   const getIcon = (type) => {
     switch (type) {
       case 'income':
-        return { name: 'arrow-down', color: '#159E3A', bgColor: '#E8F5E8' };
+        return { Icon: IoArrowDown, color: '#159E3A', bgColor: '#E8F5E8' };
       case 'expense':
-        return { name: 'arrow-up', color: '#FF3B30', bgColor: '#FFE5E5' };
+        return { Icon: IoArrowUp, color: '#FF3B30', bgColor: '#FFE5E5' };
       default:
-        return { name: 'swap-horizontal', color: '#6A2EE8', bgColor: '#F0EBFF' };
+        return { Icon: IoSwapHorizontal, color: '#6A2EE8', bgColor: '#F0EBFF' };
     }
   };
 
-  const icon = getIcon(transaction.type);
+  const { Icon, color, bgColor } = getIcon(transaction.type);
 
   return (
-    <TouchableOpacity style={styles.container} onPress={onPress}>
-      <View style={[styles.iconContainer, { backgroundColor: icon.bgColor }]}>
-        <Ionicons name={icon.name} size={20} color={icon.color} />
-      </View>
-      <View style={styles.info}>
-        <Text style={styles.title}>{transaction.title}</Text>
-        <Text style={styles.date}>{transaction.date}</Text>
-      </View>
-      <Text style={[
-        styles.amount,
-        transaction.type === 'income' ? styles.income : styles.expense
-      ]}>
+    <button 
+      className="flex flex-row items-center bg-white p-4 rounded-xl mb-2 shadow-sm hover:shadow-md transition-shadow w-full"
+      onClick={onClick}
+    >
+      <div 
+        className="w-10 h-10 rounded-full flex items-center justify-center mr-3"
+        style={{ backgroundColor: bgColor }}
+      >
+        <Icon size={20} color={color} />
+      </div>
+      <div className="flex-1 text-left">
+        <p className="text-base font-semibold text-black mb-1">{transaction.title}</p>
+        <p className="text-sm text-[#666]">{transaction.date}</p>
+      </div>
+      <p 
+        className="text-base font-bold"
+        style={{ color: transaction.type === 'income' ? '#159E3A' : '#FF3B30' }}
+      >
         {transaction.amount}
-      </Text>
-    </TouchableOpacity>
+      </p>
+    </button>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 2,
-  },
-  iconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  info: {
-    flex: 1,
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#000',
-    marginBottom: 4,
-  },
-  date: {
-    fontSize: 14,
-    color: '#666',
-  },
-  amount: {
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  income: {
-    color: '#159E3A',
-  },
-  expense: {
-    color: '#FF3B30',
-  },
-});
 
 export default TransactionItem;

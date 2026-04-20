@@ -1,449 +1,181 @@
-# Bank App (Expo) - v3
+# Bank App - Next.js
 
-🏦 Мобильное банковское приложение на React Native с использованием Expo
+Банковское приложение, переведенное с React Native на Next.js с сохранением дизайна.
 
-## 📱 Функциональность
+## Технологии
 
-### Основные экраны
-- **Главная** — обзор баланса, быстрые действия и статистика
-- **Платежи** — управление платежами и переводами
-- **Ещё** — дополнительные функции и настройки профиля
+- **Next.js 14** - React фреймворк
+- **Tailwind CSS** - стилизация
+- **React Icons** - иконки
+- **React Context API** - управление состоянием
 
-### Переводы и операции
-- Перевод между счетами
-- Перевод по номеру телефона
-- История операций
-
-### Настройки и профиль
-- Личные данные (редактирование имени, email, телефона)
-- Настройки уведомлений
-- Просмотр системных уведомлений
-- Служба поддержки
-
-## 🛠 Технологии
-
-| Технология | Назначение |
-|------------|------------|
-| React Native | Кроссплатформенная разработка |
-| Expo | Инструменты разработки и сборки |
-| React Navigation | Навигация (Stack + Bottom Tabs) |
-| Expo Vector Icons | Иконки |
-| Expo Linear Gradient | Градиенты |
-| React Native Animated | Анимации |
-| date-fns | Работа с датами |
-| AsyncStorage | Локальное хранилище |
-
-## 🚀 Установка и запуск
-
-### Требования
-- Node.js >= 16
-- npm >= 8
-- Expo CLI
-
-### Шаги установки
+## Установка
 
 ```bash
-# Клонирование и установка зависимостей
-cd BankApp-main
 npm install
-
-# Запуск Metro Bundler
-npm start
-
-# Запуск на Android
-npm run android
-
-# Запуск на iOS
-npm run ios
 ```
 
-### Запуск через Expo Go
-1. Установите приложение Expo Go на устройство
-2. Отсканируйте QR-код из терминала
-3. Приложение запустится на устройстве
+## Запуск
 
-## 📁 Структура проекта
-
-```
-BankApp-main/
-├── src/
-│   ├── components/           # Переиспользуемые UI-компоненты
-│   │   ├── ErrorBoundary.js  # ✨ Обработка ошибок (новое)
-│   │   ├── Header.js         # Оптимизирован с React.memo
-│   │   ├── IconButton.js     # Оптимизирован с React.memo
-│   │   ├── LoadingStates.js  # ✨ Loading/Skeleton компоненты (новое)
-│   │   └── TransactionItem.js
-│   ├── context/              # React Context для состояния
-│   │   └── AuthContext.js    # Улучшен реальный logout
-│   ├── screens/              # Экраны приложения
-│   │   ├── auth/             # Экраны авторизации
-│   │   ├── main/             # Главные экраны
-│   │   ├── transfers/        # Переводы
-│   │   ├── profile/          # Профиль (улучшен с const данные)
-│   │   ├── history/          # История операций
-│   │   └── partners/         # Партнёры
-│   ├── styles/               # Глобальные стили
-│   │   ├── common.js         # Общие стили
-│   │   └── themes.js         # Темы оформления
-│   └── utils/                # Утилиты и вспомогательные функции
-│       ├── api.js            # API-клиент
-│       ├── constans.js       # Константы приложения
-│       ├── errorHandler.js   # ✨ Обработка ошибок (новое)
-│       ├── format.js         # Форматирование данных
-│       └── Validation.js     # Валидация форм
-├── assets/                   # Статические ресурсы
-│   ├── cards/                # Картины карт
-│   └── partners/             # Логотипы партнёров
-├── __tests__/                # Тесты (83 тестов - ✅ 100% pass)
-│   ├── components/           # Тесты компонентов (15 тестов)
-│   │   ├── Header.test.js
-│   │   ├── IconButton.test.js
-│   │   └── TransactionItem.test.js
-│   ├── utils/                # Тесты утилит (55 тестов)
-│   │   ├── api.test.js
-│   │   ├── format.test.js
-│   │   └── Validation.test.js
-│   └── screens/              # Тесты экранов (18 тестов)
-│       ├── More.test.js
-│       ├── TelegramAuthScreen.test.js
-│       └── TransfersScreen.test.js
-├── App.js                    # Точка входа
-├── jest.config.js            # Jest конфигурация
-├── jest.setup.js             # Jest setup (улучшен)
-└── package.json
-```
-
-## 🧪 Тестирование
-
-### Статистика тестов
-
-```
-✅ Test Suites: 9 passed
-✅ Tests: 83 passed (100% pass rate)
-📊 Components: 15 tests
-📊 Utilities: 55 tests  
-📊 Screens: 18 tests
-⏱️ Runtime: ~7.6s
-```
-
-### Запуск тестов
-
+### Режим разработки
 ```bash
-# Запустить все тесты
-npm test
-
-# Запуск с покрытием кода
-npm run test:coverage
-
-# Запуск в режиме watch (автоматический перезапуск при изменениях)
-npm run test:watch
+npm run dev
 ```
 
-### Протестированные компоненты и функции
+Приложение будет доступно по адресу [http://localhost:3000](http://localhost:3000)
 
-#### Компоненты (15 тестов ✅)
-- ✅ Header - заголовок с кнопкой (React.memo оптимизирован)
-- ✅ IconButton - кнопка с иконкой (React.memo оптимизирован)
-- ✅ TransactionItem - элемент операции
+### Production сборка
+```bash
+npm run build
+npm start
+```
 
-#### Утилиты (55 тестов ✅)
-- ✅ **format.js** - форматирование денег, дат, получателей
-  - formatCurrency() - форматирование сумм (₽ 1 234,56)
-  - formatDate() - форматирование дат (10 янв 2024)
-  - formatPhoneNumber() - форматирование номеров (+7 (999) 123-45-67)
-  - formatRecipient() - форматирование получателя
+## Структура проекта
 
-- ✅ **Validation.js** - валидация форм (регистрация, логин, забытый пароль)
-  - validateEmail() - валидация email адреса
-  - validatePhoneNumber() - валидация номера телефона
-  - validatePassword() - валидация пароля (минимум 6 символов)
-  - validateName() - валидация имени
-  - validateAmount() - валидация суммы перевода
+```
+BankApp/
+├── pages/                    # Next.js страницы
+│   ├── _app.js              # Главный компонент приложения
+│   ├── _document.js         # HTML документ
+│   ├── index.js             # Главная страница (редирект)
+│   ├── welcome.js           # Экран приветствия
+│   ├── auth/                # Страницы авторизации
+│   │   ├── telegram.js      # Вход через Telegram
+│   │   └── code-input.js    # Ввод кода подтверждения
+│   ├── main/                # Основные страницы
+│   │   └── home.js          # Главная страница
+│   ├── transfers/           # Переводы
+│   ├── profile/             # Профиль
+│   └── partners/            # Партнеры
+├── src/
+│   ├── components/          # React компоненты
+│   │   ├── MainLayout.js    # Layout с нижней навигацией
+│   │   ├── Header.js        # Заголовок
+│   │   ├── IconButton.js    # Кнопка с иконкой
+│   │   ├── TransactionItem.js # Элемент транзакции
+│   │   ├── LoadingStates.js # Компоненты загрузки
+│   │   └── ErrorBoundary.js # Обработка ошибок
+│   ├── context/
+│   │   └── AuthContext.js   # Контекст авторизации
+│   ├── utils/
+│   │   ├── api.js           # API клиент
+│   │   ├── validation.js    # Валидация форм
+│   │   ├── format.js        # Форматирование данных
+│   │   ├── errorHandler.js  # Обработка ошибок
+│   │   └── constants.js     # Константы
+│   └── styles/
+│       └── themes.js        # Цвета и стили
+├── styles/
+│   └── globals.css          # Глобальные стили
+├── public/                  # Статические файлы
+├── next.config.js           # Конфигурация Next.js
+├── tailwind.config.js       # Конфигурация Tailwind
+└── package.json
 
-- ✅ **api.js** - работа с API и AsyncStorage
-  - Мокирование AsyncStorage
-  - Тестирование запросов
+```
 
-#### Экраны (18 тестов ✅)
-- ✅ **More.js** - профиль пользователя (улучшен с AuthContext)
-  - Отображение профиля
-  - Интеграция с AuthContext
-  - Обработка logout
+## Основные страницы
 
-- ✅ **TelegramAuthScreen.js** - вход через Telegram
-  - Корректная иконка (send вместо logo-telegram)
-  - Мокирование Linking API
-  - Обработка нажатий
+### Авторизация
+- `/auth/telegram` - Вход через Telegram
+- `/auth/code-input` - Ввод кода подтверждения
+- `/welcome` - Экран приветствия
 
-- ✅ **TransfersScreen.js** - экран переводов
-  - Отображение полей ввода
-  - Валидация входных данных
-  - Обработка отправки
+### Главные страницы
+- `/main/home` - Главная страница с балансом и быстрыми действиями
+- `/main/operations` - История операций
 
-## 📐 Архитектура
+### Переводы
+- `/transfers/phone` - Перевод по номеру телефона
+- `/transfers/accounts` - Перевод между счетами
+- `/transfers/payments` - Платежи
+
+### Профиль
+- `/profile/more` - Меню профиля
+- `/profile/settings` - Настройки
+- `/profile/personal-data` - Личные данные
+- `/profile/support` - Поддержка
+
+### Партнеры
+- `/partners/list` - Список партнеров
+- `/partners/astra` - Astra RP
+- `/partners/yanima` - Yanima
+
+## API
+
+API базовый URL: `https://bank.korzik.space/api/auth/v1`
+
+### Основные эндпоинты:
+- `GET /simple/telegram/url` - Получить URL для авторизации
+- `POST /simple/telegram/callback` - Подтверждение кода
+- `GET /whoami` - Проверка сессии
+- `POST /logout` - Выход
+- `GET /user/profile` - Профиль пользователя
+- `GET /accounts` - Счета пользователя
+- `GET /transactions` - История транзакций
+
+## Особенности
+
+### Авторизация
+- Авторизация через Telegram
+- Сохранение сессии в localStorage
+- Автоматическая проверка сессии при загрузке
 
 ### Навигация
+- Нижняя навигация (Bottom Tabs)
+- Роутинг через Next.js Router
+- Защищенные маршруты
 
-```
-Loader → Main (Bottom Tabs)
-              ├── Главная (Home)
-              ├── Платежи (Payments)
-              └── Ещё (More)
-                  └── Stack Navigation
-                      ├── Профиль
-                      ├── Настройки
-                      ├── Уведомления
-                      └── Поддержка
-```
+### Дизайн
+- Полностью адаптивный дизайн
+- Сохранен оригинальный дизайн из React Native
+- Tailwind CSS для стилизации
+- Градиенты и тени
 
-### Реализованные функции
+### Компоненты
+- Переиспользуемые компоненты
+- Мемоизация для оптимизации
+- Error Boundary для обработки ошибок
+- Loading states
 
-- ✅ Переводы между счетами
-- ✅ Перевод по номеру телефона
-- ✅ История операций
-- ✅ Настройки профиля
-- ✅ Система уведомлений
-- ✅ Валидация форм
-- ✅ Форматирование данных
+## Отличия от React Native версии
 
-## 🛡️ Обработка ошибок
+1. **Навигация**: React Navigation → Next.js Router
+2. **Стили**: StyleSheet → Tailwind CSS
+3. **Хранилище**: AsyncStorage → localStorage
+4. **Иконки**: @expo/vector-icons → react-icons
+5. **Градиенты**: expo-linear-gradient → CSS градиенты
+6. **Платформа**: Mobile → Web
 
-### ErrorBoundary компонент
+## Разработка
 
-Перехватывает ошибки в React компонентах и отображает fallback UI:
+### Добавление новой страницы
+1. Создайте файл в папке `pages/`
+2. Используйте `MainLayout` для страниц с навигацией
+3. Используйте `useRouter` для навигации
 
+### Пример:
 ```jsx
-import ErrorBoundary from '@/components/ErrorBoundary';
+import MainLayout from '../../src/components/MainLayout';
+import { useRouter } from 'next/router';
 
-<ErrorBoundary>
-  <YourScreen />
-</ErrorBoundary>
-```
-
-**Особенности:**
-- ✅ Автоматический перехват ошибок в компонентах
-- ✅ Красивое отображение ошибки с иконкой
-- ✅ Кнопка повтора для перезагрузки
-- ✅ Отображение полного стека ошибки в режиме разработки
-- ✅ Логирование ошибок
-
-### errorHandler.js утилита
-
-Централизованная обработка ошибок с классификацией и логированием:
-
-```jsx
-import { logError, handleApiError, retryAsync } from '@/utils/errorHandler';
-
-try {
-  const data = await api.getBalance();
-} catch (error) {
-  logError(error, 'Failed to fetch balance'); // логирование
+export default function MyPage() {
+  const router = useRouter();
   
-  const message = handleApiError(
-    error,
-    () => showSessionExpiredDialog(),     // Callback для UNAUTHORIZED
-    () => showSessionLimitDialog()        // Callback для SESSION_LIMIT
+  return (
+    <MainLayout>
+      <div>My Page Content</div>
+    </MainLayout>
   );
-  
-  Alert.alert('Ошибка', message);
 }
 ```
 
-**Типы ошибок:**
-- 🔴 `NETWORK_ERROR` - нет соединения
-- 🔴 `UNAUTHORIZED` - 401 (требуется логин)
-- 🔴 `FORBIDDEN` - 403 (доступ запрещён)
-- 🔴 `NOT_FOUND` - 404 (не найдено)
-- 🔴 `SERVER_ERROR` - 500+ (ошибка сервера)
-- 🔴 `SESSION_LIMIT` - 429 (лимит сессии)
-- 🔴 `VALIDATION_ERROR` - 422 (ошибка валидации)
-- 🔴 `UNKNOWN_ERROR` - прочие ошибки
+## Тестирование
 
-**Методы:**
-- `logError(error, context)` - логирование с контекстом и временем
-- `getErrorType(status)` - определение типа ошибки по статусу
-- `getErrorMessage(error)` - извлечение понятного сообщения
-- `retryAsync(asyncFn, maxRetries, backoffMs)` - автоматический повтор с экспоненциальной задержкой
-- `handleApiError(error, onUnauth, onSessionLimit)` - обработка с callbacks
-
-## 📦 Loading и Skeleton компоненты
-
-### LoadingStates.js
-
-Набор переиспользуемых компонентов для улучшения UX при загрузке данных:
-
-```jsx
-import { 
-  LoadingSpinner, 
-  SkeletonPlaceholder, 
-  CardSkeleton, 
-  ListItemSkeleton, 
-  EmptyState 
-} from '@/components/LoadingStates';
-
-// Спиннер загрузки
-<LoadingSpinner message="Загружение..." />
-
-// Скелет для карточки
-<CardSkeleton />
-
-// Скелет для элемента списка
-<ListItemSkeleton />
-
-// Пустое состояние
-<EmptyState 
-  icon="📭" 
-  title="Нет операций" 
-  message="Ваша история пуста"
-  actionLabel="Создать перевод"
-  onAction={() => navigate('Transfers')}
-/>
-
-// Placeholder с анимацией
-<SkeletonPlaceholder width={100} height={50} />
-```
-
-**Компоненты:**
-- 🎯 `LoadingSpinner` - спиннер с опциональным сообщением
-- 🎯 `SkeletonPlaceholder` - базовый placeholder с анимацией
-- 🎯 `CardSkeleton` - скелет для карточки (avatar + 2 строки текста)
-- 🎯 `ListItemSkeleton` - скелет для элемента списка (иконка + текст)
-- 🎯 `EmptyState` - состояние "данных нет" с кнопкой действия
-
-## ⚡ Оптимизация производительности
-
-### React.memo
-
-Компоненты оптимизированы с `React.memo` для предотвращения ненужных re-renders:
-
-```javascript
-// Header.js - мемоизирован
-export default React.memo(Header);
-
-// IconButton.js - мемоизирован  
-export default React.memo(IconButton);
-```
-
-**Преимущества:**
-- ✅ Предотвращает re-render при тех же props
-- ✅ особенно важно для список элементов
-- ✅ примерно 20% улучшение производительности
-
-### AsyncStorage очистка
-
-Токены и данные безопасно хранятся в защищённом хранилище.
-
-## 🎨 Особенности реализации
-
-- ✅ Адаптивная вёрстка для разных размеров экранов
-- ✅ Плавные анимации переходов
-- ✅ Интуитивная навигация с жестами
-- ✅ Модульная архитектура компонентов
-- ✅ Обработка ошибок через ErrorBoundary
-- ✅ Loading и skeleton состояния для лучшего UX
-- ✅ Централизованная обработка ошибок (errorHandler.js)
-- ✅ React.memo оптимизация для производительности
-- ✅ Защищённое хранилище данных (AsyncStorage)
-- ✅ Полное покрытие тестами (83 тестов, 100% pass)
-
-## 📊 Последние улучшения (v1.1.0)
-
-### Новые компоненты
-- 🆕 **ErrorBoundary.js** - Перехват и отображение ошибок в UI
-- 🆕 **LoadingStates.js** - Loading спиннеры и skeleton плейсхолдеры
-- 🆕 **errorHandler.js** - Утилита для централизованной обработки ошибок
-
-### Улучшения существующих компонентов
-- ⚡ **Header.js** - Оптимизирован с React.memo (+20% производительность)
-- ⚡ **IconButton.js** - Оптимизирован с React.memo + accessibility
-- 🔄 **More.js** - Интеграция с AuthContext для реального logout
-- 📝 **More.js** - Извлечение hardcoded данных в константу PROFILE_DATA
-
-### Улучшения тестирования
-- 📈 Расширено покрытие с 73 до 83 тестов
-- 📈 Добавлены тесты для api.js (AsyncStorage мокирование)
-- 📈 Расширены тесты для Validation.js (все сценарии)
-- 📈 Улучшена jest.setup.js конфигурация (подавление warnings)
-
-### Безопасность
-- 🔐 Реальный logout с очисткой токена
-- 🔐 Обработка session expiration (429 статус)
-- 🔐 Опасная операция requires confirmation
-- 🔐 Защита от 401 Unauthorized ошибок
-
-## � Советы по разработке
-
-### При разработке новых экранов
-
-1. **Используйте ErrorBoundary** для обработки ошибок:
-```jsx
-import ErrorBoundary from '@/components/ErrorBoundary';
-
-return (
-  <ErrorBoundary>
-    <YourScreen />
-  </ErrorBoundary>
-);
-```
-
-2. **Используйте LoadingStates** при загрузке данных:
-```jsx
-import { LoadingSpinner, CardSkeleton } from '@/components/LoadingStates';
-
-const [isLoading, setIsLoading] = useState(true);
-
-if (isLoading) return <CardSkeleton />;
-```
-
-3. **Используйте errorHandler** для API ошибок:
-```jsx
-import { logError, handleApiError } from '@/utils/errorHandler';
-
-try {
-  const data = await api.fetchData();
-} catch (error) {
-  logError(error, 'fetch operation');
-  const message = handleApiError(error);
-  showAlert(message);
-}
-```
-
-### При создании новых компонентов
-
-1. **Используйте React.memo** для list items:
-```jsx
-const MyListItem = ({ item, onPress }) => (
-  // component code
-);
-
-export default React.memo(MyListItem);
-```
-
-2. **Добавляйте testID** для тестирования:
-```jsx
-<TouchableOpacity testID="my-button" onPress={onPress}>
-  <Text>Press me</Text>
-</TouchableOpacity>
-```
-
-3. **Пишите тесты** для новых компонентов:
 ```bash
-npm test -- --watch  # Разработка с автоматическим перезапуском
+npm test
 ```
 
-## 🐛 Известные проблемы
+## Лицензия
 
-- ⚠️ Animated компоненты требуют jest.useFakeTimers() в тестах
-- ⚠️ Некоторые иконки требуют специфичных библиотек значков (@expo/vector-icons)
-- ⚠️ AsyncStorage требует мокирования при тестировании
-
-## 👥 Поддержка
-
-По вопросам разработки и ошибкам:
-- 📧 Email: support@bankapp.example.com
-- 🐛 Issues: Создавайте GitHub issues для багов
-- 💬 Discussions: Используйте GitHub discussions для обсуждений
-
-## 📄 Лицензия
-
-Проект создан в образовательных целях. MIT License.
+Private

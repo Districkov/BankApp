@@ -1,14 +1,11 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Platform } from 'react-native';
-
 const API_BASE_URL = 'https://bank.korzik.space/api/auth/v1';
 
 /**
- * Получает токен сессии из AsyncStorage
+ * Получает токен сессии из localStorage
  */
-const getSessionToken = async () => {
+const getSessionToken = () => {
   try {
-    const sessionCookie = await AsyncStorage.getItem('session_cookie');
+    const sessionCookie = localStorage.getItem('session_cookie');
     if (!sessionCookie) return null;
 
     const cookieName = 'YAA_SESS_ID=';
@@ -18,7 +15,6 @@ const getSessionToken = async () => {
       return cookieValue.substring(cookieName.length);
     }
     
-    // Если токен сохранён без имени куки
     return sessionCookie.replace('YAA_SESS_ID=', '').split(';')[0].trim();
   } catch (error) {
     console.error('Error getting session token:', error);
@@ -30,11 +26,10 @@ const getSessionToken = async () => {
  * Базовый fetch с автоматической подстановкой заголовков и токена
  */
 const apiFetch = async (endpoint, options = {}) => {
-  const token = await getSessionToken();
+  const token = getSessionToken();
   
   const headers = {
     'Content-Type': 'application/json',
-    ...(Platform.OS !== 'web' && token && { 'Cookie': `YAA_SESS_ID=${token}` }),
     ...options.headers,
   };
 
