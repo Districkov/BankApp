@@ -7,11 +7,14 @@ export default function Home() {
   const router = useRouter();
 
   useEffect(() => {
+    console.log('Index page - isLoading:', isLoading, 'isAuthenticated:', isAuthenticated);
     if (!isLoading) {
       if (isAuthenticated) {
+        console.log('Redirecting to /main/home');
         router.replace('/main/home');
       } else {
-        router.replace('/auth/telegram');
+        console.log('Redirecting to /auth/yandex');
+        router.replace('/auth/yandex');
       }
     }
   }, [isAuthenticated, isLoading, router]);

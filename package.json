@@ -4,26 +4,30 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:https": "node generate-cert.js && node server.js",
     "build": "next build",
     "start": "next start",
+    "start:https": "NODE_ENV=production node server.js",
     "lint": "next lint",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage"
   },
   "dependencies": {
+    "date-fns": "^4.1.0",
     "next": "^14.2.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "date-fns": "^4.1.0",
     "react-icons": "^5.0.0"
   },
   "devDependencies": {
-    "@testing-library/react": "^14.0.0",
     "@testing-library/jest-dom": "^6.1.0",
+    "@testing-library/react": "^14.0.0",
+    "autoprefixer": "^10.4.0",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.7.0",
-    "autoprefixer": "^10.4.0",
+    "local-ssl-proxy": "^2.0.5",
+    "node-forge": "^1.4.0",
     "postcss": "^8.4.0",
     "tailwindcss": "^3.4.0"
   }

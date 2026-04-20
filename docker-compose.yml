@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  # Фронтенд Next.js
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bank-frontend
+    ports:
+      - "80:3000"
+      - "443:3000"
+    environment:
+      - NODE_ENV=production
+      - BACKEND_HOST=${BACKEND_HOST:-backend}
+      - BACKEND_PORT=${BACKEND_PORT:-8080}
+    networks:
+      - bank-network
+    restart: unless-stopped
+    # Раскомментируйте, если бэкенд в том же docker-compose
+    # depends_on:
+    #   - backend
+
+  # Бэкенд (если он тоже в Docker)
+  # Раскомментируйте и настройте под ваш бэкенд:
+  # backend:
+  #   image: your-backend-image:latest
+  #   container_name: bank-backend
+  #   ports:
+  #     - "8080:8080"
+  #   environment:
+  #     - DATABASE_URL=postgresql://user:pass@db:5432/bankdb
+  #   networks:
+  #     - bank-network
+  #   restart: unless-stopped
+
+networks:
+  bank-network:
+    driver: bridge
+    # Если бэкенд уже запущен в другой сети, используйте:
+    # external: true
+    # name: existing-network-name

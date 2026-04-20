@@ -1,4 +1,9 @@
-const API_BASE_URL = 'https://bank.korzik.space/api/auth/v1';
+// Separate base URLs for each microservice
+const API_BASE_URLS = {
+  AUTH: '/api/auth',
+  ACCOUNTS: '/api/accounts',
+  TRANSFERS: '/api/transfers',
+};
 
 /**
  * Получает токен сессии из localStorage
@@ -25,7 +30,7 @@ const getSessionToken = () => {
 /**
  * Базовый fetch с автоматической подстановкой заголовков и токена
  */
-const apiFetch = async (endpoint, options = {}) => {
+const apiFetch = async (baseUrl, endpoint, options = {}) => {
   const token = getSessionToken();
   
   const headers = {
@@ -34,10 +39,11 @@ const apiFetch = async (endpoint, options = {}) => {
   };
 
   try {
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    const response = await fetch(`${baseUrl}${endpoint}`, {
       ...options,
       headers,
       credentials: 'include',
+      mode: 'cors',
     });
 
     // Обработка 300 статуса (Multiple Choices / Session Limit)
@@ -65,6 +71,7 @@ const apiFetch = async (endpoint, options = {}) => {
       throw error;
     }
     // Сетевая ошибка
+    console.error('Network error:', error);
     throw { 
       status: 0, 
       message: 'Ошибка сети. Проверьте подключение к интернету.' 
@@ -75,15 +82,15 @@ const apiFetch = async (endpoint, options = {}) => {
 /**
  * GET запрос
  */
-export const get = async (endpoint) => {
-  return apiFetch(endpoint, { method: 'GET' });
+export const get = async (baseUrl, endpoint) => {
+  return apiFetch(baseUrl, endpoint, { method: 'GET' });
 };
 
 /**
  * POST запрос
  */
-export const post = async (endpoint, body) => {
-  return apiFetch(endpoint, {
+export const post = async (baseUrl, endpoint, body) => {
+  return apiFetch(baseUrl, endpoint, {
     method: 'POST',
     body: JSON.stringify(body),
   });
@@ -92,8 +99,8 @@ export const post = async (endpoint, body) => {
 /**
  * PUT запрос
  */
-export const put = async (endpoint, body) => {
-  return apiFetch(endpoint, {
+export const put = async (baseUrl, endpoint, body) => {
+  return apiFetch(baseUrl, endpoint, {
     method: 'PUT',
     body: JSON.stringify(body),
   });
@@ -102,8 +109,8 @@ export const put = async (endpoint, body) => {
 /**
  * DELETE запрос
  */
-export const del = async (endpoint) => {
-  return apiFetch(endpoint, { method: 'DELETE' });
+export const del = async (baseUrl, endpoint) => {
+  return apiFetch(baseUrl, endpoint, { method: 'DELETE' });
 };
 
 // ==================== API методы ====================
@@ -112,9 +119,9 @@ export const del = async (endpoint) => {
  * Авторизация и аутентификация
  */
 export const authAPI = {
-  // Получить URL для Telegram авторизации
-  getTelegramAuthUrl: async () => {
-    const response = await fetch(`${API_BASE_URL}/simple/telegram/url`, {
+  // Получить URL для Yandex OAuth авторизации
+  getYandexAuthUrl: async () => {
+    const response = await fetch(`${API_BASE_URLS.AUTH}/simple/yandex/url`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
     });
@@ -124,19 +131,58 @@ export const authAPI = {
     return await response.text();
   },
 
-  // Подтверждение кода из Telegram
+  // Подтверждение кода из Yandex OAuth
   verifyCode: async (code) => {
-    return post('/simple/telegram/callback', { code });
+    console.log('verifyCode called with code:', code);
+    const url = `${API_BASE_URLS.AUTH}/simple/yandex/callback`;
+    console.log('verifyCode URL:', url);
+    
+    return fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ code }),
+    })
+      .then(async res => {
+        console.log('verifyCode response status:', res.status);
+        const text = await res.text();
+        console.log('verifyCode response body:', text);
+        
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}: ${text}`);
+        }
+        
+        // Если ответ пустой (201), извлекаем cookie из заголовков
+        if (res.status === 201 && !text) {
+          const setCookie = res.headers.get('set-cookie');
+          console.log('Set-Cookie header:', setCookie);
+          
+          if (setCookie) {
+            const match = setCookie.match(/YAA_SESS_ID=([^;]+)/);
+            if (match) {
+              return { session_cookie: `YAA_SESS_ID=${match[1]}` };
+            }
+          }
+          
+          return { success: true };
+        }
+        
+        return JSON.parse(text);
+      })
+      .catch(err => {
+        console.error('verifyCode error:', err);
+        throw err;
+      });
   },
 
   // Проверка текущей сессии
   whoami: async () => {
-    return get('/whoami');
+    return get(API_BASE_URLS.AUTH, '/whoami');
   },
 
   // Выход из системы
   logout: async () => {
-    return post('/logout');
+    return post(API_BASE_URLS.AUTH, '/logout');
   },
 };
 
@@ -144,24 +190,24 @@ export const authAPI = {
  * Пользователь
  */
 export const userAPI = {
-  // Получить данные текущего пользователя
+  // Получить данные текущего пользователя (используем whoami)
   getProfile: async () => {
-    return get('/user/profile');
+    return get(API_BASE_URLS.AUTH, '/whoami');
   },
 
   // Обновить данные пользователя
   updateProfile: async (data) => {
-    return put('/user/profile', data);
+    return put(API_BASE_URLS.AUTH, '/user/profile', data);
   },
 
   // Получить настройки пользователя
   getSettings: async () => {
-    return get('/user/settings');
+    return get(API_BASE_URLS.AUTH, '/user/settings');
   },
 
   // Обновить настройки
   updateSettings: async (settings) => {
-    return put('/user/settings', settings);
+    return put(API_BASE_URLS.AUTH, '/user/settings', settings);
   },
 };
 
@@ -171,22 +217,22 @@ export const userAPI = {
 export const accountsAPI = {
   // Получить все счета пользователя
   getAccounts: async () => {
-    return get('/accounts');
+    return get(API_BASE_URLS.ACCOUNTS, '/accounts');
   },
 
   // Получить счёт по ID
   getAccount: async (accountId) => {
-    return get(`/accounts/${accountId}`);
+    return get(API_BASE_URLS.ACCOUNTS, `/accounts/${accountId}`);
   },
 
   // Получить баланс счёта
   getBalance: async (accountId) => {
-    return get(`/accounts/${accountId}/balance`);
+    return get(API_BASE_URLS.ACCOUNTS, `/accounts/${accountId}/balance`);
   },
 
   // Создать новый счёт
   createAccount: async (data) => {
-    return post('/accounts', data);
+    return post(API_BASE_URLS.ACCOUNTS, '/accounts', data);
   },
 };
 
@@ -197,17 +243,17 @@ export const transactionsAPI = {
   // Получить историю транзакций
   getTransactions: async (params = {}) => {
     const queryParams = new URLSearchParams(params).toString();
-    return get(`/transactions${queryParams ? `?${queryParams}` : ''}`);
+    return get(API_BASE_URLS.ACCOUNTS, `/transactions${queryParams ? `?${queryParams}` : ''}`);
   },
 
   // Получить транзакцию по ID
   getTransaction: async (transactionId) => {
-    return get(`/transactions/${transactionId}`);
+    return get(API_BASE_URLS.ACCOUNTS, `/transactions/${transactionId}`);
   },
 
   // Получить категории транзакций
   getCategories: async () => {
-    return get('/transactions/categories');
+    return get(API_BASE_URLS.ACCOUNTS, '/transactions/categories');
   },
 };
 
@@ -217,22 +263,22 @@ export const transactionsAPI = {
 export const transfersAPI = {
   // Перевод по номеру карты
   transferToCard: async (data) => {
-    return post('/transfers/card', data);
+    return post(API_BASE_URLS.TRANSFERS, '/transfers/card', data);
   },
 
   // Перевод по номеру телефона
   transferToPhone: async (data) => {
-    return post('/transfers/phone', data);
+    return post(API_BASE_URLS.TRANSFERS, '/transfers/phone', data);
   },
 
   // Перевод между своими счетами
   transferBetweenAccounts: async (data) => {
-    return post('/transfers/internal', data);
+    return post(API_BASE_URLS.TRANSFERS, '/transfers/internal', data);
   },
 
   // Получить лимиты на переводы
   getLimits: async () => {
-    return get('/transfers/limits');
+    return get(API_BASE_URLS.TRANSFERS, '/transfers/limits');
   },
 };
 
@@ -242,22 +288,22 @@ export const transfersAPI = {
 export const contactsAPI = {
   // Получить список контактов
   getContacts: async () => {
-    return get('/contacts');
+    return get(API_BASE_URLS.AUTH, '/contacts');
   },
 
   // Добавить контакт
   addContact: async (data) => {
-    return post('/contacts', data);
+    return post(API_BASE_URLS.AUTH, '/contacts', data);
   },
 
   // Обновить контакт
   updateContact: async (contactId, data) => {
-    return put(`/contacts/${contactId}`, data);
+    return put(API_BASE_URLS.AUTH, `/contacts/${contactId}`, data);
   },
 
   // Удалить контакт
   deleteContact: async (contactId) => {
-    return del(`/contacts/${contactId}`);
+    return del(API_BASE_URLS.AUTH, `/contacts/${contactId}`);
   },
 };
 
@@ -267,13 +313,13 @@ export const contactsAPI = {
 export const paymentsAPI = {
   // Совершить платёж
   makePayment: async (data) => {
-    return post('/payments', data);
+    return post(API_BASE_URLS.TRANSFERS, '/payments', data);
   },
 
   // Получить историю платежей
   getPayments: async (params = {}) => {
     const queryParams = new URLSearchParams(params).toString();
-    return get(`/payments${queryParams ? `?${queryParams}` : ''}`);
+    return get(API_BASE_URLS.TRANSFERS, `/payments${queryParams ? `?${queryParams}` : ''}`);
   },
 };
 
@@ -284,13 +330,13 @@ export const statsAPI = {
   // Получить статистику по расходам
   getSpendingStats: async (params = {}) => {
     const queryParams = new URLSearchParams(params).toString();
-    return get(`/stats/spending${queryParams ? `?${queryParams}` : ''}`);
+    return get(API_BASE_URLS.ACCOUNTS, `/stats/spending${queryParams ? `?${queryParams}` : ''}`);
   },
 
   // Получить статистику по доходам
   getIncomeStats: async (params = {}) => {
     const queryParams = new URLSearchParams(params).toString();
-    return get(`/stats/income${queryParams ? `?${queryParams}` : ''}`);
+    return get(API_BASE_URLS.ACCOUNTS, `/stats/income${queryParams ? `?${queryParams}` : ''}`);
   },
 };
 

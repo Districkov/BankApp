@@ -1,84 +1,143 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { 
+  get, 
+  post, 
+  transfersAPI, 
+  accountsAPI 
+} from '../../src/utils/api';
 
-describe('API Utils - Mocking Tests', () => {
+// Mock fetch
+global.fetch = jest.fn();
+
+describe('API Utils', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    localStorage.clear();
   });
 
-  describe('AsyncStorage mocking', () => {
-    it('должен быть смокирован AsyncStorage', async () => {
-      AsyncStorage.setItem.mockResolvedValueOnce(undefined);
-      AsyncStorage.getItem.mockResolvedValueOnce('test_value');
+  describe('get', () => {
+    it('makes GET request with correct headers', async () => {
+      const mockResponse = { data: 'test' };
+      global.fetch.mockResolvedValue({
+        ok: true,
+        json: async () => mockResponse,
+      });
 
-      await AsyncStorage.setItem('key', 'value');
-      const value = await AsyncStorage.getItem('key');
+      const result = await get('/api/test', '/endpoint');
 
-      expect(value).toBe('test_value');
-      expect(AsyncStorage.setItem).toHaveBeenCalledWith('key', 'value');
-      expect(AsyncStorage.getItem).toHaveBeenCalledWith('key');
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/test/endpoint',
+        expect.objectContaining({
+          method: 'GET',
+          headers: expect.objectContaining({
+            'Content-Type': 'application/json',
+          }),
+        })
+      );
+      expect(result).toEqual(mockResponse);
     });
 
-    it('должен вернуть null если нет значения', async () => {
-      AsyncStorage.getItem.mockResolvedValueOnce(null);
+    it('handles 403 error', async () => {
+      global.fetch.mockResolvedValue({
+        ok: false,
+        status: 403,
+        json: async () => ({ message: 'Forbidden' }),
+      });
 
-      const value = await AsyncStorage.getItem('nonexistent_key');
-
-      expect(value).toBeNull();
+      await expect(get('/api/test', '/endpoint')).rejects.toEqual({
+        status: 403,
+        message: 'Forbidden',
+      });
     });
+  });
 
-    it('должен сохранять данные пользователя', async () => {
-      const userData = { id: 1, name: 'John Doe', email: 'john@example.com' };
+  describe('post', () => {
+    it('makes POST request with body', async () => {
+      const mockResponse = { success: true };
+      const requestBody = { amount: 1000 };
       
-      AsyncStorage.setItem.mockResolvedValueOnce(undefined);
-      AsyncStorage.getItem.mockResolvedValueOnce(JSON.stringify(userData));
+      global.fetch.mockResolvedValue({
+        ok: true,
+        json: async () => mockResponse,
+      });
 
-      await AsyncStorage.setItem('user_data', JSON.stringify(userData));
-      const saved = await AsyncStorage.getItem('user_data');
+      const result = await post('/api/test', '/endpoint', requestBody);
 
-      expect(saved).toBe(JSON.stringify(userData));
-    });
-
-    it('должен очищать хранилище', async () => {
-      AsyncStorage.clear.mockResolvedValueOnce(undefined);
-
-      await AsyncStorage.clear();
-
-      expect(AsyncStorage.clear).toHaveBeenCalled();
-    });
-
-    it('должен удалять значение', async () => {
-      AsyncStorage.removeItem.mockResolvedValueOnce(undefined);
-
-      await AsyncStorage.removeItem('old_key');
-
-      expect(AsyncStorage.removeItem).toHaveBeenCalledWith('old_key');
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/test/endpoint',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify(requestBody),
+        })
+      );
+      expect(result).toEqual(mockResponse);
     });
   });
 
-  describe('Multiple storage operations', () => {
-    it('должен выполнять несколько операций', async () => {
-      AsyncStorage.setItem.mockResolvedValue(undefined);
-      AsyncStorage.getItem.mockResolvedValue('value');
+  describe('transfersAPI', () => {
+    it('transferToPhone sends correct data', async () => {
+      const mockResponse = { transaction_id: 'tx_123' };
+      global.fetch.mockResolvedValue({
+        ok: true,
+        json: async () => mockResponse,
+      });
 
-      await AsyncStorage.setItem('key1', 'value1');
-      await AsyncStorage.setItem('key2', 'value2');
+      const transferData = {
+        phone: '79001234567',
+        amount: 5000,
+        message: 'Test'
+      };
 
-      expect(AsyncStorage.setItem).toHaveBeenCalledTimes(2);
+      const result = await transfersAPI.transferToPhone(transferData);
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/transfers/transfers/phone',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify(transferData),
+        })
+      );
+      expect(result).toEqual(mockResponse);
     });
 
-    it('должен обеспечивать отдельные мок-значения для каждого вызова', async () => {
-      AsyncStorage.getItem
-        .mockResolvedValueOnce('first')
-        .mockResolvedValueOnce('second')
-        .mockResolvedValueOnce('third');
+    it('handles antifraud rejection', async () => {
+      global.fetch.mockResolvedValue({
+        ok: false,
+        status: 403,
+        json: async () => ({ message: 'Превышен дневной лимит' }),
+      });
 
-      const val1 = await AsyncStorage.getItem('key1');
-      const val2 = await AsyncStorage.getItem('key2');
-      const val3 = await AsyncStorage.getItem('key3');
+      await expect(
+        transfersAPI.transferToPhone({
+          phone: '79001234567',
+          amount: 1000000,
+          message: ''
+        })
+      ).rejects.toEqual({
+        status: 403,
+        message: 'Превышен дневной лимит',
+      });
+    });
+  });
 
-      expect(val1).toBe('first');
-      expect(val2).toBe('second');
-      expect(val3).toBe('third');
+  describe('accountsAPI', () => {
+    it('getAccounts returns account list', async () => {
+      const mockAccounts = [
+        { id: '1', name: 'Основной', balance: 10000 },
+        { id: '2', name: 'Накопительный', balance: 50000 }
+      ];
+      
+      global.fetch.mockResolvedValue({
+        ok: true,
+        json: async () => mockAccounts,
+      });
+
+      const result = await accountsAPI.getAccounts();
+
+      expect(global.fetch).toHaveBeenCalledWith(
+        '/api/accounts/accounts',
+        expect.any(Object)
+      );
+      expect(result).toEqual(mockAccounts);
     });
   });
 });

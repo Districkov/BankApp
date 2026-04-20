@@ -1,0 +1,116 @@
+import React, { useState } from 'react';
+import { useRouter } from 'next/router';
+import MainLayout from '../../src/components/MainLayout';
+import { IoArrowBack } from 'react-icons/io5';
+
+export default function Payments() {
+  const router = useRouter();
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [phoneError, setPhoneError] = useState('');
+
+  const contacts = [
+    { id: 1, name: 'Борис Иван', initial: 'Б', phone: '+7 (900) 123-45-67' },
+    { id: 2, name: 'Руслан Диа', initial: 'Р', phone: '+7 (900) 123-45-68' },
+    { id: 3, name: 'Му Angel♥', initial: 'М', phone: '+7 (900) 123-45-69' },
+    { id: 4, name: 'Иван Соломин', initial: 'ИС', phone: '+7 (900) 123-45-60' },
+    { id: 5, name: 'Korzik', initial: 'K', phone: '+7 (902) 207-72-41' },
+  ];
+
+  const formatPhoneNumber = (text) => {
+    const clean = text.replace(/\D/g, '');
+    if (clean.startsWith('7') || clean.startsWith('8')) {
+      const numbers = clean.substring(1);
+      let result = '+7 (';
+      if (numbers.length > 0) result += numbers.substring(0, 3);
+      if (numbers.length > 3) result += ') ' + numbers.substring(3, 6);
+      if (numbers.length > 6) result += '-' + numbers.substring(6, 8);
+      if (numbers.length > 8) result += '-' + numbers.substring(8, 10);
+      return result;
+    }
+    return text;
+  };
+
+  const validatePhone = (phone) => {
+    const cleanPhone = phone.replace(/\D/g, '');
+    return cleanPhone.length === 11 && (cleanPhone.startsWith('7') || cleanPhone.startsWith('8'));
+  };
+
+  const handlePhoneChange = (e) => {
+    const formatted = formatPhoneNumber(e.target.value);
+    setPhoneNumber(formatted);
+    if (e.target.value && !validatePhone(e.target.value)) {
+      setPhoneError('Введите корректный номер телефона');
+    } else {
+      setPhoneError('');
+    }
+  };
+
+  const handleContactPress = (contact) => {
+    setPhoneNumber(contact.phone);
+    setPhoneError('');
+  };
+
+  const handlePhoneTransfer = () => {
+    if (phoneNumber && validatePhone(phoneNumber)) {
+      router.push(`/transfers/phone?phone=${encodeURIComponent(phoneNumber)}`);
+    } else {
+      setPhoneError('Введите корректный номер телефона');
+    }
+  };
+
+  return (
+    <MainLayout>
+      <div className="flex-1 bg-[#F8FAFD] min-h-screen">
+        <div className="bg-white px-5 py-4 border-b border-[#F0F0F5] flex items-center gap-4">
+          <button onClick={() => router.back()}>
+            <IoArrowBack size={24} color="#000" />
+          </button>
+          <h1 className="text-xl font-bold text-[#1A1A1A]">Платежи</h1>
+        </div>
+
+        <div className="p-5">
+          <h2 className="text-lg font-bold text-[#1A1A1A] mb-4">Перевод по телефону</h2>
+          <div className="bg-white p-5 rounded-[20px] shadow-lg border border-[#F0F0F5]">
+            <div className="flex gap-3 mb-2">
+              <input
+                type="tel"
+                placeholder="+7 (___) ___-__-__"
+                className="flex-1 bg-[#F8FAFD] px-4 py-4 rounded-xl text-base border border-[#E5E5EA]"
+                value={phoneNumber}
+                onChange={handlePhoneChange}
+              />
+              <button
+                className={`px-5 py-4 rounded-xl font-bold text-sm ${
+                  phoneNumber && validatePhone(phoneNumber)
+                    ? 'bg-primary text-white'
+                    : 'bg-[#C4B5FD] text-white cursor-not-allowed'
+                }`}
+                onClick={handlePhoneTransfer}
+                disabled={!phoneNumber || !validatePhone(phoneNumber)}
+              >
+                Перевести
+              </button>
+            </div>
+            {phoneError && <p className="text-danger text-sm mb-2">{phoneError}</p>}
+
+            <h3 className="text-sm font-semibold text-[#666] mt-5 mb-3">Недавние контакты</h3>
+            <div className="flex gap-5 overflow-x-auto">
+              {contacts.map((contact) => (
+                <button
+                  key={contact.id}
+                  className="flex flex-col items-center min-w-[64px]"
+                  onClick={() => handleContactPress(contact)}
+                >
+                  <div className="w-14 h-14 rounded-full bg-primary flex items-center justify-center mb-2 shadow">
+                    <span className="text-white font-bold text-base">{contact.initial}</span>
+                  </div>
+                  <span className="text-xs text-[#1A1A1A] font-medium text-center">{contact.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </MainLayout>
+  );
+}

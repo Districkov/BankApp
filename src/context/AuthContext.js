@@ -14,13 +14,17 @@ export const AuthProvider = ({ children }) => {
 
   const checkSession = async () => {
     try {
+      console.log('Checking session...');
       const sessionCookie = localStorage.getItem('session_cookie');
+      console.log('Session cookie:', sessionCookie ? 'exists' : 'not found');
 
       if (sessionCookie) {
         const userData = await authAPI.whoami();
+        console.log('User data from whoami:', userData);
         if (userData) {
           setUser(userData);
           setIsAuthenticated(true);
+          console.log('User authenticated');
         }
       }
     } catch (error) {
@@ -29,22 +33,27 @@ export const AuthProvider = ({ children }) => {
       localStorage.removeItem('user_data');
     } finally {
       setIsLoading(false);
+      console.log('Auth loading finished');
     }
   };
 
   const login = async (sessionCookie, userData) => {
     try {
+      console.log('Login called with:', { sessionCookie: sessionCookie ? 'exists' : 'missing', userData });
       localStorage.setItem('session_cookie', sessionCookie);
       localStorage.setItem('user_data', JSON.stringify(userData));
       
       try {
         const profileData = await userAPI.getProfile();
+        console.log('Profile data:', profileData);
         setUser(profileData || userData);
       } catch (e) {
+        console.log('Failed to get profile, using userData:', e);
         setUser(userData);
       }
       
       setIsAuthenticated(true);
+      console.log('Login successful, isAuthenticated set to true');
     } catch (error) {
       console.error('Error saving session:', error);
       throw error;

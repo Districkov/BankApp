@@ -1,56 +1,28 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { IoShieldCheckmark, IoAlertCircle } from 'react-icons/io5';
+import { IoAlertCircle, IoCheckmarkCircle } from 'react-icons/io5';
 import { useAuth } from '../../src/context/AuthContext';
-
-const API_URL = 'https://bank.korzik.space/api/auth/v1';
+import { authAPI } from '../../src/utils/api';
 
 export default function CodeInputScreen() {
-  const [code, setCode] = useState(['', '', '', '', '', '']);
+  const [code, setCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  const [isAutoSubmitting, setIsAutoSubmitting] = useState(false);
-  const inputRefs = useRef([]);
+  const [success, setSuccess] = useState(false);
   const { login } = useAuth();
   const router = useRouter();
-  const tgAuthResultRef = useRef('');
 
   useEffect(() => {
-    const authCode = router.query.code;
-    if (authCode) {
-      tgAuthResultRef.current = authCode;
-      setIsAutoSubmitting(true);
-      handleSubmit(authCode);
+    if (router.query.code) {
+      setCode(router.query.code);
+      handleVerifyCode(router.query.code);
     }
   }, [router.query.code]);
 
-  useEffect(() => {
-    if (inputRefs.current[0]) {
-      inputRefs.current[0].focus();
-    }
-  }, []);
-
-  const handleCodeChange = (text, index) => {
-    const newCode = [...code];
-    newCode[index] = text;
-    setCode(newCode);
-    setError('');
-
-    if (text && index < 5) {
-      inputRefs.current[index + 1]?.focus();
-    }
-  };
-
-  const handleKeyDown = (e, index) => {
-    if (e.key === 'Backspace' && !code[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus();
-    }
-  };
-
-  const handleSubmit = async (verificationCode) => {
-    const codeToVerify = verificationCode || code.join('');
+  const handleVerifyCode = async (verificationCode) => {
+    const codeToVerify = verificationCode || code;
     
-    if (!codeToVerify || codeToVerify.length < 6) {
+    if (!codeToVerify || codeToVerify.trim().length === 0) {
       setError('Введите код авторизации');
       return;
     }
@@ -59,136 +31,86 @@ export default function CodeInputScreen() {
     setError('');
 
     try {
-      const response = await fetch(`${API_URL}/simple/telegram/callback`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          code: codeToVerify,
-        }),
-      });
+      const response = await authAPI.verifyCode(codeToVerify.trim());
 
-      if (response.status === 300) {
-        const data = await response.json();
-        router.push({
-          pathname: '/auth/session-limit',
-          query: {
-            sessions: JSON.stringify(data.sessions),
-            preauthSessionId: data.preauthSessionId,
-            username: data.username,
-            tgAuthResult: codeToVerify,
-          },
-        });
-        setIsLoading(false);
-        return;
-      }
+      if (response && response.session_cookie) {
+        setSuccess(true);
+        
+        const userData = response.user || { id: response.user_id };
+        await login(response.session_cookie, userData);
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || 'Ошибка авторизации');
+        setTimeout(() => {
+          router.replace('/welcome');
+        }, 1000);
+      } else {
+        throw new Error('Не удалось получить данные сессии');
       }
-
-      const setCookieHeader = response.headers.get('set-cookie');
-      if (setCookieHeader) {
-        localStorage.setItem('session_cookie', setCookieHeader);
-      }
-      
-      let userData = {};
-      try {
-        userData = await response.json();
-      } catch (e) {
-        // Response может быть пустым
-      }
-      
-      await login(setCookieHeader || 'session_cookie', userData);
-
-      router.replace('/welcome');
     } catch (err) {
-      setError(err.message || 'Ошибка при проверке кода');
-      setIsAutoSubmitting(false);
+      setError(err.message || 'Неверный код авторизации');
+      setSuccess(false);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleResendCode = () => {
-    console.log('Resend code');
-  };
-
   return (
-    <div className="flex-1 bg-[#F7F7FB] min-h-screen">
-      <div className="flex-1 flex flex-col justify-center items-center px-8">
-        <div className="w-20 h-20 rounded-full bg-white flex justify-center items-center mb-6 shadow-lg">
-          <IoShieldCheckmark size={48} color="#6A2EE8" />
-        </div>
-
-        <h1 className="text-2xl font-bold text-black mb-3 text-center">
-          Подтверждение
+    <div className="flex-1 flex justify-center items-center w-full min-h-screen bg-gradient-to-br from-[#fafafa] via-[#f0e6ff] to-[#e8d5ff]">
+      <div className="flex flex-col items-center justify-center px-8 w-full max-w-md">
+        <h1 className="text-[28px] font-semibold text-black text-center mb-4">
+          Подтверждение входа
         </h1>
-        <p className="text-base text-[#666] text-center leading-6 mb-8">
-          {isAutoSubmitting
-            ? 'Проверка данных Telegram...'
-            : 'Введите код из Telegram'
-          }
+        <p className="text-[#666] text-center mb-8">
+          Введите код, полученный от Яндекса
         </p>
 
         {error && (
-          <div className="flex flex-row items-center bg-[#FF3B3010] px-4 py-3 rounded-lg mb-6 w-full max-w-md">
+          <div className="flex flex-row items-center bg-[#FF3B3010] px-4 py-3 rounded-lg mb-6 w-full">
             <IoAlertCircle size={20} color="#FF3B30" />
             <p className="text-[#FF3B30] text-sm ml-2 flex-1">{error}</p>
           </div>
         )}
 
-        {!isAutoSubmitting && (
-          <>
-            <div className="flex flex-row justify-center items-center mb-8 w-full max-w-md">
-              {code.map((digit, index) => (
-                <input
-                  key={index}
-                  ref={(ref) => (inputRefs.current[index] = ref)}
-                  className={`w-12 h-14 rounded-xl bg-white border text-2xl font-semibold text-center mx-1 text-black focus:outline-none focus:ring-2 focus:ring-primary ${
-                    digit ? 'border-primary bg-[#6A2EE810]' : 'border-[#E5E5E5]'
-                  } ${error ? 'border-[#FF3B30] bg-[#FF3B3010]' : ''}`}
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={1}
-                  value={digit}
-                  onChange={(e) => handleCodeChange(e.target.value, index)}
-                  onKeyDown={(e) => handleKeyDown(e, index)}
-                  autoFocus={index === 0}
-                />
-              ))}
-            </div>
-
-            <button
-              className={`bg-primary px-8 py-4 rounded-xl w-full max-w-md flex items-center justify-center mb-4 ${
-                isLoading ? 'opacity-60 cursor-not-allowed' : 'hover:opacity-90'
-              } transition-opacity`}
-              onClick={() => handleSubmit()}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent" />
-              ) : (
-                <span className="text-white text-base font-semibold">Подтвердить</span>
-              )}
-            </button>
-
-            <button 
-              onClick={handleResendCode} 
-              disabled={isLoading}
-              className="text-primary text-sm font-medium hover:opacity-80 transition-opacity"
-            >
-              Отправить код повторно
-            </button>
-          </>
+        {success && (
+          <div className="flex flex-row items-center bg-[#34C75910] px-4 py-3 rounded-lg mb-6 w-full">
+            <IoCheckmarkCircle size={20} color="#34C759" />
+            <p className="text-[#34C759] text-sm ml-2 flex-1">
+              Авторизация успешна! Перенаправление...
+            </p>
+          </div>
         )}
 
-        {isAutoSubmitting && isLoading && (
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent" />
-        )}
+        <input
+          type="text"
+          value={code}
+          onChange={(e) => setCode(e.target.value)}
+          placeholder="Введите код"
+          className="w-full px-4 py-3 border border-gray-300 rounded-lg mb-4 text-base focus:outline-none focus:border-[#8B5CF6] transition-colors"
+          disabled={isLoading || success}
+        />
+
+        <button
+          className={`flex flex-row items-center justify-center bg-[#8B5CF6] px-8 py-4 rounded-xl w-full mb-4 ${
+            isLoading || success ? 'opacity-60 cursor-not-allowed' : 'hover:opacity-90'
+          } transition-opacity`}
+          onClick={() => handleVerifyCode()}
+          disabled={isLoading || success}
+        >
+          {isLoading ? (
+            <div className="animate-spin rounded-full h-6 w-6 border-2 border-white border-t-transparent" />
+          ) : (
+            <span className="text-white text-base font-semibold">
+              Подтвердить
+            </span>
+          )}
+        </button>
+
+        <button
+          className="text-[#8B5CF6] text-sm hover:underline"
+          onClick={() => router.push('/auth/yandex')}
+          disabled={isLoading || success}
+        >
+          Вернуться к авторизации
+        </button>
       </div>
     </div>
   );
