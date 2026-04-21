@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import { IoAlertCircle, IoLogoGoogle } from 'react-icons/io5';
 import { useAuth } from '../../src/context/AuthContext';
 
-const API_URL = 'https://bank.korzik.space/api/auth/v1';
+const API_URL = '/api/auth';
 const REDIRECT_PATHS = ['/code/yandex', '/auth/yandex/callback'];
 
 export default function YandexAuthScreen() {
@@ -75,12 +75,15 @@ export default function YandexAuthScreen() {
     try {
       // Определяем текущий redirect_uri на основе окружения
       const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
-      const redirectUri = `${currentOrigin}/auth/callback`;
+      const redirectUri = `${currentOrigin}/code/callback`;
       
       console.log('Current origin:', currentOrigin);
       console.log('Redirect URI:', redirectUri);
 
-      const response = await fetch(`${API_URL}/simple/yandex/url?redirect_uri=${encodeURIComponent(redirectUri)}`, {
+      const requestUrl = `${API_URL}/simple/yandex/url?redirect_uri=${encodeURIComponent(redirectUri)}`;
+      console.log('Request URL:', requestUrl);
+
+      const response = await fetch(requestUrl, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -94,6 +97,19 @@ export default function YandexAuthScreen() {
       const authUrl = await response.text();
 
       console.log('Received auth URL from backend:', authUrl);
+      
+      // Проверяем, содержит ли URL правильный redirect_uri
+      if (authUrl.includes('redirect_uri=')) {
+        const urlObj = new URL(authUrl);
+        const returnedRedirectUri = urlObj.searchParams.get('redirect_uri');
+        console.log('Redirect URI in auth URL:', returnedRedirectUri);
+        
+        if (returnedRedirectUri !== redirectUri) {
+          console.warn('Backend returned different redirect_uri!');
+          console.warn('Expected:', redirectUri);
+          console.warn('Got:', returnedRedirectUri);
+        }
+      }
 
       if (!authUrl) {
         throw new Error('URL авторизации не получен');
