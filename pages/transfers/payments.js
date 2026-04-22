@@ -74,12 +74,12 @@ export default function Payments() {
               <input
                 type="tel"
                 placeholder="+7 (___) ___-__-__"
-                className={`flex-1 px-4 py-4 rounded-xl text-base border ${isDarkMode ? 'bg-[#1f1f1f] border-[#4d4d4d] text-white placeholder-[#666]' : 'bg-[#F8FAFD] border-[#E5E5EA] text-[#000]'}`}
+                className={`flex-1 min-w-0 px-4 py-4 rounded-xl text-base border ${isDarkMode ? 'bg-[#1f1f1f] border-[#4d4d4d] text-white placeholder-[#666]' : 'bg-[#F8FAFD] border-[#E5E5EA] text-[#000]'}`}
                 value={phoneNumber}
                 onChange={handlePhoneChange}
               />
               <button
-                className={`px-5 py-4 rounded-xl font-bold text-sm ${
+                className={`shrink-0 px-4 py-4 rounded-xl font-bold text-sm ${
                   phoneNumber && validatePhone(phoneNumber)
                     ? 'bg-primary text-white'
                     : (isDarkMode ? 'bg-[#4d4d4d] text-[#999] cursor-not-allowed' : 'bg-[#C4B5FD] text-white cursor-not-allowed')
