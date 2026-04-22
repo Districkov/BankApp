@@ -2,9 +2,11 @@ import React from 'react';
 import { useRouter } from 'next/router';
 import MainLayout from '../../src/components/MainLayout';
 import { IoArrowBack, IoCheckmarkCircle, IoGlobeOutline, IoPaperPlaneOutline } from 'react-icons/io5';
+import { useTheme } from '../../src/context/ThemeContext';
 
 export default function AstraDetail() {
   const router = useRouter();
+  const { isDarkMode } = useTheme();
 
   const partner = {
     name: 'Astra RP',
@@ -40,12 +42,12 @@ export default function AstraDetail() {
 
   return (
     <MainLayout>
-      <div className="flex-1 bg-[#F8FAFD] min-h-screen">
-        <div className="bg-white px-5 py-4 border-b border-[#F0F0F5] flex items-center gap-4">
+      <div className={`flex-1 min-h-screen ${isDarkMode ? 'bg-[#121212]' : 'bg-[#F8FAFD]'}`}>
+        <div className={`px-5 py-4 border-b flex items-center gap-4 ${isDarkMode ? 'bg-[#181818] border-[#4d4d4d]' : 'bg-white border-[#F0F0F5]'}`}>
           <button onClick={() => router.back()}>
-            <IoArrowBack size={24} color="#000" />
+            <IoArrowBack size={24} color={isDarkMode ? '#fff' : '#000'} />
           </button>
-          <h1 className="text-xl font-bold text-[#1A1A1A]">Партнёр</h1>
+          <h1 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>Партнёр</h1>
         </div>
 
         <div className="overflow-y-auto pb-5">
@@ -59,39 +61,39 @@ export default function AstraDetail() {
           </div>
 
           {/* Description */}
-          <div className="bg-white m-5 p-5 rounded-[20px] shadow-lg border border-[#F0F0F5]">
-            <h3 className="text-xl font-bold text-[#1A1A1A] mb-4">О проекте</h3>
-            <p className="text-base text-[#666] leading-6">{partner.fullDescription}</p>
+          <div className={`m-5 p-5 rounded-[20px] shadow-lg ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white border border-[#F0F0F5]'}`}>
+            <h3 className={`text-xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>О проекте</h3>
+            <p className={`text-base leading-6 ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>{partner.fullDescription}</p>
           </div>
 
           {/* Benefits */}
-          <div className="bg-white m-5 mt-0 p-5 rounded-[20px] shadow-lg border border-[#F0F0F5]">
-            <h3 className="text-xl font-bold text-[#1A1A1A] mb-4">Ваши преимущества</h3>
+          <div className={`m-5 mt-0 p-5 rounded-[20px] shadow-lg ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white border border-[#F0F0F5]'}`}>
+            <h3 className={`text-xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>Ваши преимущества</h3>
             <div className="space-y-3">
               {partner.benefits.map((benefit, index) => (
                 <div key={index} className="flex items-center gap-3">
-                  <IoCheckmarkCircle size={20} color="#159E3A" />
-                  <span className="text-base text-[#1A1A1A]">{benefit}</span>
+                  <IoCheckmarkCircle size={20} color={isDarkMode ? '#6A2EE8' : '#159E3A'} />
+                  <span className={`text-base ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>{benefit}</span>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Features */}
-          <div className="bg-white m-5 mt-0 p-5 rounded-[20px] shadow-lg border border-[#F0F0F5]">
-            <h3 className="text-xl font-bold text-[#1A1A1A] mb-4">Особенности проекта</h3>
+          <div className={`m-5 mt-0 p-5 rounded-[20px] shadow-lg ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white border border-[#F0F0F5]'}`}>
+            <h3 className={`text-xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>Особенности проекта</h3>
             <div className="flex flex-wrap gap-3">
               {partner.features.map((feature, index) => (
-                <div key={index} className="bg-[#F8FAFD] px-4 py-2 rounded-xl">
-                  <span className="text-sm text-[#1A1A1A] font-medium">{feature}</span>
+                <div key={index} className={`px-4 py-2 rounded-xl ${isDarkMode ? 'bg-[#1f1f1f]' : 'bg-[#F8FAFD]'}`}>
+                  <span className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>{feature}</span>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Social Links */}
-          <div className="bg-white m-5 mt-0 p-5 rounded-[20px] shadow-lg border border-[#F0F0F5]">
-            <h3 className="text-xl font-bold text-[#1A1A1A] mb-4">Присоединяйтесь</h3>
+          <div className={`m-5 mt-0 p-5 rounded-[20px] shadow-lg ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white border border-[#F0F0F5]'}`}>
+            <h3 className={`text-xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>Присоединяйтесь</h3>
             <div className="flex gap-3">
               <a href={partner.website} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-white font-semibold" style={{ backgroundColor: partner.color }}>
                 <IoGlobeOutline size={20} />
@@ -105,8 +107,8 @@ export default function AstraDetail() {
           </div>
 
           {/* How to Get */}
-          <div className="bg-white m-5 mt-0 p-5 rounded-[20px] shadow-lg border border-[#F0F0F5]">
-            <h3 className="text-xl font-bold text-[#1A1A1A] mb-4">Как получить бонусы</h3>
+          <div className={`m-5 mt-0 p-5 rounded-[20px] shadow-lg ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white border border-[#F0F0F5]'}`}>
+            <h3 className={`text-xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>Как получить бонусы</h3>
             <div className="space-y-4">
               {partner.steps.map((step, index) => (
                 <div key={index} className="flex items-start gap-3">
@@ -114,8 +116,8 @@ export default function AstraDetail() {
                     {index + 1}
                   </div>
                   <div className="flex-1 mt-1">
-                    <p className="text-base text-[#1A1A1A]">{step.title}</p>
-                    <p className="text-sm text-[#666]">{step.text}</p>
+                    <p className={`text-base ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>{step.title}</p>
+                    <p className={`text-sm ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>{step.text}</p>
                   </div>
                 </div>
               ))}

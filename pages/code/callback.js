@@ -1,22 +1,23 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../src/context/AuthContext';
+import { useTheme } from '../../src/context/ThemeContext';
 import { authAPI } from '../../src/utils/api';
 
 export default function CodeCallback() {
   const [status, setStatus] = useState('processing');
   const [error, setError] = useState('');
   const { login } = useAuth();
+  const { isDarkMode } = useTheme();
   const router = useRouter();
 
   useEffect(() => {
     const handleCallback = async () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const code = urlParams.get('code') || hashParams.get('code');
+
       try {
-        // Все способы получить код из URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const hashParams = new URLSearchParams(window.location.hash.substring(1));
-        
-        const code = urlParams.get('code') || hashParams.get('code');
         
         console.log('Authorization callback started');
         console.log('Full URL:', window.location.href);
@@ -34,22 +35,43 @@ export default function CodeCallback() {
         
         console.log('Verification response:', response);
 
-        if (response && response.session_cookie) {
-          const userData = response.user || { id: response.user_id };
-          console.log('Login successful, redirecting to welcome');
-          await login(response.session_cookie, userData);
-          
+        if (response && response.verified) {
+          try {
+            const userData = await authAPI.whoami();
+            console.log('whoami after verify:', userData);
+            if (userData) {
+              localStorage.setItem('session_cookie', 'YAA_SESS_ID=httponly');
+              localStorage.setItem('user_data', JSON.stringify(userData));
+              await login('YAA_SESS_ID=httponly', userData);
+            } else {
+              throw new Error('whoami вернул пустые данные');
+            }
+          } catch (whoamiErr) {
+            console.error('whoami failed:', whoamiErr);
+            localStorage.setItem('session_cookie', 'YAA_SESS_ID=httponly');
+            router.replace('/welcome');
+            return;
+          }
+
           setStatus('success');
           setTimeout(() => {
             router.replace('/welcome');
           }, 1000);
         } else {
-          throw new Error('Не удалось получить данные сессии');
+          throw new Error('Не удалось подтвердить код авторизации');
         }
       } catch (err) {
+        if (err.status === 300 && err.data) {
+          console.log('Session limit reached, redirecting to session-limit');
+          router.replace({
+            pathname: '/auth/session-limit',
+            query: { data: JSON.stringify(err.data), code: code },
+          });
+          return;
+        }
         console.error('Callback error:', err);
-        console.log('Error occurred, redirecting to home');
-        router.replace('/');
+        setStatus('error');
+        setError(err.message || 'Ошибка авторизации');
       }
     };
 
@@ -59,21 +81,21 @@ export default function CodeCallback() {
   }, [router.isReady, login, router]);
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', padding: '20px' }}>
+    <div className={`flex justify-center items-center min-h-screen ${isDarkMode ? 'bg-[#121212]' : 'bg-[#F7F7FB]'}`} style={{ padding: '20px' }}>
       <div style={{ textAlign: 'center', maxWidth: '400px' }}>
         {status === 'processing' && (
           <>
-            <p style={{ fontSize: '18px' }}>Авторизация...</p>
-            <p style={{ fontSize: '12px', color: '#666' }}>Пожалуйста, подождите</p>
+            <p className={`text-lg ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>Авторизация...</p>
+            <p className={`text-xs ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Пожалуйста, подождите</p>
           </>
         )}
         {status === 'error' && (
           <>
-            <p style={{ color: 'red', fontSize: '16px', fontWeight: 'bold' }}>❌ Ошибка авторизации</p>
-            <p style={{ color: 'red', fontSize: '14px', marginTop: '10px' }}>{error}</p>
+            <p className="text-danger font-bold text-base">❌ Ошибка авторизации</p>
+            <p className={`text-sm mt-2.5 ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>{error}</p>
             <button 
               onClick={() => window.location.href = '/auth/yandex'}
-              style={{ marginTop: '20px', padding: '10px 20px', cursor: 'pointer' }}
+              className={`mt-5 px-5 py-2.5 rounded-lg ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d] text-white' : 'bg-white text-[#000]'}`}
             >
               ← Вернуться к входу
             </button>
@@ -81,8 +103,8 @@ export default function CodeCallback() {
         )}
         {status === 'success' && (
           <>
-            <p style={{ color: 'green', fontSize: '16px', fontWeight: 'bold' }}>✓ Вход выполнен!</p>
-            <p style={{ fontSize: '14px', marginTop: '10px' }}>Перенаправление на главную...</p>
+            <p className="text-success font-bold text-base">✓ Вход выполнен!</p>
+            <p className={`text-sm mt-2.5 ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Перенаправление на главную...</p>
           </>
         )}
       </div>

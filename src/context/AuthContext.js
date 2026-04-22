@@ -43,16 +43,8 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('session_cookie', sessionCookie);
       localStorage.setItem('user_data', JSON.stringify(userData));
       
-      try {
-        const profileData = await userAPI.getProfile();
-        console.log('Profile data:', profileData);
-        setUser(profileData || userData);
-      } catch (e) {
-        console.log('Failed to get profile, using userData:', e);
-        setUser(userData);
-      }
-      
       setIsAuthenticated(true);
+      setUser(userData);
       console.log('Login successful, isAuthenticated set to true');
     } catch (error) {
       console.error('Error saving session:', error);

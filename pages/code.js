@@ -1,22 +1,19 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
+import { useTheme } from '../src/context/ThemeContext';
 
 export default function CodeRedirect() {
   const router = useRouter();
+  const { isDarkMode } = useTheme();
 
   useEffect(() => {
-    // Получаем полный URL
     const fullPath = window.location.pathname + window.location.search + window.location.hash;
     
-    // Ищем код в разных форматах
-    // Формат 1: /code=XXXXX
     const pathMatch = fullPath.match(/\/code=([^&?#]+)/);
     
-    // Формат 2: ?code=XXXXX
     const searchParams = new URLSearchParams(window.location.search);
     const queryCode = searchParams.get('code');
     
-    // Формат 3: #code=XXXXX
     const hashParams = new URLSearchParams(window.location.hash.substring(1));
     const hashCode = hashParams.get('code');
     
@@ -26,24 +23,15 @@ export default function CodeRedirect() {
     console.log('Code extracted:', code);
     
     if (code) {
-      // Перенаправляем на правильный callback с кодом
       router.replace(`/auth/callback?code=${code}`);
     } else {
-      // Если код не найден, возвращаем на страницу входа
       console.error('Code not found in URL');
       router.replace('/auth/yandex');
     }
   }, [router]);
 
   return (
-    <div style={{ 
-      display: 'flex', 
-      justifyContent: 'center', 
-      alignItems: 'center', 
-      minHeight: '100vh',
-      flexDirection: 'column',
-      gap: '10px'
-    }}>
+    <div className={`flex justify-center items-center min-h-screen ${isDarkMode ? 'bg-[#121212]' : 'bg-[#F7F7FB]'}`} style={{ flexDirection: 'column', gap: '10px' }}>
       <div style={{ 
         width: '40px', 
         height: '40px', 
@@ -52,7 +40,7 @@ export default function CodeRedirect() {
         borderRadius: '50%',
         animation: 'spin 1s linear infinite'
       }} />
-      <p>Обработка авторизации...</p>
+      <p className={isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}>Обработка авторизации...</p>
       <style jsx>{`
         @keyframes spin {
           to { transform: rotate(360deg); }

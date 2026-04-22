@@ -1,15 +1,17 @@
 import React from 'react';
 import { IoArrowDown, IoArrowUp, IoSwapHorizontal } from 'react-icons/io5';
+import { useTheme } from '../context/ThemeContext';
 
 const TransactionItem = ({ transaction, onClick }) => {
+  const { isDarkMode } = useTheme();
   const getIcon = (type) => {
     switch (type) {
       case 'income':
-        return { Icon: IoArrowDown, color: '#159E3A', bgColor: '#E8F5E8' };
+        return { Icon: IoArrowDown, color: '#159E3A', bgColor: isDarkMode ? '#1a3d1a' : '#E8F5E8' };
       case 'expense':
-        return { Icon: IoArrowUp, color: '#FF3B30', bgColor: '#FFE5E5' };
+        return { Icon: IoArrowUp, color: '#FF3B30', bgColor: isDarkMode ? '#3d1a1a' : '#FFE5E5' };
       default:
-        return { Icon: IoSwapHorizontal, color: '#6A2EE8', bgColor: '#F0EBFF' };
+        return { Icon: IoSwapHorizontal, color: '#6A2EE8', bgColor: isDarkMode ? '#2a1a4d' : '#F0EBFF' };
     }
   };
 
@@ -17,7 +19,7 @@ const TransactionItem = ({ transaction, onClick }) => {
 
   return (
     <button 
-      className="flex flex-row items-center bg-white p-4 rounded-xl mb-2 shadow-sm hover:shadow-md transition-shadow w-full"
+      className={`flex flex-row items-center p-4 rounded-xl mb-2 shadow-sm hover:shadow-md transition-shadow w-full ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white'}`}
       onClick={onClick}
     >
       <div 
@@ -27,8 +29,8 @@ const TransactionItem = ({ transaction, onClick }) => {
         <Icon size={20} color={color} />
       </div>
       <div className="flex-1 text-left">
-        <p className="text-base font-semibold text-black mb-1">{transaction.title}</p>
-        <p className="text-sm text-[#666]">{transaction.date}</p>
+        <p className={`text-base font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-black'}`}>{transaction.title}</p>
+        <p className={`text-sm ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>{transaction.date}</p>
       </div>
       <p 
         className="text-base font-bold"

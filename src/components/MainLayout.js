@@ -3,9 +3,11 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { IoHomeOutline, IoEllipsisHorizontalCircleOutline } from 'react-icons/io5';
 import { MdOutlineCreditCard } from 'react-icons/md';
+import { useTheme } from '../context/ThemeContext';
 
 export default function MainLayout({ children }) {
   const router = useRouter();
+  const { isDarkMode } = useTheme();
   const currentPath = router.pathname;
 
   const tabs = [
@@ -21,7 +23,7 @@ export default function MainLayout({ children }) {
       </main>
       
       {/* Bottom Tab Navigation */}
-      <nav className="h-[72px] pb-2.5 bg-white border-t border-[#E5E5E5] flex flex-row">
+      <nav className={`h-[72px] pb-2.5 border-t flex flex-row ${isDarkMode ? 'bg-[#181818] border-[#4d4d4d]' : 'bg-white border-[#E5E5E5]'}`}>
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = currentPath === tab.path;
@@ -34,11 +36,11 @@ export default function MainLayout({ children }) {
             >
               <Icon 
                 size={24} 
-                color={isActive ? '#6A2EE8' : '#666'} 
+                color={isActive ? '#6A2EE8' : (isDarkMode ? '#b3b3b3' : '#666')} 
               />
               <span 
                 className={`text-xs font-medium mt-1 ${
-                  isActive ? 'text-primary' : 'text-[#666]'
+                  isActive ? 'text-primary' : (isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]')
                 }`}
               >
                 {tab.label}

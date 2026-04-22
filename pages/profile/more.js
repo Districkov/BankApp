@@ -3,14 +3,18 @@ import { useRouter } from 'next/router';
 import MainLayout from '../../src/components/MainLayout';
 import { IoPersonOutline, IoDocumentTextOutline, IoHelpCircleOutline, IoLogOutOutline } from 'react-icons/io5';
 import { useAuth } from '../../src/context/AuthContext';
+import { useTheme } from '../../src/context/ThemeContext';
 import { userAPI, accountsAPI } from '../../src/utils/api';
 
 export default function More() {
   const router = useRouter();
   const { logout, user: authUser } = useAuth();
-  const [user, setUser] = useState(null);
+  const { isDarkMode } = useTheme();
+  const [profileData, setProfileData] = useState(null);
   const [totalBalance, setTotalBalance] = useState(0);
   const [loading, setLoading] = useState(true);
+
+  const user = profileData || authUser;
 
   useEffect(() => {
     loadData();
@@ -20,13 +24,14 @@ export default function More() {
     try {
       setLoading(true);
       const [userData, accountsData] = await Promise.all([
-        userAPI.getProfile(),
-        accountsAPI.getAccounts()
+        userAPI.getProfile().catch(() => null),
+        accountsAPI.getAccounts().catch(() => [])
       ]);
       
-      setUser(userData);
+      if (userData) {
+        setProfileData(userData);
+      }
       
-      // Подсчитываем общий баланс
       if (accountsData && accountsData.length > 0) {
         const total = accountsData.reduce((sum, acc) => {
           const balance = parseFloat(acc.balance || 0);
@@ -96,8 +101,8 @@ export default function More() {
   if (loading) {
     return (
       <MainLayout>
-        <div className="flex-1 bg-[#F7F7FB] min-h-screen flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent" />
+        <div className={`flex-1 min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-[#121212]' : 'bg-[#F7F7FB]'}`}>
+          <div className={`animate-spin rounded-full h-12 w-12 border-4 border-t-transparent ${isDarkMode ? 'border-[#6A2EE8]' : 'border-primary'}`} />
         </div>
       </MainLayout>
     );
@@ -105,15 +110,15 @@ export default function More() {
 
   return (
     <MainLayout>
-      <div className="flex-1 bg-[#F7F7FB] min-h-screen">
-        <div className="bg-white px-5 py-4 border-b border-[#E5E5E5]">
-          <h1 className="text-lg font-semibold text-[#000]">Ещё</h1>
+      <div className={`flex-1 min-h-screen ${isDarkMode ? 'bg-[#121212]' : 'bg-[#F7F7FB]'}`}>
+        <div className={`px-5 py-4 border-b ${isDarkMode ? 'bg-[#181818] border-[#4d4d4d]' : 'bg-white border-[#E5E5E5]'}`}>
+          <h1 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>Ещё</h1>
         </div>
 
         <div className="p-4">
           {/* Profile Card */}
           <button
-            className="bg-white p-5 rounded-2xl shadow-sm mb-6 w-full text-left"
+            className={`p-5 rounded-2xl shadow-sm mb-6 w-full text-left ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white'}`}
             onClick={() => router.push('/profile/settings')}
           >
             <div className="flex items-center mb-4">
@@ -123,7 +128,7 @@ export default function More() {
                 </span>
               </div>
               <div>
-                <p className="text-xl font-bold text-[#000]">
+                <p className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>
                   {user?.first_name || 'Иван'} {user?.last_name || ''}
                 </p>
               </div>
@@ -131,30 +136,30 @@ export default function More() {
 
             <div className="space-y-2 mb-4">
               <div className="flex items-center gap-2">
-                <span className="text-sm text-[#666]">📞 {user?.phone_number || '+7 926 718-55-52'}</span>
+                <span className={`text-sm ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>📞 {user?.phone_number || '+7 926 718-55-52'}</span>
               </div>
               {user?.email && (
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-[#666]">✉️ {user.email}</span>
+                  <span className={`text-sm ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>✉️ {user.email}</span>
                 </div>
               )}
             </div>
 
-            <div className="flex justify-between items-center pt-3 border-t border-[#F0F0F0]">
-              <span className="text-sm text-[#666] font-medium">Общий баланс</span>
-              <span className="text-lg font-bold text-[#000]">{formatBalance(totalBalance)} ₽</span>
+            <div className={`flex justify-between items-center pt-3 border-t ${isDarkMode ? 'border-[#4d4d4d]' : 'border-[#F0F0F0]'}`}>
+              <span className={`text-sm font-medium ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Общий баланс</span>
+              <span className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>{formatBalance(totalBalance)} ₽</span>
             </div>
           </button>
 
           {/* Menu Sections */}
           {menuSections.map((section, sectionIndex) => (
             <div key={sectionIndex} className="mb-6">
-              <h2 className="text-base font-semibold text-[#666] mb-3">{section.title}</h2>
+              <h2 className={`text-base font-semibold mb-3 ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>{section.title}</h2>
               <div className="space-y-2">
                 {section.items.map((item, itemIndex) => (
                   <button
                     key={itemIndex}
-                    className="flex items-center bg-white p-4 rounded-xl shadow-sm w-full"
+                    className={`flex items-center p-4 rounded-xl shadow-sm w-full ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white'}`}
                     onClick={() => router.push(item.screen)}
                   >
                     <div
@@ -164,10 +169,10 @@ export default function More() {
                       <item.icon size={20} color="#fff" />
                     </div>
                     <div className="flex-1 text-left">
-                      <p className="text-base font-semibold text-[#000]">{item.title}</p>
-                      <p className="text-xs text-[#666]">{item.description}</p>
+                      <p className={`text-base font-semibold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>{item.title}</p>
+                      <p className={`text-xs ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>{item.description}</p>
                     </div>
-                    <span className="text-[#999]">›</span>
+                    <span className={isDarkMode ? 'text-[#b3b3b3]' : 'text-[#999]'}>›</span>
                   </button>
                 ))}
               </div>
@@ -176,10 +181,10 @@ export default function More() {
 
           {/* Logout Button */}
           <button
-            className="flex items-center bg-white p-4 rounded-xl shadow-sm w-full"
+            className={`flex items-center p-4 rounded-xl shadow-sm w-full ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white'}`}
             onClick={handleLogout}
           >
-            <div className="w-10 h-10 rounded-full bg-[#FFE8E8] flex items-center justify-center mr-3">
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center mr-3 ${isDarkMode ? 'bg-[#3d1a1a]' : 'bg-[#FFE8E8]'}`}>
               <IoLogOutOutline size={20} color="#FF3B30" />
             </div>
             <span className="text-base font-semibold text-[#FF3B30]">Выйти</span>

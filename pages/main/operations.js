@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import MainLayout from '../../src/components/MainLayout';
 import { IoArrowBack, IoCarOutline, IoFastFoodOutline, IoMedicalOutline, IoCardOutline, IoSwapHorizontalOutline, IoGameControllerOutline } from 'react-icons/io5';
 import { transactionsAPI } from '../../src/utils/api';
+import { useTheme } from '../../src/context/ThemeContext';
 
 const categoryIcons = {
   transport: IoCarOutline,
@@ -24,6 +25,7 @@ const categoryColors = {
 
 export default function Operations() {
   const router = useRouter();
+  const { isDarkMode } = useTheme();
   const [filter, setFilter] = useState('all');
   const [activeTab, setActiveTab] = useState('transactions');
   const [data, setData] = useState([]);
@@ -50,7 +52,6 @@ export default function Operations() {
           category: tx.category || 'transfer'
         })));
       } else {
-        // Fallback на тестовые данные если API не работает
         setData([
           { id: '1', title: 'BMW Motors', subtitle: 'Покупка', amount: '-14 743 211 ₽', type: 'expense', date: '20 окт 2024', time: '14:30', category: 'transport' },
           { id: '2', title: 'Перевод от Петя', subtitle: 'Перевод', amount: '+8 700 ₽', type: 'income', date: '13 сент 2024', time: '11:15', category: 'transfer' },
@@ -64,7 +65,6 @@ export default function Operations() {
       }
     } catch (error) {
       console.error('Error loading transactions:', error);
-      // Устанавливаем тестовые данные при ошибке
       setData([
         { id: '1', title: 'BMW Motors', subtitle: 'Покупка', amount: '-14 743 211 ₽', type: 'expense', date: '20 окт 2024', time: '14:30', category: 'transport' },
         { id: '2', title: 'Перевод от Петя', subtitle: 'Перевод', amount: '+8 700 ₽', type: 'income', date: '13 сент 2024', time: '11:15', category: 'transfer' },
@@ -97,8 +97,8 @@ export default function Operations() {
   if (loading) {
     return (
       <MainLayout>
-        <div className="flex-1 bg-[#F7F7FB] min-h-screen flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent" />
+        <div className={`flex-1 min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-[#121212]' : 'bg-[#F8FAFD]'}`}>
+          <div className={`animate-spin rounded-full h-12 w-12 border-4 border-t-transparent ${isDarkMode ? 'border-[#6A2EE8]' : 'border-primary'}`} />
         </div>
       </MainLayout>
     );
@@ -106,19 +106,18 @@ export default function Operations() {
 
   return (
     <MainLayout>
-      <div className="flex-1 bg-[#F7F7FB] min-h-screen">
-        <div className="bg-white px-4 py-4 border-b border-[#E5E5E5] flex items-center gap-4">
+      <div className={`flex-1 min-h-screen ${isDarkMode ? 'bg-[#121212]' : 'bg-[#F8FAFD]'}`}>
+        <div className={`px-5 py-4 border-b flex items-center gap-4 ${isDarkMode ? 'bg-[#181818] border-[#4d4d4d]' : 'bg-white border-[#F0F0F5]'}`}>
           <button onClick={() => router.back()}>
-            <IoArrowBack size={24} color="#000" />
+            <IoArrowBack size={24} color={isDarkMode ? '#fff' : '#000'} />
           </button>
-          <h1 className="text-lg font-semibold text-[#000]">Операции</h1>
+          <h1 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>Операции</h1>
         </div>
 
-        {/* Tab Switcher */}
-        <div className="flex bg-white px-4 py-2 border-b border-[#E5E5E5]">
+        <div className={`flex px-4 py-2 border-b ${isDarkMode ? 'bg-[#181818] border-[#4d4d4d]' : 'bg-white border-[#E5E5E5]'}`}>
           <button
             className={`flex-1 py-3 rounded-lg mx-1 font-semibold text-sm ${
-              activeTab === 'transactions' ? 'bg-primary text-white' : 'text-[#666]'
+              activeTab === 'transactions' ? 'bg-primary text-white' : (isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]')
             }`}
             onClick={() => setActiveTab('transactions')}
           >
@@ -126,7 +125,7 @@ export default function Operations() {
           </button>
           <button
             className={`flex-1 py-3 rounded-lg mx-1 font-semibold text-sm ${
-              activeTab === 'analytics' ? 'bg-primary text-white' : 'text-[#666]'
+              activeTab === 'analytics' ? 'bg-primary text-white' : (isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]')
             }`}
             onClick={() => setActiveTab('analytics')}
           >
@@ -137,11 +136,10 @@ export default function Operations() {
         <div className="overflow-y-auto">
           {activeTab === 'transactions' ? (
             <>
-              {/* Filters */}
               <div className="px-4 my-4 flex gap-2 overflow-x-auto">
                 <button
                   className={`px-5 py-3 rounded-[20px] text-sm font-medium whitespace-nowrap ${
-                    filter === 'all' ? 'bg-primary text-white' : 'bg-white text-[#666] border border-[#E5E5E5]'
+                    filter === 'all' ? 'bg-primary text-white' : (isDarkMode ? 'bg-[#181818] text-[#b3b3b3] border border-[#4d4d4d]' : 'bg-white text-[#666] border border-[#E5E5E5]')
                   }`}
                   onClick={() => setFilter('all')}
                 >
@@ -149,7 +147,7 @@ export default function Operations() {
                 </button>
                 <button
                   className={`px-5 py-3 rounded-[20px] text-sm font-medium whitespace-nowrap ${
-                    filter === 'income' ? 'bg-primary text-white' : 'bg-white text-[#666] border border-[#E5E5E5]'
+                    filter === 'income' ? 'bg-primary text-white' : (isDarkMode ? 'bg-[#181818] text-[#b3b3b3] border border-[#4d4d4d]' : 'bg-white text-[#666] border border-[#E5E5E5]')
                   }`}
                   onClick={() => setFilter('income')}
                 >
@@ -157,7 +155,7 @@ export default function Operations() {
                 </button>
                 <button
                   className={`px-5 py-3 rounded-[20px] text-sm font-medium whitespace-nowrap ${
-                    filter === 'expense' ? 'bg-primary text-white' : 'bg-white text-[#666] border border-[#E5E5E5]'
+                    filter === 'expense' ? 'bg-primary text-white' : (isDarkMode ? 'bg-[#181818] text-[#b3b3b3] border border-[#4d4d4d]' : 'bg-white text-[#666] border border-[#E5E5E5]')
                   }`}
                   onClick={() => setFilter('expense')}
                 >
@@ -165,15 +163,14 @@ export default function Operations() {
                 </button>
               </div>
 
-              {/* Transactions List */}
               <div className="px-4 mb-5">
-                <h2 className="text-lg font-semibold text-[#000] mb-4">
+                <h2 className={`text-lg font-semibold mb-4 ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>
                   {filter === 'all' ? 'Все операции' : filter === 'income' ? 'Доходы' : 'Расходы'} ({filtered.length})
                 </h2>
                 {filtered.map((item) => {
                   const Icon = categoryIcons[item.category];
                   return (
-                    <div key={item.id} className="bg-white rounded-xl p-4 mb-2 shadow-sm">
+                    <div key={item.id} className={`rounded-xl p-4 mb-2 shadow-sm ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white'}`}>
                       <div className="flex items-center">
                         <div
                           className="w-10 h-10 rounded-full flex items-center justify-center mr-3"
@@ -182,13 +179,15 @@ export default function Operations() {
                           {Icon && <Icon size={18} color="#fff" />}
                         </div>
                         <div className="flex-1">
-                          <p className="text-base font-semibold text-[#000]">{item.title}</p>
-                          <p className="text-sm text-[#666]">{item.subtitle}</p>
-                          <p className="text-xs text-[#999]">{item.date} в {item.time}</p>
+                          <p className={`text-base font-semibold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>{item.title}</p>
+                          <p className={`text-sm ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>{item.subtitle}</p>
+                          <p className={`text-xs ${isDarkMode ? 'text-[#666]' : 'text-[#999]'}`}>{item.date} в {item.time}</p>
                         </div>
-                        <p className={`text-base font-bold ${item.type === 'income' ? 'text-success' : 'text-danger'}`}>
-                          {item.amount}
-                        </p>
+                        <div className="text-right">
+                          <p className={`text-base font-bold ${item.type === 'income' ? 'text-success' : 'text-danger'}`}>
+                            {item.amount}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   );
@@ -197,37 +196,36 @@ export default function Operations() {
             </>
           ) : (
             <div className="px-4 mb-5">
-              {/* Stats Grid */}
-              <div className="flex bg-white rounded-2xl p-5 mb-5 shadow-sm">
+              <div className={`flex rounded-2xl p-5 mb-5 shadow-sm ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white'}`}>
                 <div className="flex-1 text-center">
-                  <p className="text-base font-bold text-[#000]">+{totals.incomes.toLocaleString()} ₽</p>
-                  <p className="text-xs text-[#666]">Доходы</p>
+                  <p className={`text-base font-bold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>+{totals.incomes.toLocaleString()} ₽</p>
+                  <p className={`text-xs ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Доходы</p>
                 </div>
                 <div className="flex-1 text-center">
-                  <p className="text-base font-bold text-[#000]">-{totals.expenses.toLocaleString()} ₽</p>
-                  <p className="text-xs text-[#666]">Расходы</p>
+                  <p className={`text-base font-bold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>-{totals.expenses.toLocaleString()} ₽</p>
+                  <p className={`text-xs ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Расходы</p>
                 </div>
                 <div className="flex-1 text-center">
                   <p className={`text-base font-bold ${totals.total >= 0 ? 'text-success' : 'text-danger'}`}>
                     {totals.total >= 0 ? '+' : ''}{totals.total.toLocaleString()} ₽
                   </p>
-                  <p className="text-xs text-[#666]">Итого</p>
+                  <p className={`text-xs ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Итого</p>
                 </div>
               </div>
 
-              <h2 className="text-lg font-semibold text-[#000] mb-4">Статистика за месяц</h2>
-              <div className="flex bg-white rounded-2xl p-5 shadow-sm">
+              <h2 className={`text-lg font-semibold mb-4 ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>Статистика за месяц</h2>
+              <div className={`flex rounded-2xl p-5 shadow-sm ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white'}`}>
                 <div className="flex-1 text-center">
-                  <p className="text-lg font-bold text-[#000]">24</p>
-                  <p className="text-xs text-[#666]">Операций</p>
+                  <p className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>24</p>
+                  <p className={`text-xs ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Операций</p>
                 </div>
                 <div className="flex-1 text-center">
-                  <p className="text-lg font-bold text-[#000]">8 740 ₽</p>
-                  <p className="text-xs text-[#666]">Средний чек</p>
+                  <p className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>8 740 ₽</p>
+                  <p className={`text-xs ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Средний чек</p>
                 </div>
                 <div className="flex-1 text-center">
-                  <p className="text-lg font-bold text-[#000]">12</p>
-                  <p className="text-xs text-[#666]">Дней с тратами</p>
+                  <p className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>12</p>
+                  <p className={`text-xs ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Дней с тратами</p>
                 </div>
               </div>
             </div>

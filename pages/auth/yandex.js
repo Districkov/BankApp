@@ -2,14 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { IoAlertCircle, IoLogoGoogle } from 'react-icons/io5';
 import { useAuth } from '../../src/context/AuthContext';
+import { useTheme } from '../../src/context/ThemeContext';
+import { authAPI } from '../../src/utils/api';
 
-const API_URL = '/api/auth';
 const REDIRECT_PATHS = ['/code/yandex', '/auth/yandex/callback'];
 
 export default function YandexAuthScreen() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const { isAuthenticated, isLoading: authLoading } = useAuth();
+  const { isDarkMode } = useTheme();
   const router = useRouter();
 
   useEffect(() => {
@@ -73,43 +75,9 @@ export default function YandexAuthScreen() {
     setError('');
 
     try {
-      // Определяем текущий redirect_uri на основе окружения
-      const currentOrigin = typeof window !== 'undefined' ? window.location.origin : '';
-      const redirectUri = `${currentOrigin}/code/callback`;
-      
-      console.log('Current origin:', currentOrigin);
-      console.log('Redirect URI:', redirectUri);
-
-      const requestUrl = `${API_URL}/simple/yandex/url?redirect_uri=${encodeURIComponent(redirectUri)}`;
-      console.log('Request URL:', requestUrl);
-
-      const response = await fetch(requestUrl, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error('Не удалось получить URL авторизации');
-      }
-
-      const authUrl = await response.text();
+      const authUrl = await authAPI.getYandexAuthUrl();
 
       console.log('Received auth URL from backend:', authUrl);
-      
-      // Проверяем, содержит ли URL правильный redirect_uri
-      if (authUrl.includes('redirect_uri=')) {
-        const urlObj = new URL(authUrl);
-        const returnedRedirectUri = urlObj.searchParams.get('redirect_uri');
-        console.log('Redirect URI in auth URL:', returnedRedirectUri);
-        
-        if (returnedRedirectUri !== redirectUri) {
-          console.warn('Backend returned different redirect_uri!');
-          console.warn('Expected:', redirectUri);
-          console.warn('Got:', returnedRedirectUri);
-        }
-      }
 
       if (!authUrl) {
         throw new Error('URL авторизации не получен');
@@ -125,14 +93,14 @@ export default function YandexAuthScreen() {
   };
 
   return (
-    <div className="flex-1 flex justify-center items-center w-full min-h-screen bg-gradient-to-br from-[#fafafa] via-[#f0e6ff] to-[#e8d5ff]">
+    <div className={`flex-1 flex justify-center items-center w-full min-h-screen ${isDarkMode ? 'bg-gradient-to-br from-[#121212] via-[#1a1a2e] to-[#16213e]' : 'bg-gradient-to-br from-[#fafafa] via-[#f0e6ff] to-[#e8d5ff]'}`}>
       <div className="flex flex-col items-center justify-center px-8 w-full max-w-md">
-        <h1 className="text-[28px] font-semibold text-black text-center mb-[60px]">
+        <h1 className={`text-[28px] font-semibold text-center mb-[60px] ${isDarkMode ? 'text-white' : 'text-black'}`}>
           Добро пожаловать,
         </h1>
 
         {error && (
-          <div className="flex flex-row items-center bg-[#FF3B3010] px-4 py-3 rounded-lg mb-6 w-full">
+          <div className={`flex flex-row items-center px-4 py-3 rounded-lg mb-6 w-full ${isDarkMode ? 'bg-[#FF3B3020]' : 'bg-[#FF3B3010]'}`}>
             <IoAlertCircle size={20} color="#FF3B30" />
             <p className="text-[#FF3B30] text-sm ml-2 flex-1">{error}</p>
           </div>

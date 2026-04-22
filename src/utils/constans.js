@@ -1,8 +1,8 @@
 // Константы приложения
 export const APP_CONSTANTS = {
-  APP_NAME: 'BANKAPP',
+  APP_NAME: 'Verdical Bank',
   VERSION: '1.0.0',
-  SUPPORT_EMAIL: 'support@bankapp.com',
+  SUPPORT_EMAIL: 'support@verdicalbank.com',
   SUPPORT_PHONE: '+7 (800) 123-45-67',
 };
 

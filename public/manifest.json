@@ -1,6 +1,6 @@
 {
-  "name": "BankApp",
-  "short_name": "BankApp",
+  "name": "Verdical Bank",
+  "short_name": "Verdical",
   "description": "Банковское приложение для управления финансами",
   "start_url": "/",
   "scope": "/",

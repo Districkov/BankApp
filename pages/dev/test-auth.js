@@ -2,12 +2,14 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import { authAPI } from '../../src/utils/api';
 import { useAuth } from '../../src/context/AuthContext';
+import { useTheme } from '../../src/context/ThemeContext';
 
 export default function TestAuth() {
   const [code, setCode] = useState('');
   const [status, setStatus] = useState('');
   const [error, setError] = useState('');
   const { login } = useAuth();
+  const { isDarkMode } = useTheme();
   const router = useRouter();
 
   const handleSubmit = async (e) => {
@@ -20,18 +22,15 @@ export default function TestAuth() {
       const response = await authAPI.verifyCode(code);
       console.log('Response:', response);
 
-      // Если получили 201 (success: true), проверяем whoami
-      if (response && (response.success || response.session_cookie)) {
+      if (response && response.verified) {
         try {
-          // Пробуем получить данные пользователя
           const userData = await authAPI.whoami();
           console.log('User data from whoami:', userData);
           
           if (userData) {
-            // Cookie установлен автоматически сервером (HttpOnly)
-            // Сохраняем флаг авторизации в localStorage
             localStorage.setItem('session_cookie', 'YAA_SESS_ID=httponly');
             localStorage.setItem('user_data', JSON.stringify(userData));
+            await login('YAA_SESS_ID=httponly', userData);
             
             setStatus('success');
             setTimeout(() => {
@@ -43,19 +42,7 @@ export default function TestAuth() {
           console.error('Whoami error:', whoamiError);
         }
         
-        // Если есть session_cookie в ответе
-        if (response.session_cookie) {
-          const userData = response.user || { id: response.user_id };
-          await login(response.session_cookie, userData);
-          
-          setStatus('success');
-          setTimeout(() => {
-            router.replace('/main/home');
-          }, 1000);
-          return;
-        }
-        
-        throw new Error('Не удалось получить session_cookie');
+        throw new Error('Не удалось получить данные пользователя через whoami');
       } else {
         throw new Error('Неожиданный ответ от сервера');
       }
@@ -67,13 +54,13 @@ export default function TestAuth() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full">
-        <h1 className="text-2xl font-bold mb-6 text-center">Test Auth</h1>
+    <div className={`min-h-screen flex items-center justify-center p-4 ${isDarkMode ? 'bg-[#121212]' : 'bg-gray-100'}`}>
+      <div className={`rounded-lg shadow-lg p-8 max-w-md w-full ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white'}`}>
+        <h1 className={`text-2xl font-bold mb-6 text-center ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Test Auth</h1>
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className={`block text-sm font-medium mb-2 ${isDarkMode ? 'text-[#b3b3b3]' : 'text-gray-700'}`}>
               Yandex Code
             </label>
             <input
@@ -81,7 +68,7 @@ export default function TestAuth() {
               value={code}
               onChange={(e) => setCode(e.target.value)}
               placeholder="qcgmlvcgmoaen6us"
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className={`w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${isDarkMode ? 'bg-[#1f1f1f] border border-[#4d4d4d] text-white placeholder-[#666]' : 'border border-gray-300'}`}
               required
             />
           </div>
@@ -96,18 +83,18 @@ export default function TestAuth() {
         </form>
 
         {status === 'success' && (
-          <div className="mt-4 p-4 bg-green-100 text-green-700 rounded-lg">
+          <div className={`mt-4 p-4 rounded-lg ${isDarkMode ? 'bg-[#1a3d1a] text-[#34C759]' : 'bg-green-100 text-green-700'}`}>
             ✓ Успешно! Перенаправление...
           </div>
         )}
 
         {status === 'error' && (
-          <div className="mt-4 p-4 bg-red-100 text-red-700 rounded-lg">
+          <div className={`mt-4 p-4 rounded-lg ${isDarkMode ? 'bg-[#3d1a1a] text-danger' : 'bg-red-100 text-red-700'}`}>
             ✕ Ошибка: {error}
           </div>
         )}
 
-        <div className="mt-6 text-sm text-gray-500">
+        <div className={`mt-6 text-sm ${isDarkMode ? 'text-[#b3b3b3]' : 'text-gray-500'}`}>
           <p className="font-semibold mb-2">Как использовать:</p>
           <ol className="list-decimal list-inside space-y-1">
             <li>Получите код через Swagger</li>

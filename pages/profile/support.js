@@ -152,7 +152,7 @@ export default function Support() {
                 </div>
                 <div className="flex justify-between items-center py-2 border-b border-[#F0F0F0]">
                   <span className="text-sm text-[#666]">Разработчик</span>
-                  <span className="text-sm font-medium text-[#000]">Банк</span>
+                  <span className="text-sm font-medium text-[#000]">Verdical Bank</span>
                 </div>
               </div>
             </div>

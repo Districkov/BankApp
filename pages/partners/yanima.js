@@ -2,9 +2,11 @@ import React from 'react';
 import { useRouter } from 'next/router';
 import MainLayout from '../../src/components/MainLayout';
 import { IoArrowBack, IoCheckmarkCircle, IoGlobeOutline, IoPaperPlaneOutline, IoStarOutline } from 'react-icons/io5';
+import { useTheme } from '../../src/context/ThemeContext';
 
 export default function YanimaDetail() {
   const router = useRouter();
+  const { isDarkMode } = useTheme();
 
   const partner = {
     name: 'Yanima',
@@ -48,18 +50,18 @@ export default function YanimaDetail() {
 
   return (
     <MainLayout>
-      <div className="flex-1 bg-[#F8FAFD] min-h-screen">
-        <div className="bg-white px-5 py-4 border-b border-[#F0F0F5] flex items-center gap-4">
+      <div className={`flex-1 min-h-screen ${isDarkMode ? 'bg-[#121212]' : 'bg-[#F8FAFD]'}`}>
+        <div className={`px-5 py-4 border-b flex items-center gap-4 ${isDarkMode ? 'bg-[#181818] border-[#4d4d4d]' : 'bg-white border-[#F0F0F5]'}`}>
           <button onClick={() => router.back()}>
-            <IoArrowBack size={24} color="#000" />
+            <IoArrowBack size={24} color={isDarkMode ? '#fff' : '#000'} />
           </button>
-          <h1 className="text-xl font-bold text-[#1A1A1A]">Партнёр</h1>
+          <h1 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>Партнёр</h1>
         </div>
 
         <div className="overflow-y-auto pb-5">
           {/* Hero Section */}
           <div className="p-8 flex flex-col items-center" style={{ backgroundColor: partner.color }}>
-            <div className="w-20 h-20 bg-white rounded-2xl flex items-center justify-center mb-4 shadow-lg border border-[#E5E5E5]">
+            <div className={`w-20 h-20 rounded-2xl flex items-center justify-center mb-4 shadow-lg ${isDarkMode ? 'bg-[#1f1f1f] border border-[#4d4d4d]' : 'bg-white border border-[#E5E5E5]'}`}>
               <img src={partner.logo} alt={partner.name} width={60} height={60} />
             </div>
             <h2 className="text-3xl font-extrabold text-white mb-2">{partner.name}</h2>
@@ -67,58 +69,65 @@ export default function YanimaDetail() {
           </div>
 
           {/* Description */}
-          <div className="bg-white m-5 p-5 rounded-[20px] shadow-lg border border-[#F0F0F5]">
-            <h3 className="text-xl font-bold text-[#1A1A1A] mb-4">О платформе</h3>
-            <p className="text-base text-[#666] leading-6">{partner.fullDescription}</p>
+          <div className={`m-5 p-5 rounded-[20px] shadow-lg ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white border border-[#F0F0F5]'}`}>
+            <h3 className={`text-xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>О платформе</h3>
+            <p className={`text-base leading-6 ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>{partner.fullDescription}</p>
           </div>
 
           {/* Benefits */}
-          <div className="bg-white m-5 mt-0 p-5 rounded-[20px] shadow-lg border border-[#F0F0F5]">
-            <h3 className="text-xl font-bold text-[#1A1A1A] mb-4">Ваши преимущества</h3>
+          <div className={`m-5 mt-0 p-5 rounded-[20px] shadow-lg ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white border border-[#F0F0F5]'}`}>
+            <h3 className={`text-xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>Ваши преимущества</h3>
             <div className="space-y-3">
               {partner.benefits.map((benefit, index) => (
                 <div key={index} className="flex items-center gap-3">
-                  <IoCheckmarkCircle size={20} color="#159E3A" />
-                  <span className="text-base text-[#1A1A1A]">{benefit}</span>
+                  <IoCheckmarkCircle size={20} color="#6A2EE8" />
+                  <span className={`text-base ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>{benefit}</span>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Features */}
-          <div className="bg-white m-5 mt-0 p-5 rounded-[20px] shadow-lg border border-[#F0F0F5]">
-            <h3 className="text-xl font-bold text-[#1A1A1A] mb-4">Возможности платформы</h3>
-            <div className="grid grid-cols-2 gap-3">
+          <div className={`m-5 mt-0 p-5 rounded-[20px] shadow-lg ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white border border-[#F0F0F5]'}`}>
+            <h3 className={`text-xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>Особенности платформы</h3>
+            <div className="flex flex-wrap gap-3">
               {partner.features.map((feature, index) => (
-                <div key={index} className="flex items-center gap-2 bg-[#F8FAFD] p-3 rounded-xl">
-                  <IoStarOutline size={16} color="#FF6B6B" />
-                  <span className="text-sm text-[#1A1A1A] font-medium">{feature}</span>
+                <div key={index} className={`px-4 py-2 rounded-xl ${isDarkMode ? 'bg-[#1f1f1f]' : 'bg-[#F8FAFD]'}`}>
+                  <span className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>{feature}</span>
                 </div>
               ))}
             </div>
           </div>
 
+          {/* Rating */}
+          <div className={`m-5 mt-0 p-5 rounded-[20px] shadow-lg ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white border border-[#F0F0F5]'}`}>
+            <h3 className={`text-xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>Рейтинг пользователей</h3>
+            <div className="flex items-center gap-2 mb-3">
+              {[1, 2, 3, 4, 5].map((star) => (
+                <IoStarOutline key={star} size={16} color="#6A2EE8" className="mt-1" />
+              ))}
+              <span className={`text-lg font-bold ml-2 ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>4.8</span>
+              <span className={`text-sm ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>(2,547 отзывов)</span>
+            </div>
+            <p className={`text-sm ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Более 95% пользователей рекомендуют Yanima</p>
+          </div>
+
           {/* Conditions */}
-          <div className="bg-white m-5 mt-0 p-5 rounded-[20px] shadow-lg border border-[#F0F0F5]">
-            <h3 className="text-xl font-bold text-[#1A1A1A] mb-4">Условия предложения</h3>
-            <div className="space-y-3">
+          <div className={`m-5 mt-0 p-5 rounded-[20px] shadow-lg ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white border border-[#F0F0F5]'}`}>
+            <h3 className={`text-xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>Условия акции</h3>
+            <div className="space-y-2">
               {partner.conditions.map((condition, index) => (
-                <div key={index} className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-full flex items-center justify-center text-white font-bold text-xs" style={{ backgroundColor: partner.color }}>
-                    {index + 1}
-                  </div>
-                  <span className="text-base text-[#1A1A1A] flex-1 leading-6">{condition}</span>
+                <div key={index} className="flex items-start gap-2">
+                  <span className={`text-sm mt-0.5 ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>•</span>
+                  <span className={`text-sm ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>{condition}</span>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Social Links */}
-          <div className="bg-white m-5 mt-0 p-5 rounded-[20px] shadow-lg border border-[#F0F0F5]">
-            <h3 className="text-xl font-bold text-[#1A1A1A] mb-2">Присоединяйтесь</h3>
-            <p className="text-base text-[#666] mb-4 leading-6">
-              Станьте частью сообщества Yanima и откройте для себя мир аниме
-            </p>
+          <div className={`m-5 mt-0 p-5 rounded-[20px] shadow-lg ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white border border-[#F0F0F5]'}`}>
+            <h3 className={`text-xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>Присоединяйтесь</h3>
             <div className="flex gap-3">
               <a href={partner.website} target="_blank" rel="noopener noreferrer" className="flex-1 flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-white font-semibold" style={{ backgroundColor: partner.color }}>
                 <IoGlobeOutline size={20} />
@@ -132,17 +141,17 @@ export default function YanimaDetail() {
           </div>
 
           {/* How to Get */}
-          <div className="bg-white m-5 mt-0 p-5 rounded-[20px] shadow-lg border border-[#F0F0F5]">
-            <h3 className="text-xl font-bold text-[#1A1A1A] mb-4">Как получить подписку</h3>
-            <div className="space-y-5">
+          <div className={`m-5 mt-0 p-5 rounded-[20px] shadow-lg ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white border border-[#F0F0F5]'}`}>
+            <h3 className={`text-xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>Как получить подписку</h3>
+            <div className="space-y-4">
               {partner.steps.map((step, index) => (
-                <div key={index} className="flex items-start gap-4">
+                <div key={index} className="flex items-start gap-3">
                   <div className="w-8 h-8 rounded-full flex items-center justify-center text-white font-bold" style={{ backgroundColor: partner.color }}>
                     {index + 1}
                   </div>
-                  <div className="flex-1">
-                    <p className="text-base font-semibold text-[#1A1A1A] mb-1">{step.title}</p>
-                    <p className="text-sm text-[#666] leading-5">{step.text}</p>
+                  <div className="flex-1 mt-1">
+                    <p className={`text-base ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>{step.title}</p>
+                    <p className={`text-sm ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>{step.text}</p>
                   </div>
                 </div>
               ))}

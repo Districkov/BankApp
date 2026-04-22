@@ -4,6 +4,7 @@ import { IoHomeOutline, IoPhonePortraitOutline, IoTrendingUp, IoEyeOutline, IoEy
 import { MdOutlineCreditCard } from 'react-icons/md';
 import MainLayout from '../../src/components/MainLayout';
 import { accountsAPI, userAPI, transactionsAPI } from '../../src/utils/api';
+import { useTheme } from '../../src/context/ThemeContext';
 
 const AstraLogo = ({ width = 50, height = 50 }) => (
   <div className="bg-black rounded-xl flex items-center justify-center p-2" style={{ width, height }}>
@@ -19,6 +20,7 @@ const YanimaLogo = ({ width = 50, height = 50 }) => (
 
 export default function Home() {
   const router = useRouter();
+  const { isDarkMode } = useTheme();
   const [refreshing, setRefreshing] = useState(false);
   const [isBalanceHidden, setIsBalanceHidden] = useState(false);
   const [user, setUser] = useState(null);
@@ -150,8 +152,8 @@ export default function Home() {
   if (loading) {
     return (
       <MainLayout>
-        <div className="flex-1 bg-[#F8FAFD] min-h-screen flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent" />
+        <div className={`flex-1 min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-[#121212]' : 'bg-[#F8FAFD]'}`}>
+          <div className={`animate-spin rounded-full h-12 w-12 border-4 border-t-transparent ${isDarkMode ? 'border-[#6A2EE8]' : 'border-primary'}`} />
         </div>
       </MainLayout>
     );
@@ -159,66 +161,49 @@ export default function Home() {
 
   return (
     <MainLayout>
-    <div className="flex-1 bg-[#F8FAFD] min-h-screen">
+    <div className={`flex-1 min-h-screen ${isDarkMode ? 'bg-[#121212]' : 'bg-[#F8FAFD]'}`}>
       {/* Header */}
-      <div className="flex flex-row justify-between items-center px-5 py-4 bg-white border-b border-[#F0F0F5]">
+      <div className={`flex flex-row justify-between items-center px-5 py-4 border-b ${isDarkMode ? 'bg-[#181818] border-[#4d4d4d]' : 'bg-white border-[#F0F0F5]'}`}>
         <button onClick={handleProfilePress} className="flex flex-row items-center gap-3">
-          <div className="w-11 h-11 rounded-[22px] bg-primary flex items-center justify-center">
-            <span className="text-white font-bold text-base">
+          <div className={`w-11 h-11 rounded-[22px] flex items-center justify-center ${isDarkMode ? 'bg-[#6A2EE8]' : 'bg-primary'}`}>
+            <span className={`font-bold text-base ${isDarkMode ? 'text-white' : 'text-white'}`}>
               {user?.first_name?.[0] || 'И'}
             </span>
           </div>
           <div>
-            <p className="text-base font-bold text-[#1A1A1A]">{user?.first_name || 'Иван'}</p>
+            <p className={`text-base font-bold ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>{user?.first_name || 'Иван'}</p>
           </div>
         </button>
         <button className="w-11 h-11 flex items-center justify-center relative">
-          <IoNotificationsOutline size={24} color="#1A1A1A" />
+          <IoNotificationsOutline size={24} color={isDarkMode ? '#ffffff' : '#1A1A1A'} />
           <div className="absolute top-2 right-2 bg-danger w-[18px] h-[18px] rounded-full flex items-center justify-center">
-            <span className="text-[10px] text-white font-bold">3</span>
+            <span className={`text-[10px] font-bold ${isDarkMode ? 'text-white' : 'text-white'}`}>3</span>
           </div>
         </button>
       </div>
 
       <div className="flex-1 overflow-y-auto">
-        {/* Total Balance Card */}
-        <div className="bg-white m-5 p-6 rounded-[20px] shadow-lg border border-[#F0F0F5]">
-          <div className="flex flex-row justify-between items-center mb-3">
-            <span className="text-base font-bold text-[#666]">Общий баланс</span>
-            <button onClick={toggleBalanceVisibility}>
-              {isBalanceHidden ? <IoEyeOffOutline size={20} color="#666" /> : <IoEyeOutline size={20} color="#666" />}
-            </button>
-          </div>
-          <p className="text-[32px] font-extrabold text-[#1A1A1A] mb-3 tracking-wide">
-            {isBalanceHidden ? '•••••••' : `${formatBalance(totalBalance)} ₽`}
-          </p>
-          <div className="flex flex-row items-center gap-1.5">
-            <IoTrendingUp size={16} color="#159E3A" />
-            <span className="text-sm text-success font-semibold">+5.2% за месяц</span>
-          </div>
-        </div>
-
         {/* Monthly Spending Card */}
         <button 
-          className="bg-white mx-5 mt-0 p-6 rounded-[20px] shadow-lg border border-[#F0F0F5] w-[calc(100%-40px)]"
+          className={`mx-5 mt-5 p-6 rounded-[20px] shadow-lg w-[calc(100%-40px)] ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white border border-[#F0F0F5]'}`}
           onClick={() => router.push('/main/operations')}
         >
           <div className="flex flex-row justify-between items-center mb-4">
-            <span className="text-base font-bold text-[#666]">Расходы в {new Date().toLocaleDateString('ru-RU', { month: 'long' })}</span>
+            <span className={`text-base font-bold ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Расходы в {new Date().toLocaleDateString('ru-RU', { month: 'long' })}</span>
             <span className="text-xl font-extrabold text-danger">{formatBalance(monthlyExpenses)} ₽</span>
           </div>
           
           <div className="mb-2">
-            <div className="h-1.5 bg-[#F0F0F0] rounded-full mb-2 overflow-hidden">
-              <div className="h-full bg-primary rounded-full" style={{ width: `${expensePercentage}%` }} />
+            <div className={`h-1.5 rounded-full mb-2 overflow-hidden ${isDarkMode ? 'bg-[#1f1f1f]' : 'bg-[#F0F0F0]'}`}>
+              <div className={`h-full rounded-full ${isDarkMode ? 'bg-[#6A2EE8]' : 'bg-primary'}`} style={{ width: `${expensePercentage}%` }} />
             </div>
-            <span className="text-xs text-[#666] font-medium">{Math.round(expensePercentage)}% от лимита</span>
+            <span className={`text-xs font-medium ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>{Math.round(expensePercentage)}% от лимита</span>
           </div>
         </button>
 
         {/* Quick Actions */}
         <div className="mb-6 mt-5">
-          <h2 className="text-lg font-bold text-[#1A1A1A] mb-4 px-5">Быстрые действия</h2>
+          <h2 className={`text-lg font-bold mb-4 px-5 ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>Быстрые действия</h2>
           <div className="flex flex-row px-5 gap-3">
             {quickActions.map((action, index) => (
               <button 
@@ -232,22 +217,39 @@ export default function Home() {
                 >
                   {getIcon(action.icon)}
                 </div>
-                <span className="text-xs font-semibold text-[#1A1A1A] text-center">{action.title}</span>
+                <span className={`text-xs font-semibold text-center ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>{action.title}</span>
               </button>
             ))}
+          </div>
+        </div>
+
+        {/* Total Balance Card */}
+        <div className={`m-5 p-6 rounded-[20px] shadow-lg ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white border border-[#F0F0F5]'}`}>
+          <div className="flex flex-row justify-between items-center mb-3">
+            <span className={`text-base font-bold ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Общий баланс</span>
+            <button onClick={toggleBalanceVisibility}>
+              {isBalanceHidden ? <IoEyeOffOutline size={20} color={isDarkMode ? '#b3b3b3' : '#666'} /> : <IoEyeOutline size={20} color={isDarkMode ? '#b3b3b3' : '#666'} />}
+            </button>
+          </div>
+          <p className={`text-[32px] font-extrabold mb-3 tracking-wide ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>
+            {isBalanceHidden ? '•••••••' : `${formatBalance(totalBalance)} ₽`}
+          </p>
+          <div className="flex flex-row items-center gap-1.5">
+            <IoTrendingUp size={16} color={isDarkMode ? '#6A2EE8' : '#159E3A'} />
+            <span className={`text-sm font-semibold ${isDarkMode ? 'text-[#6A2EE8]' : 'text-success'}`}>+5.2% за месяц</span>
           </div>
         </div>
 
         {/* Our Partners Section */}
         <div className="mb-6">
           <div className="flex flex-row justify-between items-center px-5 mb-4">
-            <h2 className="text-lg font-bold text-[#1A1A1A]">Наши партнёры</h2>
+            <h2 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>Наши партнёры</h2>
             <button 
               className="flex flex-row items-center gap-1"
               onClick={() => router.push('/partners/list')}
             >
-              <span className="text-sm text-primary font-semibold">Все</span>
-              <IoChevronForward size={16} color="#6A2EE8" />
+              <span className={`text-sm font-semibold ${isDarkMode ? 'text-[#6A2EE8]' : 'text-primary'}`}>Все</span>
+              <IoChevronForward size={16} color={isDarkMode ? '#6A2EE8' : '#6A2EE8'} />
             </button>
           </div>
           
@@ -255,24 +257,24 @@ export default function Home() {
             {partners.map((partner) => (
               <button 
                 key={partner.id}
-                className="bg-white p-5 rounded-[20px] shadow-lg border border-[#F0F0F5] w-full text-left"
+                className={`p-5 rounded-[20px] shadow-lg w-full text-left ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white border border-[#F0F0F5]'}`}
                 onClick={() => handlePartnerPress(partner)}
               >
                 <div className="flex flex-row items-center mb-3">
                   <PartnerLogo logo={partner.logo} partnerId={partner.id} />
                   <div className="flex-1 ml-3">
-                    <p className="text-lg font-bold text-[#1A1A1A] mb-1">{partner.name}</p>
-                    <p className="text-sm text-primary font-semibold">{partner.discount}</p>
+                    <p className={`text-lg font-bold mb-1 ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>{partner.name}</p>
+                    <p className={`text-sm font-semibold ${isDarkMode ? 'text-[#6A2EE8]' : 'text-primary'}`}>{partner.discount}</p>
                   </div>
                 </div>
-                <p className="text-sm text-[#666] leading-5 mb-4 font-medium whitespace-pre-line">
+                <p className={`text-sm leading-5 mb-4 font-medium whitespace-pre-line ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>
                   {partner.description}
                 </p>
                 <div className="mb-4 space-y-2">
                   {partner.benefits.map((benefit, index) => (
                     <div key={index} className="flex flex-row items-center gap-2">
-                      <IoCheckmarkCircle size={16} color="#159E3A" />
-                      <span className="text-sm text-[#1A1A1A] font-medium">{benefit}</span>
+                      <IoCheckmarkCircle size={16} color={isDarkMode ? '#6A2EE8' : '#159E3A'} />
+                      <span className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>{benefit}</span>
                     </div>
                   ))}
                 </div>

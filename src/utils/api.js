@@ -1,8 +1,10 @@
 // Separate base URLs for each microservice
+// Всегда используем прямой URL к продакшн API, так как rewrites не работают на custom server
 const API_BASE_URLS = {
-  AUTH: '/api/auth',
-  ACCOUNTS: '/api/accounts',
-  TRANSFERS: '/api/transfers',
+  AUTH: 'https://bank.korzik.space/api/auth/v1',
+  ACCOUNTS: 'https://bank.korzik.space/api/accounts/v1',
+  TRANSFERS: 'https://bank.korzik.space/api/transfers/v1',
+  PROXY: '/api/auth',
 };
 
 /**
@@ -60,9 +62,11 @@ const apiFetch = async (baseUrl, endpoint, options = {}) => {
       };
     }
 
-    // Пустой ответ (204 No Content)
-    if (response.status === 204) {
-      return null;
+    // Пустой ответ (204 No Content или 201 без тела)
+    if (response.status === 204 || response.status === 201) {
+      const text = await response.text();
+      if (!text) return { success: true };
+      try { return JSON.parse(text); } catch { return { success: true }; }
     }
 
     return await response.json();
@@ -134,10 +138,8 @@ export const authAPI = {
   // Подтверждение кода из Yandex OAuth
   verifyCode: async (code) => {
     console.log('verifyCode called with code:', code);
-    const url = `${API_BASE_URLS.AUTH}/simple/yandex/callback`;
-    console.log('verifyCode URL:', url);
-    
-    return fetch(url, {
+
+    return fetch('/api/auth/verify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -145,44 +147,66 @@ export const authAPI = {
     })
       .then(async res => {
         console.log('verifyCode response status:', res.status);
-        const text = await res.text();
-        console.log('verifyCode response body:', text);
-        
+
+        if (res.status === 300) {
+          const data = await res.json();
+          const err = new Error('HTTP 300');
+          err.status = 300;
+          err.data = data;
+          throw err;
+        }
+
         if (!res.ok) {
+          const text = await res.text();
           throw new Error(`HTTP ${res.status}: ${text}`);
         }
-        
-        // Если ответ пустой (201), извлекаем cookie из заголовков
-        if (res.status === 201 && !text) {
-          const setCookie = res.headers.get('set-cookie');
-          console.log('Set-Cookie header:', setCookie);
-          
-          if (setCookie) {
-            const match = setCookie.match(/YAA_SESS_ID=([^;]+)/);
-            if (match) {
-              return { session_cookie: `YAA_SESS_ID=${match[1]}` };
-            }
-          }
-          
-          return { success: true };
+
+        const text = await res.text();
+        let parsed = { success: true };
+        if (text) {
+          try { parsed = JSON.parse(text); } catch {}
         }
-        
-        return JSON.parse(text);
+
+        return { ...parsed, verified: res.status >= 200 && res.status < 300 };
       })
       .catch(err => {
-        console.error('verifyCode error:', err);
+        if (err.status !== 300) {
+          console.error('verifyCode error:', err);
+        }
         throw err;
       });
   },
 
   // Проверка текущей сессии
   whoami: async () => {
-    return get(API_BASE_URLS.AUTH, '/whoami');
+    const res = await fetch('/api/auth/whoami', {
+      method: 'GET',
+      credentials: 'include',
+    });
+    if (!res.ok) throw { status: res.status, message: 'Unauthorized' };
+    return res.json();
   },
 
   // Выход из системы
   logout: async () => {
     return post(API_BASE_URLS.AUTH, '/logout');
+  },
+
+  // Удалить сессию (при лимите сессий)
+  deleteSession: async (sessionId, preauthSessionId) => {
+    const res = await fetch('/api/auth/preauth', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ sessionId, preauthSessionId }),
+    });
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw { status: res.status, message: text || 'Ошибка удаления сессии' };
+    }
+    const text = await res.text();
+    if (text) { try { return JSON.parse(text); } catch {} }
+    return { success: true };
   },
 };
 
@@ -192,7 +216,9 @@ export const authAPI = {
 export const userAPI = {
   // Получить данные текущего пользователя (используем whoami)
   getProfile: async () => {
-    return get(API_BASE_URLS.AUTH, '/whoami');
+    const res = await fetch('/api/auth/whoami', { method: 'GET', credentials: 'include' });
+    if (!res.ok) throw { status: res.status, message: 'Unauthorized' };
+    return res.json();
   },
 
   // Обновить данные пользователя

@@ -2,9 +2,11 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import MainLayout from '../../src/components/MainLayout';
 import { IoArrowBack } from 'react-icons/io5';
+import { useTheme } from '../../src/context/ThemeContext';
 
 export default function Payments() {
   const router = useRouter();
+  const { isDarkMode } = useTheme();
   const [phoneNumber, setPhoneNumber] = useState('');
   const [phoneError, setPhoneError] = useState('');
 
@@ -60,22 +62,19 @@ export default function Payments() {
 
   return (
     <MainLayout>
-      <div className="flex-1 bg-[#F8FAFD] min-h-screen">
-        <div className="bg-white px-5 py-4 border-b border-[#F0F0F5] flex items-center gap-4">
-          <button onClick={() => router.back()}>
-            <IoArrowBack size={24} color="#000" />
-          </button>
-          <h1 className="text-xl font-bold text-[#1A1A1A]">Платежи</h1>
+      <div className={`flex-1 min-h-screen ${isDarkMode ? 'bg-[#121212]' : 'bg-[#F8FAFD]'}`}>
+        <div className={`px-5 py-4 border-b flex items-center gap-4 ${isDarkMode ? 'bg-[#181818] border-[#4d4d4d]' : 'bg-white border-[#F0F0F5]'}`}>
+          <h1 className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>Платежи</h1>
         </div>
 
         <div className="p-5">
-          <h2 className="text-lg font-bold text-[#1A1A1A] mb-4">Перевод по телефону</h2>
-          <div className="bg-white p-5 rounded-[20px] shadow-lg border border-[#F0F0F5]">
+          <h2 className={`text-lg font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>Перевод по телефону</h2>
+          <div className={`p-5 rounded-[20px] shadow-lg ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white border border-[#F0F0F5]'}`}>
             <div className="flex gap-3 mb-2">
               <input
                 type="tel"
                 placeholder="+7 (___) ___-__-__"
-                className="flex-1 bg-[#F8FAFD] px-4 py-4 rounded-xl text-base border border-[#E5E5EA]"
+                className={`flex-1 px-4 py-4 rounded-xl text-base border ${isDarkMode ? 'bg-[#1f1f1f] border-[#4d4d4d] text-white placeholder-[#666]' : 'bg-[#F8FAFD] border-[#E5E5EA] text-[#000]'}`}
                 value={phoneNumber}
                 onChange={handlePhoneChange}
               />
@@ -83,7 +82,7 @@ export default function Payments() {
                 className={`px-5 py-4 rounded-xl font-bold text-sm ${
                   phoneNumber && validatePhone(phoneNumber)
                     ? 'bg-primary text-white'
-                    : 'bg-[#C4B5FD] text-white cursor-not-allowed'
+                    : (isDarkMode ? 'bg-[#4d4d4d] text-[#999] cursor-not-allowed' : 'bg-[#C4B5FD] text-white cursor-not-allowed')
                 }`}
                 onClick={handlePhoneTransfer}
                 disabled={!phoneNumber || !validatePhone(phoneNumber)}
@@ -93,7 +92,7 @@ export default function Payments() {
             </div>
             {phoneError && <p className="text-danger text-sm mb-2">{phoneError}</p>}
 
-            <h3 className="text-sm font-semibold text-[#666] mt-5 mb-3">Недавние контакты</h3>
+            <h3 className={`text-sm font-semibold mt-5 mb-3 ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Недавние контакты</h3>
             <div className="flex gap-5 overflow-x-auto">
               {contacts.map((contact) => (
                 <button
@@ -104,7 +103,7 @@ export default function Payments() {
                   <div className="w-14 h-14 rounded-full bg-primary flex items-center justify-center mb-2 shadow">
                     <span className="text-white font-bold text-base">{contact.initial}</span>
                   </div>
-                  <span className="text-xs text-[#1A1A1A] font-medium text-center">{contact.name}</span>
+                  <span className={`text-xs font-medium text-center ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>{contact.name}</span>
                 </button>
               ))}
             </div>
