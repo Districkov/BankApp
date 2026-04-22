@@ -128,7 +128,7 @@ export default function TransferPhone() {
   if (loading) {
     return (
       <MainLayout>
-        <div className={`flex-1 min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-[#121212]' : 'bg-[#F7F7FB]'}`}>
+        <div className={`flex-1 flex items-center justify-center ${isDarkMode ? 'bg-[#121212]' : 'bg-[#F7F7FB]'}`}>
           <div className={`animate-spin rounded-full h-12 w-12 border-4 border-t-transparent ${isDarkMode ? 'border-[#6A2EE8]' : 'border-primary'}`} />
         </div>
       </MainLayout>
@@ -137,7 +137,7 @@ export default function TransferPhone() {
 
   return (
     <MainLayout>
-      <div className={`flex-1 min-h-screen ${isDarkMode ? 'bg-[#121212]' : 'bg-[#F7F7FB]'}`}>
+      <div className={`flex flex-col flex-1 ${isDarkMode ? 'bg-[#121212]' : 'bg-[#F7F7FB]'}`}>
         <div className={`px-4 py-3 border-b flex justify-between items-center ${isDarkMode ? 'bg-[#181818] border-[#4d4d4d]' : 'bg-white border-[#E5E5E5]'}`}>
           <button className="w-8 h-8 flex items-center justify-center" onClick={() => router.back()}>
             <span className={`text-xl ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>✕</span>
@@ -146,7 +146,7 @@ export default function TransferPhone() {
           <div className="w-8" />
         </div>
 
-        <div className="p-4">
+        <div className="flex-1 overflow-y-auto p-4 pb-6">
           <div className={`p-4 rounded-xl shadow-sm mb-4 ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white'}`}>
             <label className={`text-sm font-semibold mb-2 block ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Номер телефона</label>
             <input

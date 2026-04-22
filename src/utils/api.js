@@ -2,8 +2,8 @@
 // Всегда используем прямой URL к продакшн API, так как rewrites не работают на custom server
 const API_BASE_URLS = {
   AUTH: 'https://bank.korzik.space/api/auth/v1',
-  ACCOUNTS: 'https://bank.korzik.space/api/accounts/v1',
-  TRANSFERS: 'https://bank.korzik.space/api/transfers/v1',
+  ACCOUNTS: '/api/accounts',
+  TRANSFERS: '/api/transfers',
   PROXY: '/api/auth',
 };
 
@@ -33,7 +33,7 @@ const getSessionToken = () => {
  * Базовый fetch с автоматической подстановкой заголовков и токена
  */
 const apiFetch = async (baseUrl, endpoint, options = {}) => {
-  const token = getSessionToken();
+  const isProxy = baseUrl.startsWith('/');
   
   const headers = {
     'Content-Type': 'application/json',
@@ -45,7 +45,7 @@ const apiFetch = async (baseUrl, endpoint, options = {}) => {
       ...options,
       headers,
       credentials: 'include',
-      mode: 'cors',
+      ...(!isProxy && { mode: 'cors' }),
     });
 
     // Обработка 300 статуса (Multiple Choices / Session Limit)

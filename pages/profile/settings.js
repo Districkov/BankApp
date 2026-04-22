@@ -37,7 +37,7 @@ export default function Settings() {
 
   return (
     <MainLayout>
-      <div className={`flex-1 min-h-screen ${isDarkMode ? 'bg-[#121212]' : 'bg-[#F7F7FB]'}`}>
+      <div className={`flex flex-col flex-1 ${isDarkMode ? 'bg-[#121212]' : 'bg-[#F7F7FB]'}`}>
         <div className={`px-4 py-4 border-b flex justify-between items-center ${isDarkMode ? 'bg-[#181818] border-[#4d4d4d]' : 'bg-white border-[#E5E5E5]'}`}>
           <button onClick={() => router.back()}>
             <IoArrowBack size={24} color={isDarkMode ? '#fff' : '#000'} />

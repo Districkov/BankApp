@@ -18,7 +18,7 @@ export default function MainLayout({ children }) {
 
   return (
     <div className="flex flex-col h-screen">
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto flex flex-col">
         {children}
       </main>
       

@@ -29,7 +29,7 @@ export default function Support() {
 
   return (
     <MainLayout>
-      <div className="flex-1 bg-[#F7F7FB] min-h-screen">
+      <div className="flex flex-col flex-1 bg-[#F7F7FB]">
         <div className="bg-white px-4 py-4 border-b border-[#E5E5E5] flex justify-between items-center">
           <button onClick={() => router.back()}>
             <IoArrowBack size={24} color="#000" />

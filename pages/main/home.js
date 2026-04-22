@@ -152,7 +152,7 @@ export default function Home() {
   if (loading) {
     return (
       <MainLayout>
-        <div className={`flex-1 min-h-screen flex items-center justify-center ${isDarkMode ? 'bg-[#121212]' : 'bg-[#F8FAFD]'}`}>
+        <div className={`flex-1 flex items-center justify-center ${isDarkMode ? 'bg-[#121212]' : 'bg-[#F8FAFD]'}`}>
           <div className={`animate-spin rounded-full h-12 w-12 border-4 border-t-transparent ${isDarkMode ? 'border-[#6A2EE8]' : 'border-primary'}`} />
         </div>
       </MainLayout>
@@ -161,7 +161,7 @@ export default function Home() {
 
   return (
     <MainLayout>
-    <div className={`flex-1 min-h-screen ${isDarkMode ? 'bg-[#121212]' : 'bg-[#F8FAFD]'}`}>
+    <div className={`flex flex-col flex-1 ${isDarkMode ? 'bg-[#121212]' : 'bg-[#F8FAFD]'}`}>
       {/* Header */}
       <div className={`flex flex-row justify-between items-center px-5 py-4 border-b ${isDarkMode ? 'bg-[#181818] border-[#4d4d4d]' : 'bg-white border-[#F0F0F5]'}`}>
         <button onClick={handleProfilePress} className="flex flex-row items-center gap-3">
@@ -182,8 +182,7 @@ export default function Home() {
         </button>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
-        {/* Monthly Spending Card */}
+        <div className="flex-1 overflow-y-auto">
         <button 
           className={`mx-5 mt-5 p-6 rounded-[20px] shadow-lg w-[calc(100%-40px)] ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white border border-[#F0F0F5]'}`}
           onClick={() => router.push('/main/operations')}
