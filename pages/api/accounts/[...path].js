@@ -10,7 +10,9 @@ export default async function handler(req, res) {
   const cookie = [...otherCookies, lastSessCookie].join('; ').replace(/%3A/g, ':').replace(/%2F/g, '/');
 
   const { path: pathSegments } = req.query;
-  const apiPath = '/api/accounts/' + (Array.isArray(pathSegments) ? pathSegments.join('/') : pathSegments || '');
+  const apiPath = '/api/accounts/v1/' + (Array.isArray(pathSegments) ? pathSegments.join('/') : pathSegments || '');
+
+  console.log(`[ACCOUNTS PROXY] ${req.method} ${apiPath} cookie=${rawCookie ? 'present' : 'missing'} sessCookie=${lastSessCookie ? 'present' : 'missing'}`);
 
   const options = {
     hostname: 'bank.korzik.space',
@@ -22,11 +24,11 @@ export default async function handler(req, res) {
     },
   };
 
-  if (['POST', 'PUT', 'PATCH'].includes(req.method)) {
-    const body = JSON.stringify(req.body);
-    options.headers['Content-Length'] = Buffer.byteLength(body);
-
-    const apiRes = await new Promise((resolve, reject) => {
+  const makeRequest = (extraBody) => {
+    return new Promise((resolve, reject) => {
+      if (extraBody) {
+        options.headers['Content-Length'] = Buffer.byteLength(extraBody);
+      }
       const request = https.request(options, (response) => {
         let data = '';
         response.on('data', (chunk) => { data += chunk; });
@@ -35,40 +37,20 @@ export default async function handler(req, res) {
         });
       });
       request.on('error', reject);
-      request.write(body);
+      if (extraBody) request.write(extraBody);
       request.end();
     });
-
-    const setCookies = apiRes.headers['set-cookie'];
-    if (setCookies) {
-      const modified = (Array.isArray(setCookies) ? setCookies : [setCookies]).map(c =>
-        c.replace(/Domain=[^;]+;?\s*/i, '')
-      );
-      res.setHeader('Set-Cookie', modified);
-    }
-
-    if (apiRes.body) {
-      try {
-        return res.status(apiRes.status).json(JSON.parse(apiRes.body));
-      } catch {
-        return res.status(apiRes.status).send(apiRes.body);
-      }
-    }
-    return res.status(apiRes.status).end();
-  }
+  };
 
   try {
-    const apiRes = await new Promise((resolve, reject) => {
-      const request = https.request(options, (response) => {
-        let data = '';
-        response.on('data', (chunk) => { data += chunk; });
-        response.on('end', () => {
-          resolve({ status: response.statusCode, headers: response.headers, body: data });
-        });
-      });
-      request.on('error', reject);
-      request.end();
-    });
+    let apiRes;
+
+    if (['POST', 'PUT', 'PATCH'].includes(req.method)) {
+      const body = JSON.stringify(req.body);
+      apiRes = await makeRequest(body);
+    } else {
+      apiRes = await makeRequest();
+    }
 
     const setCookies = apiRes.headers['set-cookie'];
     if (setCookies) {
@@ -77,6 +59,8 @@ export default async function handler(req, res) {
       );
       res.setHeader('Set-Cookie', modified);
     }
+
+    console.log(`[ACCOUNTS PROXY] Response: ${apiRes.status}`);
 
     if (apiRes.body) {
       try {
