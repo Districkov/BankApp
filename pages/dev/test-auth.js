@@ -68,7 +68,7 @@ export default function TestAuth() {
               value={code}
               onChange={(e) => setCode(e.target.value)}
               placeholder="qcgmlvcgmoaen6us"
-              className={`w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${isDarkMode ? 'bg-[#1f1f1f] border border-[#4d4d4d] text-white placeholder-[#666]' : 'border border-gray-300'}`}
+              className={`w-full px-4 py-2 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent ${isDarkMode ? 'bg-[#1f1f1f] border border-[#4d4d4d] text-white placeholder-[#666]' : 'border border-gray-300'}`}
               required
             />
           </div>
@@ -76,7 +76,7 @@ export default function TestAuth() {
           <button
             type="submit"
             disabled={status === 'processing'}
-            className="w-full bg-purple-600 text-white py-3 rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full bg-primary text-white py-3 rounded-lg hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {status === 'processing' ? 'Обработка...' : 'Войти'}
           </button>

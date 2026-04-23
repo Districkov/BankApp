@@ -51,7 +51,7 @@ export default function Settings() {
           <div className={`m-4 rounded-2xl p-4 shadow-sm ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white'}`}>
             <div className="flex items-center justify-between py-3 border-b border-[#F0F0F0]">
               <div className="flex items-center gap-3">
-                <IoNotificationsOutline size={22} color="#6A2EE8" />
+                <IoNotificationsOutline size={22} color="#1A889F" />
                 <span className={`text-base font-medium ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>Уведомления</span>
               </div>
               <button
@@ -70,7 +70,7 @@ export default function Settings() {
             
             <div className="flex items-center justify-between py-3">
               <div className="flex items-center gap-3">
-                <IoMoonOutline size={22} color="#6A2EE8" />
+                <IoMoonOutline size={22} color="#1A889F" />
                 <span className={`text-base font-medium ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>Темная тема</span>
               </div>
               <button
@@ -100,8 +100,8 @@ export default function Settings() {
                       className={`flex items-center justify-between p-4 border-b last:border-b-0 ${isDarkMode ? 'border-[#4d4d4d]' : 'border-[#F0F0F0]'}`}
                     >
                       <div className="flex items-center gap-3 flex-1">
-                        <div className={`w-9 h-9 rounded-full flex items-center justify-center ${isDarkMode ? 'bg-[#2d2d2d]' : 'bg-[#F0EBFF]'}`}>
-                          <item.icon size={20} color="#6A2EE8" />
+                        <div className={`w-9 h-9 rounded-full flex items-center justify-center ${isDarkMode ? 'bg-[#2d2d2d]' : 'bg-[#E0F4F8]'}`}>
+                          <item.icon size={20} color="#1A889F" />
                         </div>
                         <div className="flex-1">
                           <p className={`text-base font-medium mb-0.5 ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>{item.title}</p>
@@ -119,8 +119,8 @@ export default function Settings() {
                       onClick={() => router.push(item.screen)}
                     >
                       <div className="flex items-center gap-3 flex-1">
-                        <div className={`w-9 h-9 rounded-full flex items-center justify-center ${isDarkMode ? 'bg-[#2d2d2d]' : 'bg-[#F0EBFF]'}`}>
-                          <item.icon size={20} color="#6A2EE8" />
+                        <div className={`w-9 h-9 rounded-full flex items-center justify-center ${isDarkMode ? 'bg-[#2d2d2d]' : 'bg-[#E0F4F8]'}`}>
+                          <item.icon size={20} color="#1A889F" />
                         </div>
                         <div className="flex-1 text-left">
                           <p className={`text-base font-medium mb-0.5 ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>{item.title}</p>

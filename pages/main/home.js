@@ -85,7 +85,7 @@ export default function Home() {
 
   const quickActions = [
     { title: 'Перевод по номеру', icon: 'phone', nav: '/transfers/phone', color: '#159E3A' },
-    { title: 'Перевести', icon: 'transfer', nav: '/transfers/accounts', color: '#6A2EE8' },
+    { title: 'Перевести', icon: 'transfer', nav: '/transfers/accounts', color: '#1A889F' },
   ];
 
   const partners = [
@@ -106,7 +106,7 @@ export default function Home() {
       description: 'Онлайн-просмотр аниме\nСпециальные предложения',
       logo: YanimaLogo,
       screen: '/partners/yanima',
-      color: '#6A2EE8',
+      color: '#1A889F',
       benefits: ['Премиум подписка', 'Ранний доступ', 'Эксклюзивные релизы']
     },
   ];
@@ -153,7 +153,7 @@ export default function Home() {
     return (
       <MainLayout>
         <div className={`flex-1 flex items-center justify-center ${isDarkMode ? 'bg-[#121212]' : 'bg-[#F8FAFD]'}`}>
-          <div className={`animate-spin rounded-full h-12 w-12 border-4 border-t-transparent ${isDarkMode ? 'border-[#6A2EE8]' : 'border-primary'}`} />
+          <div className={`animate-spin rounded-full h-12 w-12 border-4 border-t-transparent ${isDarkMode ? 'border-[#1A889F]' : 'border-primary'}`} />
         </div>
       </MainLayout>
     );
@@ -165,7 +165,7 @@ export default function Home() {
       {/* Header */}
       <div className={`flex flex-row justify-between items-center px-5 py-4 border-b ${isDarkMode ? 'bg-[#181818] border-[#4d4d4d]' : 'bg-white border-[#F0F0F5]'}`}>
         <button onClick={handleProfilePress} className="flex flex-row items-center gap-3">
-          <div className={`w-11 h-11 rounded-[22px] flex items-center justify-center ${isDarkMode ? 'bg-[#6A2EE8]' : 'bg-primary'}`}>
+          <div className={`w-11 h-11 rounded-[22px] flex items-center justify-center ${isDarkMode ? 'bg-[#1A889F]' : 'bg-primary'}`}>
             <span className={`font-bold text-base ${isDarkMode ? 'text-white' : 'text-white'}`}>
               {user?.first_name?.[0] || 'И'}
             </span>
@@ -194,7 +194,7 @@ export default function Home() {
           
           <div className="mb-2">
             <div className={`h-1.5 rounded-full mb-2 overflow-hidden ${isDarkMode ? 'bg-[#1f1f1f]' : 'bg-[#F0F0F0]'}`}>
-              <div className={`h-full rounded-full ${isDarkMode ? 'bg-[#6A2EE8]' : 'bg-primary'}`} style={{ width: `${expensePercentage}%` }} />
+              <div className={`h-full rounded-full ${isDarkMode ? 'bg-[#1A889F]' : 'bg-primary'}`} style={{ width: `${expensePercentage}%` }} />
             </div>
             <span className={`text-xs font-medium ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>{Math.round(expensePercentage)}% от лимита</span>
           </div>
@@ -234,8 +234,8 @@ export default function Home() {
             {isBalanceHidden ? '•••••••' : `${formatBalance(totalBalance)} ₽`}
           </p>
           <div className="flex flex-row items-center gap-1.5">
-            <IoTrendingUp size={16} color={isDarkMode ? '#6A2EE8' : '#159E3A'} />
-            <span className={`text-sm font-semibold ${isDarkMode ? 'text-[#6A2EE8]' : 'text-success'}`}>+5.2% за месяц</span>
+            <IoTrendingUp size={16} color={isDarkMode ? '#1A889F' : '#159E3A'} />
+            <span className={`text-sm font-semibold ${isDarkMode ? 'text-[#1A889F]' : 'text-success'}`}>+5.2% за месяц</span>
           </div>
         </div>
 
@@ -247,8 +247,8 @@ export default function Home() {
               className="flex flex-row items-center gap-1"
               onClick={() => router.push('/partners/list')}
             >
-              <span className={`text-sm font-semibold ${isDarkMode ? 'text-[#6A2EE8]' : 'text-primary'}`}>Все</span>
-              <IoChevronForward size={16} color={isDarkMode ? '#6A2EE8' : '#6A2EE8'} />
+              <span className={`text-sm font-semibold ${isDarkMode ? 'text-[#1A889F]' : 'text-primary'}`}>Все</span>
+              <IoChevronForward size={16} color={isDarkMode ? '#1A889F' : '#1A889F'} />
             </button>
           </div>
           
@@ -263,7 +263,7 @@ export default function Home() {
                   <PartnerLogo logo={partner.logo} partnerId={partner.id} />
                   <div className="flex-1 ml-3">
                     <p className={`text-lg font-bold mb-1 ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>{partner.name}</p>
-                    <p className={`text-sm font-semibold ${isDarkMode ? 'text-[#6A2EE8]' : 'text-primary'}`}>{partner.discount}</p>
+                    <p className={`text-sm font-semibold ${isDarkMode ? 'text-[#1A889F]' : 'text-primary'}`}>{partner.discount}</p>
                   </div>
                 </div>
                 <p className={`text-sm leading-5 mb-4 font-medium whitespace-pre-line ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>
@@ -272,7 +272,7 @@ export default function Home() {
                 <div className="mb-4 space-y-2">
                   {partner.benefits.map((benefit, index) => (
                     <div key={index} className="flex flex-row items-center gap-2">
-                      <IoCheckmarkCircle size={16} color={isDarkMode ? '#6A2EE8' : '#159E3A'} />
+                      <IoCheckmarkCircle size={16} color={isDarkMode ? '#1A889F' : '#159E3A'} />
                       <span className={`text-sm font-medium ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>{benefit}</span>
                     </div>
                   ))}

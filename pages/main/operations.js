@@ -98,7 +98,7 @@ export default function Operations() {
     return (
       <MainLayout>
         <div className={`flex-1 flex items-center justify-center ${isDarkMode ? 'bg-[#121212]' : 'bg-[#F8FAFD]'}`}>
-          <div className={`animate-spin rounded-full h-12 w-12 border-4 border-t-transparent ${isDarkMode ? 'border-[#6A2EE8]' : 'border-primary'}`} />
+          <div className={`animate-spin rounded-full h-12 w-12 border-4 border-t-transparent ${isDarkMode ? 'border-[#1A889F]' : 'border-primary'}`} />
         </div>
       </MainLayout>
     );

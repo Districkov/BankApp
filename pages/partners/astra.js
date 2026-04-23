@@ -72,7 +72,7 @@ export default function AstraDetail() {
             <div className="space-y-3">
               {partner.benefits.map((benefit, index) => (
                 <div key={index} className="flex items-center gap-3">
-                  <IoCheckmarkCircle size={20} color={isDarkMode ? '#6A2EE8' : '#159E3A'} />
+                  <IoCheckmarkCircle size={20} color={isDarkMode ? '#1A889F' : '#159E3A'} />
                   <span className={`text-base ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>{benefit}</span>
                 </div>
               ))}

@@ -8,7 +8,7 @@ export default function Support() {
   const [searchQuery, setSearchQuery] = useState('');
 
   const faqCategories = [
-    { icon: IoCardOutline, title: 'Карты и счета', count: '12 вопросов', color: '#6A2EE8' },
+    { icon: IoCardOutline, title: 'Карты и счета', count: '12 вопросов', color: '#1A889F' },
     { icon: IoSwapHorizontalOutline, title: 'Переводы и платежи', count: '8 вопросов', color: '#FF6B6B' },
     { icon: IoLockClosedOutline, title: 'Безопасность', count: '6 вопросов', color: '#4ECDC4' },
     { icon: IoPhonePortraitOutline, title: 'Приложение', count: '5 вопросов', color: '#45B7D1' }
@@ -22,7 +22,7 @@ export default function Support() {
 
   const contactMethods = [
     { icon: IoCallOutline, title: 'Телефон поддержки', subtitle: '8 800 555-35-35', color: '#159E3A', action: () => window.open('tel:88005553535') },
-    { icon: IoChatbubbleOutline, title: 'Онлайн-чат', subtitle: 'Круглосуточно', color: '#6A2EE8', action: () => console.log('Open chat') },
+    { icon: IoChatbubbleOutline, title: 'Онлайн-чат', subtitle: 'Круглосуточно', color: '#1A889F', action: () => console.log('Open chat') },
     { icon: IoMailOutline, title: 'Электронная почта', subtitle: 'support@bank.ru', color: '#FFA726', action: () => window.open('mailto:support@bank.ru') },
     { icon: IoLocationOutline, title: 'Отделения банка', subtitle: 'Найти ближайшее', color: '#FF3B30', action: () => console.log('Open map') }
   ];
@@ -138,7 +138,7 @@ export default function Support() {
           <div className="px-4 mb-6">
             <div className="bg-white p-4 rounded-xl shadow-sm">
               <div className="flex items-center gap-2 mb-4">
-                <IoPhonePortraitOutline size={24} color="#6A2EE8" />
+                <IoPhonePortraitOutline size={24} color="#1A889F" />
                 <h3 className="text-base font-semibold text-[#000]">О приложении</h3>
               </div>
               <div className="space-y-2">

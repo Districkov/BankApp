@@ -29,7 +29,7 @@ export default function TransferAccounts() {
           id: acc.id,
           name: acc.name || 'Счёт',
           amount: parseFloat(acc.balance || 0),
-          color: acc.color || '#6A2EE8'
+          color: acc.color || '#1A889F'
         })));
         
         if (accountsData.length >= 2) {
@@ -40,7 +40,7 @@ export default function TransferAccounts() {
         }
       } else {
         setAccounts([
-          { id: 'account1', name: 'Основной счёт', amount: 22717.98, color: '#6A2EE8' },
+          { id: 'account1', name: 'Основной счёт', amount: 22717.98, color: '#1A889F' },
           { id: 'account2', name: 'Накопительный счёт', amount: 50000.00, color: '#159E3A' }
         ]);
         setFromAccount('account1');
@@ -49,7 +49,7 @@ export default function TransferAccounts() {
     } catch (error) {
       console.error('Error loading accounts:', error);
       setAccounts([
-        { id: 'account1', name: 'Основной счёт', amount: 22717.98, color: '#6A2EE8' },
+        { id: 'account1', name: 'Основной счёт', amount: 22717.98, color: '#1A889F' },
         { id: 'account2', name: 'Накопительный счёт', amount: 50000.00, color: '#159E3A' }
       ]);
       setFromAccount('account1');
@@ -110,7 +110,7 @@ export default function TransferAccounts() {
     return (
       <MainLayout>
         <div className={`flex-1 flex items-center justify-center ${isDarkMode ? 'bg-[#121212]' : 'bg-[#F7F7FB]'}`}>
-          <div className={`animate-spin rounded-full h-12 w-12 border-4 border-t-transparent ${isDarkMode ? 'border-[#6A2EE8]' : 'border-primary'}`} />
+          <div className={`animate-spin rounded-full h-12 w-12 border-4 border-t-transparent ${isDarkMode ? 'border-[#1A889F]' : 'border-primary'}`} />
         </div>
       </MainLayout>
     );

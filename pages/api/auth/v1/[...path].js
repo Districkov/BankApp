@@ -10,7 +10,7 @@ export default async function handler(req, res) {
   const cookie = [...otherCookies, lastSessCookie].join('; ').replace(/%3A/g, ':').replace(/%2F/g, '/');
 
   const { path: pathSegments } = req.query;
-  const apiPath = '/api/transfers/' + (Array.isArray(pathSegments) ? pathSegments.join('/') : pathSegments || '');
+  const apiPath = '/api/auth/v1/' + (Array.isArray(pathSegments) ? pathSegments.join('/') : pathSegments || '');
 
   const options = {
     hostname: 'bank.korzik.space',
@@ -87,7 +87,7 @@ export default async function handler(req, res) {
     }
     return res.status(apiRes.status).end();
   } catch (error) {
-    console.error('Proxy transfers error:', error);
+    console.error('Proxy auth error:', error);
     return res.status(500).json({ message: 'Internal server error' });
   }
 }

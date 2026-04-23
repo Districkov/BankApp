@@ -26,7 +26,7 @@ export default function PartnersList() {
       description: 'Онлайн-просмотр аниме',
       logo: '/partners/yanima-logo.png',
       screen: '/partners/yanima',
-      color: '#6A2EE8',
+      color: '#1A889F',
       benefits: ['Премиум подписка', 'Ранний доступ', 'Эксклюзивные релизы']
     },
   ];

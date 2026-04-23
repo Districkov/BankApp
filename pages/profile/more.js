@@ -72,7 +72,7 @@ export default function More() {
           icon: IoPersonOutline,
           title: 'Профиль',
           description: 'Личные данные и настройки',
-          color: '#6A2EE8',
+          color: '#1A889F',
           screen: '/profile/settings'
         },
         {
@@ -102,7 +102,7 @@ export default function More() {
     return (
       <MainLayout>
         <div className={`flex-1 flex items-center justify-center ${isDarkMode ? 'bg-[#121212]' : 'bg-[#F7F7FB]'}`}>
-          <div className={`animate-spin rounded-full h-12 w-12 border-4 border-t-transparent ${isDarkMode ? 'border-[#6A2EE8]' : 'border-primary'}`} />
+          <div className={`animate-spin rounded-full h-12 w-12 border-4 border-t-transparent ${isDarkMode ? 'border-[#1A889F]' : 'border-primary'}`} />
         </div>
       </MainLayout>
     );

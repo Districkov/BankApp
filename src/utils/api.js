@@ -1,10 +1,7 @@
-// Separate base URLs for each microservice
-// Всегда используем прямой URL к продакшн API, так как rewrites не работают на custom server
 const API_BASE_URLS = {
-  AUTH: 'https://bank.korzik.space/api/auth/v1',
-  ACCOUNTS: '/api/accounts',
-  TRANSFERS: '/api/transfers',
-  PROXY: '/api/auth',
+  AUTH: '/api/auth/v1',
+  ACCOUNTS: '/api/accounts/v1',
+  TRANSFERS: '/api/transfers/v1',
 };
 
 /**
@@ -139,7 +136,7 @@ export const authAPI = {
   verifyCode: async (code) => {
     console.log('verifyCode called with code:', code);
 
-    return fetch('/api/auth/verify', {
+    return fetch('/api/auth/v1/verify', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -179,7 +176,7 @@ export const authAPI = {
 
   // Проверка текущей сессии
   whoami: async () => {
-    const res = await fetch('/api/auth/whoami', {
+    const res = await fetch('/api/auth/v1/whoami', {
       method: 'GET',
       credentials: 'include',
     });
@@ -194,7 +191,7 @@ export const authAPI = {
 
   // Удалить сессию (при лимите сессий)
   deleteSession: async (sessionId, preauthSessionId) => {
-    const res = await fetch('/api/auth/preauth', {
+    const res = await fetch('/api/auth/v1/preauth', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -216,7 +213,7 @@ export const authAPI = {
 export const userAPI = {
   // Получить данные текущего пользователя (используем whoami)
   getProfile: async () => {
-    const res = await fetch('/api/auth/whoami', { method: 'GET', credentials: 'include' });
+    const res = await fetch('/api/auth/v1/whoami', { method: 'GET', credentials: 'include' });
     if (!res.ok) throw { status: res.status, message: 'Unauthorized' };
     return res.json();
   },

@@ -82,7 +82,7 @@ export default function Payments() {
                 className={`shrink-0 px-4 py-4 rounded-xl font-bold text-sm ${
                   phoneNumber && validatePhone(phoneNumber)
                     ? 'bg-primary text-white'
-                    : (isDarkMode ? 'bg-[#4d4d4d] text-[#999] cursor-not-allowed' : 'bg-[#C4B5FD] text-white cursor-not-allowed')
+                    : (isDarkMode ? 'bg-[#4d4d4d] text-[#999] cursor-not-allowed' : 'bg-[#9DD0DB] text-white cursor-not-allowed')
                 }`}
                 onClick={handlePhoneTransfer}
                 disabled={!phoneNumber || !validatePhone(phoneNumber)}

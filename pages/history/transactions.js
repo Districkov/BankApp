@@ -105,7 +105,7 @@ export default function TransactionHistory() {
           </button>
           <h1 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>История операций</h1>
           <button className="w-10 h-10 flex items-center justify-center">
-            <IoFilter size={20} color="#6A2EE8" />
+            <IoFilter size={20} color="#1A889F" />
           </button>
         </div>
 
@@ -254,11 +254,11 @@ export default function TransactionHistory() {
           {/* Export Section */}
           <div className="flex gap-3 px-4 mb-6">
             <button className={`flex-1 flex items-center justify-center gap-2 p-4 rounded-xl shadow-sm ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white'}`}>
-              <IoDownloadOutline size={20} color="#6A2EE8" />
+              <IoDownloadOutline size={20} color="#1A889F" />
               <span className="text-sm font-semibold text-primary">Экспорт выписки</span>
             </button>
             <button className={`flex-1 flex items-center justify-center gap-2 p-4 rounded-xl shadow-sm ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white'}`}>
-              <IoShareOutline size={20} color="#6A2EE8" />
+              <IoShareOutline size={20} color="#1A889F" />
               <span className="text-sm font-semibold text-primary">Поделиться</span>
             </button>
           </div>

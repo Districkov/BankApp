@@ -4,15 +4,15 @@ const nextConfig = {
   async rewrites() {
     return [
       {
-        source: '/api/auth/:path*',
+        source: '/api/auth/v1/:path*',
         destination: 'https://bank.korzik.space/api/auth/v1/:path*',
       },
       {
-        source: '/api/accounts/:path*',
+        source: '/api/accounts/v1/:path*',
         destination: 'https://bank.korzik.space/api/accounts/v1/:path*',
       },
       {
-        source: '/api/transfers/:path*',
+        source: '/api/transfers/v1/:path*',
         destination: 'https://bank.korzik.space/api/transfers/v1/:path*',
       },
     ];

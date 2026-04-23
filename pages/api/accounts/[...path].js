@@ -10,7 +10,7 @@ export default async function handler(req, res) {
   const cookie = [...otherCookies, lastSessCookie].join('; ').replace(/%3A/g, ':').replace(/%2F/g, '/');
 
   const { path: pathSegments } = req.query;
-  const apiPath = '/api/accounts/v1/' + (Array.isArray(pathSegments) ? pathSegments.join('/') : pathSegments || '');
+  const apiPath = '/api/accounts/' + (Array.isArray(pathSegments) ? pathSegments.join('/') : pathSegments || '');
 
   const options = {
     hostname: 'bank.korzik.space',

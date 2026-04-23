@@ -36,7 +36,7 @@ export default function MainLayout({ children }) {
             >
               <Icon 
                 size={24} 
-                color={isActive ? '#6A2EE8' : (isDarkMode ? '#b3b3b3' : '#666')} 
+                color={isActive ? '#1A889F' : (isDarkMode ? '#b3b3b3' : '#666')} 
               />
               <span 
                 className={`text-xs font-medium mt-1 ${

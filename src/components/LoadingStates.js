@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTheme } from '../context/ThemeContext';
 
-export const LoadingSpinner = ({ size = 'large', color = '#6A2EE8', message }) => {
+export const LoadingSpinner = ({ size = 'large', color = '#1A889F', message }) => {
   const { isDarkMode } = useTheme();
   return (
     <div className="flex-1 flex flex-col justify-center items-center p-4">

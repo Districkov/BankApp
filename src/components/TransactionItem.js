@@ -11,7 +11,7 @@ const TransactionItem = ({ transaction, onClick }) => {
       case 'expense':
         return { Icon: IoArrowUp, color: '#FF3B30', bgColor: isDarkMode ? '#3d1a1a' : '#FFE5E5' };
       default:
-        return { Icon: IoSwapHorizontal, color: '#6A2EE8', bgColor: isDarkMode ? '#2a1a4d' : '#F0EBFF' };
+        return { Icon: IoSwapHorizontal, color: '#1A889F', bgColor: isDarkMode ? '#09436B' : '#E0F4F8' };
     }
   };
 

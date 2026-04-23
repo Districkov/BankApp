@@ -94,7 +94,7 @@ export default function SessionLimit() {
   return (
     <div className={`min-h-screen px-6 pt-8 ${isDarkMode ? 'bg-[#121212]' : 'bg-[#F7F7FB]'}`}>
       <div className={`w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white'}`}>
-        <IoShieldOutline size={48} color="#6A2EE8" />
+        <IoShieldOutline size={48} color="#1A889F" />
       </div>
 
       <h1 className={`text-2xl font-bold mb-2 text-center ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>Превышен лимит сессий</h1>
@@ -119,8 +119,8 @@ export default function SessionLimit() {
               onClick={() => handleDeleteSession(session.sessionId)}
               disabled={isLoading}
             >
-              <div className={`w-10 h-10 rounded-full flex items-center justify-center mr-3 ${isDarkMode ? 'bg-[#2a1a4d]' : 'bg-[#6A2EE810]'}`}>
-                <DeviceIcon size={24} color="#6A2EE8" />
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center mr-3 ${isDarkMode ? 'bg-[#09436B]' : 'bg-[#1A889F10]'}`}>
+                <DeviceIcon size={24} color="#1A889F" />
               </div>
               <div className="flex-1 text-left">
                 <p className={`text-sm font-semibold mb-1 ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>{formatDevice(session)}</p>

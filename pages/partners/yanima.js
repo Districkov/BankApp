@@ -13,7 +13,7 @@ export default function YanimaDetail() {
     discount: 'Подписка в подарок',
     description: 'Онлайн-просмотр аниме с огромной библиотекой',
     logo: '/partners/yanima-logo.png',
-    color: '#6A2EE8',
+    color: '#1A889F',
     benefits: [
       'Премиум подписка на 1 месяц',
       'Ранний доступ к новинкам',
@@ -80,7 +80,7 @@ export default function YanimaDetail() {
             <div className="space-y-3">
               {partner.benefits.map((benefit, index) => (
                 <div key={index} className="flex items-center gap-3">
-                  <IoCheckmarkCircle size={20} color="#6A2EE8" />
+                  <IoCheckmarkCircle size={20} color="#1A889F" />
                   <span className={`text-base ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>{benefit}</span>
                 </div>
               ))}
@@ -104,7 +104,7 @@ export default function YanimaDetail() {
             <h3 className={`text-xl font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>Рейтинг пользователей</h3>
             <div className="flex items-center gap-2 mb-3">
               {[1, 2, 3, 4, 5].map((star) => (
-                <IoStarOutline key={star} size={16} color="#6A2EE8" className="mt-1" />
+                <IoStarOutline key={star} size={16} color="#1A889F" className="mt-1" />
               ))}
               <span className={`text-lg font-bold ml-2 ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>4.8</span>
               <span className={`text-sm ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>(2,547 отзывов)</span>
