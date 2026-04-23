@@ -136,7 +136,7 @@ export const authAPI = {
   verifyCode: async (code) => {
     console.log('verifyCode called with code:', code);
 
-    return fetch('/api/auth/v1/verify', {
+    return fetch('/api/auth/v1/simple/yandex/callback', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
