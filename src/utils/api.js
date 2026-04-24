@@ -1,7 +1,9 @@
+const API_BASE_URL = 'https://bank.korzik.space';
+
 const API_BASE_URLS = {
-  AUTH: '/api/auth/v1',
-  ACCOUNTS: '/api/accounts/v1',
-  TRANSFERS: '/api/transfers/v1',
+  AUTH: `${API_BASE_URL}/api/auth/v1`,
+  ACCOUNTS: `${API_BASE_URL}/api/accounts/v1`,
+  TRANSFERS: `${API_BASE_URL}/api/transfers/v1`,
 };
 
 /**
@@ -30,19 +32,18 @@ const getSessionToken = () => {
  * Базовый fetch с автоматической подстановкой заголовков и токена
  */
 const apiFetch = async (baseUrl, endpoint, options = {}) => {
-  const isProxy = baseUrl.startsWith('/');
-  
+  const url = `${baseUrl}${endpoint}`;
+
   const headers = {
     'Content-Type': 'application/json',
     ...options.headers,
   };
 
   try {
-    const response = await fetch(`${baseUrl}${endpoint}`, {
+    const response = await fetch(url, {
       ...options,
       headers,
       credentials: 'include',
-      ...(!isProxy && { mode: 'cors' }),
     });
 
     // Обработка 300 статуса (Multiple Choices / Session Limit)
@@ -125,6 +126,7 @@ export const authAPI = {
     const response = await fetch(`${API_BASE_URLS.AUTH}/simple/yandex/url`, {
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
     });
     if (!response.ok) {
       throw new Error('Не удалось получить URL авторизации');
@@ -136,7 +138,7 @@ export const authAPI = {
   verifyCode: async (code) => {
     console.log('verifyCode called with code:', code);
 
-    return fetch('/api/auth/v1/simple/yandex/callback', {
+    return fetch(`${API_BASE_URLS.AUTH}/simple/yandex/callback`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -176,7 +178,7 @@ export const authAPI = {
 
   // Проверка текущей сессии
   whoami: async () => {
-    const res = await fetch('/api/auth/v1/whoami', {
+    const res = await fetch(`${API_BASE_URLS.AUTH}/whoami`, {
       method: 'GET',
       credentials: 'include',
     });
@@ -184,14 +186,12 @@ export const authAPI = {
     return res.json();
   },
 
-  // Выход из системы
   logout: async () => {
     return post(API_BASE_URLS.AUTH, '/logout');
   },
 
-  // Удалить сессию (при лимите сессий)
   deleteSession: async (sessionId, preauthSessionId) => {
-    const res = await fetch('/api/auth/v1/preauth', {
+    const res = await fetch(`${API_BASE_URLS.AUTH}/preauth`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
@@ -213,7 +213,7 @@ export const authAPI = {
 export const userAPI = {
   // Получить данные текущего пользователя (используем whoami)
   getProfile: async () => {
-    const res = await fetch('/api/auth/v1/whoami', { method: 'GET', credentials: 'include' });
+    const res = await fetch(`${API_BASE_URLS.AUTH}/whoami`, { method: 'GET', credentials: 'include' });
     if (!res.ok) throw { status: res.status, message: 'Unauthorized' };
     return res.json();
   },
