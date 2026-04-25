@@ -292,6 +292,21 @@ export const transfersAPI = {
     return post(API_BASE_URLS.TRANSFERS, '', data);
   },
 
+  // Перевод по номеру телефона
+  transferToPhone: async (data) => {
+    return post(API_BASE_URLS.TRANSFERS, '', data);
+  },
+
+  // Перевод по номеру карты
+  transferToCard: async (data) => {
+    return post(API_BASE_URLS.TRANSFERS, '', data);
+  },
+
+  // Перевод между своими счетами
+  transferBetweenAccounts: async (data) => {
+    return post(API_BASE_URLS.TRANSFERS, '', data);
+  },
+
   // Получить все переводы
   getTransfers: async (params = {}) => {
     const queryParams = new URLSearchParams(params).toString();
