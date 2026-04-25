@@ -55,11 +55,7 @@ export default function Home() {
 
         // Получаем транзакции для первого счёта
         const firstAccountId = accountsData[0].id;
-        const transactionsData = await transactionsAPI.getTransactions(firstAccountId, { 
-          type: 'expense',
-          from: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString(),
-          to: new Date().toISOString()
-        }).catch(() => null);
+        const transactionsData = await transactionsAPI.getTransactions(firstAccountId).catch(() => null);
 
         // Подсчитываем расходы за текущий месяц
         if (transactionsData && transactionsData.length > 0) {
