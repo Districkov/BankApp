@@ -66,7 +66,11 @@ const apiFetch = async (baseUrl, endpoint, options = {}) => {
       try { return JSON.parse(text); } catch { return { success: true }; }
     }
 
-    return await response.json();
+    const result = await response.json();
+    if (result && result.success && result.data !== undefined) {
+      return result.data;
+    }
+    return result;
   } catch (error) {
     if (error.status) {
       throw error;
