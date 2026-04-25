@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import MainLayout from '../../src/components/MainLayout';
 import { IoArrowBack, IoCarOutline, IoFastFoodOutline, IoMedicalOutline, IoCardOutline, IoSwapHorizontalOutline, IoGameControllerOutline } from 'react-icons/io5';
-import { transactionsAPI } from '../../src/utils/api';
+import { transactionsAPI, accountsAPI } from '../../src/utils/api';
 import { useTheme } from '../../src/context/ThemeContext';
 
 const categoryIcons = {
@@ -38,7 +38,15 @@ export default function Operations() {
   const loadTransactions = async () => {
     try {
       setLoading(true);
-      const transactions = await transactionsAPI.getTransactions().catch(() => null);
+      // Сначала получаем счета
+      const accounts = await accountsAPI.getAccounts().catch(() => null);
+      if (!accounts || accounts.length === 0) {
+        setData([]);
+        return;
+      }
+
+      // Получаем транзакции для первого счёта
+      const transactions = await transactionsAPI.getTransactions(accounts[0].id).catch(() => null);
       
       if (transactions && transactions.length > 0) {
         setData(transactions.map(tx => ({

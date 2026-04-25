@@ -37,14 +37,9 @@ export default function Home() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [userData, accountsData, transactionsData] = await Promise.all([
+      const [userData, accountsData] = await Promise.all([
         userAPI.getProfile(),
         accountsAPI.getAccounts(),
-        transactionsAPI.getTransactions({ 
-          type: 'expense',
-          from: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString(),
-          to: new Date().toISOString()
-        }).catch(() => null)
       ]);
       
       setUser(userData);
@@ -57,18 +52,26 @@ export default function Home() {
           return sum + balance;
         }, 0);
         setTotalBalance(total);
-      }
 
-      // Подсчитываем расходы за текущий месяц
-      if (transactionsData && transactionsData.length > 0) {
-        const expenses = transactionsData.reduce((sum, tx) => {
-          return sum + Math.abs(parseFloat(tx.amount || 0));
-        }, 0);
-        setMonthlyExpenses(expenses);
-        
-        // Рассчитываем процент от лимита (предположим лимит 50000)
-        const limit = 50000;
-        setExpensePercentage(Math.min((expenses / limit) * 100, 100));
+        // Получаем транзакции для первого счёта
+        const firstAccountId = accountsData[0].id;
+        const transactionsData = await transactionsAPI.getTransactions(firstAccountId, { 
+          type: 'expense',
+          from: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString(),
+          to: new Date().toISOString()
+        }).catch(() => null);
+
+        // Подсчитываем расходы за текущий месяц
+        if (transactionsData && transactionsData.length > 0) {
+          const expenses = transactionsData.reduce((sum, tx) => {
+            return sum + Math.abs(parseFloat(tx.amount || 0));
+          }, 0);
+          setMonthlyExpenses(expenses);
+          
+          // Рассчитываем процент от лимита (предположим лимит 50000)
+          const limit = 50000;
+          setExpensePercentage(Math.min((expenses / limit) * 100, 100));
+        }
       }
     } catch (error) {
       console.error('Error loading data:', error);

@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import MainLayout from '../../src/components/MainLayout';
 import { IoArrowBack, IoSearch, IoClose, IoArrowDown, IoArrowUp, IoReceiptOutline, IoDownloadOutline, IoShareOutline } from 'react-icons/io5';
 import { IoFilter } from 'react-icons/io5';
-import { transactionsAPI } from '../../src/utils/api';
+import { transactionsAPI, accountsAPI } from '../../src/utils/api';
 import { useTheme } from '../../src/context/ThemeContext';
 
 export default function TransactionHistory() {
@@ -45,7 +45,16 @@ export default function TransactionHistory() {
         params.card = selectedCard;
       }
 
-      const data = await transactionsAPI.getTransactions(params);
+      // Сначала получаем счета
+      const accounts = await accountsAPI.getAccounts().catch(() => null);
+      if (!accounts || accounts.length === 0) {
+        setTransactions([]);
+        return;
+      }
+
+      // Получаем транзакции для первого счёта (или selectedCard если указан)
+      const accountId = selectedCard !== 'all' ? selectedCard : accounts[0].id;
+      const data = await transactionsAPI.getTransactions(accountId, params);
       setTransactions(data || []);
     } catch (error) {
       console.error('Error loading transactions:', error);
