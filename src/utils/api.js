@@ -238,22 +238,22 @@ export const userAPI = {
 export const accountsAPI = {
   // Получить все счета пользователя
   getAccounts: async () => {
-    return get(API_BASE_URLS.ACCOUNTS, '/accounts');
+    return get(API_BASE_URLS.ACCOUNTS, '');
   },
 
   // Получить счёт по ID
   getAccount: async (accountId) => {
-    return get(API_BASE_URLS.ACCOUNTS, `/accounts/${accountId}`);
+    return get(API_BASE_URLS.ACCOUNTS, `/${accountId}`);
   },
 
   // Получить баланс счёта
   getBalance: async (accountId) => {
-    return get(API_BASE_URLS.ACCOUNTS, `/accounts/${accountId}/balance`);
+    return get(API_BASE_URLS.ACCOUNTS, `/${accountId}/balance`);
   },
 
   // Создать новый счёт
   createAccount: async (data) => {
-    return post(API_BASE_URLS.ACCOUNTS, '/accounts', data);
+    return post(API_BASE_URLS.ACCOUNTS, '', data);
   },
 };
 
@@ -261,13 +261,13 @@ export const accountsAPI = {
  * Транзакции
  */
 export const transactionsAPI = {
-  // Получить историю транзакций
-  getTransactions: async (params = {}) => {
+  // Получить историю транзакций (требует accountId)
+  getTransactions: async (accountId, params = {}) => {
     const queryParams = new URLSearchParams(params).toString();
-    return get(API_BASE_URLS.ACCOUNTS, `/transactions${queryParams ? `?${queryParams}` : ''}`);
+    return get(API_BASE_URLS.ACCOUNTS, `/${accountId}/history${queryParams ? `?${queryParams}` : ''}`);
   },
 
-  // Получить транзакцию по ID
+  // Получить транзакцию по ID (если есть отдельный эндпоинт)
   getTransaction: async (transactionId) => {
     return get(API_BASE_URLS.ACCOUNTS, `/transactions/${transactionId}`);
   },
@@ -282,65 +282,25 @@ export const transactionsAPI = {
  * Переводы
  */
 export const transfersAPI = {
-  // Перевод по номеру карты
-  transferToCard: async (data) => {
-    return post(API_BASE_URLS.TRANSFERS, '/transfers/card', data);
+  // Создать перевод
+  createTransfer: async (data) => {
+    return post(API_BASE_URLS.TRANSFERS, '', data);
   },
 
-  // Перевод по номеру телефона
-  transferToPhone: async (data) => {
-    return post(API_BASE_URLS.TRANSFERS, '/transfers/phone', data);
-  },
-
-  // Перевод между своими счетами
-  transferBetweenAccounts: async (data) => {
-    return post(API_BASE_URLS.TRANSFERS, '/transfers/internal', data);
-  },
-
-  // Получить лимиты на переводы
-  getLimits: async () => {
-    return get(API_BASE_URLS.TRANSFERS, '/transfers/limits');
-  },
-};
-
-/**
- * Контакты
- */
-export const contactsAPI = {
-  // Получить список контактов
-  getContacts: async () => {
-    return get(API_BASE_URLS.AUTH, '/contacts');
-  },
-
-  // Добавить контакт
-  addContact: async (data) => {
-    return post(API_BASE_URLS.AUTH, '/contacts', data);
-  },
-
-  // Обновить контакт
-  updateContact: async (contactId, data) => {
-    return put(API_BASE_URLS.AUTH, `/contacts/${contactId}`, data);
-  },
-
-  // Удалить контакт
-  deleteContact: async (contactId) => {
-    return del(API_BASE_URLS.AUTH, `/contacts/${contactId}`);
-  },
-};
-
-/**
- * Платежи
- */
-export const paymentsAPI = {
-  // Совершить платёж
-  makePayment: async (data) => {
-    return post(API_BASE_URLS.TRANSFERS, '/payments', data);
-  },
-
-  // Получить историю платежей
-  getPayments: async (params = {}) => {
+  // Получить все переводы
+  getTransfers: async (params = {}) => {
     const queryParams = new URLSearchParams(params).toString();
-    return get(API_BASE_URLS.TRANSFERS, `/payments${queryParams ? `?${queryParams}` : ''}`);
+    return get(API_BASE_URLS.TRANSFERS, `${queryParams ? `?${queryParams}` : ''}`);
+  },
+
+  // Получить перевод по ID
+  getTransfer: async (transferId) => {
+    return get(API_BASE_URLS.TRANSFERS, `/${transferId}`);
+  },
+
+  // Отменить перевод
+  cancelTransfer: async (transferId) => {
+    return post(API_BASE_URLS.TRANSFERS, `/${transferId}/cancel`);
   },
 };
 
@@ -367,7 +327,5 @@ export default {
   accounts: accountsAPI,
   transactions: transactionsAPI,
   transfers: transfersAPI,
-  contacts: contactsAPI,
-  payments: paymentsAPI,
   stats: statsAPI,
 };
