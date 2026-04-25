@@ -1,9 +1,7 @@
-const API_BASE_URL = 'https://bank.korzik.space';
-
 const API_BASE_URLS = {
-  AUTH: `${API_BASE_URL}/api/auth/v1`,
-  ACCOUNTS: `${API_BASE_URL}/api/accounts/v1`,
-  TRANSFERS: `${API_BASE_URL}/api/transfers/v1`,
+  AUTH: '/api/auth/v1',
+  ACCOUNTS: '/api/accounts/v1',
+  TRANSFERS: '/api/transfers/v1',
 };
 
 /**
