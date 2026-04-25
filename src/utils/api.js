@@ -42,6 +42,7 @@ const apiFetch = async (baseUrl, endpoint, options = {}) => {
       ...options,
       headers,
       credentials: 'include',
+      cache: 'no-store',
     });
 
     // Обработка 300 статуса (Multiple Choices / Session Limit)
