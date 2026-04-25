@@ -1,7 +1,7 @@
 const API_BASE_URLS = {
-  AUTH: '/api/auth/v1',
-  ACCOUNTS: '/api/accounts/v1',
-  TRANSFERS: '/api/transfers/v1',
+  AUTH: 'https://bank.korzik.space/api/auth/v1',
+  ACCOUNTS: 'https://bank.korzik.space/api/accounts/v1',
+  TRANSFERS: 'https://bank.korzik.space/api/transfers/v1',
 };
 
 /**
