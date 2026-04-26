@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import MainLayout from '../../src/components/MainLayout';
-import { accountsAPI, contactsAPI, transfersAPI } from '../../src/utils/api';
+import { accountsAPI, transfersAPI } from '../../src/utils/api';
 import { useTheme } from '../../src/context/ThemeContext';
 
 export default function TransferPhone() {
@@ -28,15 +28,14 @@ export default function TransferPhone() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [accountsData, contactsData] = await Promise.all([
-        accountsAPI.getAccounts().catch(() => []),
-        contactsAPI.getContacts().catch(() => [])
-      ]);
+      const accountsData = await accountsAPI.getAccounts().catch(() => []);
       
       if (accountsData && accountsData.length > 0) {
         const balance = accountsData.reduce((sum, acc) => sum + parseFloat(acc.balance || 0), 0);
         setUserBalance(balance);
       }
+      
+      setAllContacts([]);
       
       if (contactsData && contactsData.length > 0) {
         setAllContacts(contactsData.map(c => ({

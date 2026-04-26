@@ -27,9 +27,10 @@ export default function TransferAccounts() {
       if (accountsData && accountsData.length > 0) {
         setAccounts(accountsData.map(acc => ({
           id: acc.id,
-          name: acc.name || 'Счёт',
+          name: acc.currency?.symbol ? `Счёт ${acc.currency.symbol}` : 'Счёт',
           amount: parseFloat(acc.balance || 0),
-          color: acc.color || '#1A889F'
+          currency: acc.currency?.currencyCode || 'RUB',
+          color: acc.currency?.currencyCode === 'RUB' ? '#1A889F' : acc.currency?.currencyCode === 'USD' ? '#159E3A' : '#E5A100'
         })));
         
         if (accountsData.length >= 2) {
@@ -38,22 +39,9 @@ export default function TransferAccounts() {
         } else if (accountsData.length === 1) {
           setFromAccount(accountsData[0].id);
         }
-      } else {
-        setAccounts([
-          { id: 'account1', name: 'Основной счёт', amount: 22717.98, color: '#1A889F' },
-          { id: 'account2', name: 'Накопительный счёт', amount: 50000.00, color: '#159E3A' }
-        ]);
-        setFromAccount('account1');
-        setToAccount('account2');
       }
     } catch (error) {
       console.error('Error loading accounts:', error);
-      setAccounts([
-        { id: 'account1', name: 'Основной счёт', amount: 22717.98, color: '#1A889F' },
-        { id: 'account2', name: 'Накопительный счёт', amount: 50000.00, color: '#159E3A' }
-      ]);
-      setFromAccount('account1');
-      setToAccount('account2');
     } finally {
       setLoading(false);
     }

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { IoHomeOutline, IoPhonePortraitOutline, IoTrendingUp, IoEyeOutline, IoEyeOffOutline, IoChevronForward, IoCheckmarkCircle, IoNotificationsOutline } from 'react-icons/io5';
+import { IoHomeOutline, IoPhonePortraitOutline, IoTrendingUp, IoEyeOutline, IoEyeOffOutline, IoChevronForward, IoCheckmarkCircle, IoNotificationsOutline, IoAddCircleOutline } from 'react-icons/io5';
 import { MdOutlineCreditCard } from 'react-icons/md';
 import MainLayout from '../../src/components/MainLayout';
 import { accountsAPI, userAPI, transactionsAPI } from '../../src/utils/api';
@@ -130,6 +130,28 @@ export default function Home() {
     router.push(partner.screen);
   };
 
+  const handleCreateAccount = async () => {
+    const existing = accounts.map(a => a.currency?.currencyCode);
+    const available = [
+      { id: '1', code: 'RUB', name: 'Рубли', symbol: '₽' },
+      { id: '2', code: 'USD', name: 'Доллары', symbol: '$' },
+      { id: '3', code: 'EUR', name: 'Евро', symbol: '€' },
+    ].filter(c => !existing.includes(c.code));
+
+    if (available.length === 0) return;
+
+    const currency = available[0];
+    try {
+      await accountsAPI.createAccount(currency.id);
+      const accountsData = await accountsAPI.getAccounts();
+      setAccounts(accountsData || []);
+      const total = (accountsData || []).reduce((sum, acc) => sum + parseFloat(acc.balance || 0), 0);
+      setTotalBalance(total);
+    } catch (error) {
+      console.error('Error creating account:', error);
+    }
+  };
+
   const PartnerLogo = ({ logo: LogoComponent, size = 60, partnerId }) => {
     // Для Yanima (id=2) используем белый фон, для остальных черный
     const bgColor = partnerId === 2 ? 'bg-white border border-[#E5E5E5]' : 'bg-black';
@@ -232,9 +254,47 @@ export default function Home() {
           <p className={`text-[32px] font-extrabold mb-3 tracking-wide ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>
             {isBalanceHidden ? '•••••••' : `${formatBalance(totalBalance)} ₽`}
           </p>
-          <div className="flex flex-row items-center gap-1.5">
-            <IoTrendingUp size={16} color={isDarkMode ? '#1A889F' : '#159E3A'} />
-            <span className={`text-sm font-semibold ${isDarkMode ? 'text-[#1A889F]' : 'text-success'}`}>+5.2% за месяц</span>
+        </div>
+
+        {/* Accounts */}
+        <div className="mb-6">
+          <div className="flex flex-row justify-between items-center px-5 mb-4">
+            <h2 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>Мои счета</h2>
+            {accounts.length < 3 && (
+              <button 
+                className="flex flex-row items-center gap-1"
+                onClick={handleCreateAccount}
+              >
+                <IoAddCircleOutline size={20} color={isDarkMode ? '#1A889F' : '#1A889F'} />
+                <span className={`text-sm font-semibold ${isDarkMode ? 'text-[#1A889F]' : 'text-primary'}`}>Новый счёт</span>
+              </button>
+            )}
+          </div>
+          
+          <div className="px-5 space-y-3">
+            {accounts.map((acc) => {
+              const symbol = acc.currency?.symbol || '₽';
+              const color = acc.currency?.currencyCode === 'USD' ? '#159E3A' : acc.currency?.currencyCode === 'EUR' ? '#E5A100' : '#1A889F';
+              return (
+                <div 
+                  key={acc.id}
+                  className={`p-4 rounded-2xl shadow-sm flex flex-row justify-between items-center ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white border border-[#F0F0F5]'}`}
+                >
+                  <div className="flex flex-row items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ backgroundColor: color + '20' }}>
+                      <span className="text-lg font-bold" style={{ color }}>{symbol}</span>
+                    </div>
+                    <div>
+                      <p className={`text-sm font-semibold ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>{acc.currency?.currencyName || 'Рубли'}</p>
+                      <p className={`text-xs ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>{acc.status === 'ACTIVE' ? 'Активен' : acc.status}</p>
+                    </div>
+                  </div>
+                  <p className={`text-base font-bold ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>
+                    {isBalanceHidden ? '•••••' : `${formatBalance(parseFloat(acc.balance || 0))} ${symbol}`}
+                  </p>
+                </div>
+              );
+            })}
           </div>
         </div>
 

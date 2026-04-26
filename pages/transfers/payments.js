@@ -10,13 +10,7 @@ export default function Payments() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [phoneError, setPhoneError] = useState('');
 
-  const contacts = [
-    { id: 1, name: 'Борис Иван', initial: 'Б', phone: '+7 (900) 123-45-67' },
-    { id: 2, name: 'Руслан Диа', initial: 'Р', phone: '+7 (900) 123-45-68' },
-    { id: 3, name: 'Му Angel♥', initial: 'М', phone: '+7 (900) 123-45-69' },
-    { id: 4, name: 'Иван Соломин', initial: 'ИС', phone: '+7 (900) 123-45-60' },
-    { id: 5, name: 'Korzik', initial: 'K', phone: '+7 (902) 207-72-41' },
-  ];
+  const contacts = [];
 
   const formatPhoneNumber = (text) => {
     const clean = text.replace(/\D/g, '');

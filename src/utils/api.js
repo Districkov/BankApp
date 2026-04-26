@@ -118,6 +118,10 @@ export const del = async (baseUrl, endpoint) => {
   return apiFetch(baseUrl, endpoint, { method: 'DELETE' });
 };
 
+export const patch = async (baseUrl, endpoint, body) => {
+  return apiFetch(baseUrl, endpoint, { method: 'PATCH', body: JSON.stringify(body) });
+};
+
 // ==================== API методы ====================
 
 /**
@@ -251,14 +255,30 @@ export const accountsAPI = {
     return get(API_BASE_URLS.ACCOUNTS, `/${accountId}`);
   },
 
-  // Получить баланс счёта
-  getBalance: async (accountId) => {
-    return get(API_BASE_URLS.ACCOUNTS, `/${accountId}/balance`);
+  // Создать новый счёт
+  createAccount: async (currencyId) => {
+    return post(API_BASE_URLS.ACCOUNTS, '', { currencyId });
   },
 
-  // Создать новый счёт
-  createAccount: async (data) => {
-    return post(API_BASE_URLS.ACCOUNTS, '', data);
+  // Получить историю счёта
+  getAccountHistory: async (accountId, params = {}) => {
+    const queryParams = new URLSearchParams(params).toString();
+    return get(API_BASE_URLS.ACCOUNTS, `/${accountId}/history${queryParams ? `?${queryParams}` : ''}`);
+  },
+
+  // Обновить статус счёта
+  updateAccountStatus: async (accountId, status) => {
+    return patch(API_BASE_URLS.ACCOUNTS, `/${accountId}/status`, { status });
+  },
+
+  // Получить валюты
+  getCurrencies: async () => {
+    return get(API_BASE_URLS.ACCOUNTS, '/currencies');
+  },
+
+  // Получить курсы обмена
+  getExchangeRates: async () => {
+    return get(API_BASE_URLS.ACCOUNTS, '/currencies/rates');
   },
 };
 
