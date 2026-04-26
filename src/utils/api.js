@@ -287,24 +287,37 @@ export const transactionsAPI = {
  * Переводы
  */
 export const transfersAPI = {
-  // Создать перевод
-  createTransfer: async (data) => {
-    return post(API_BASE_URLS.TRANSFERS, '', data);
-  },
-
-  // Перевод по номеру телефона
-  transferToPhone: async (data) => {
-    return post(API_BASE_URLS.TRANSFERS, '', data);
+  // Перевод по номеру телефона (СБП)
+  transferToPhone: async ({ phone, amount, message }) => {
+    return post(API_BASE_URLS.TRANSFERS, '', {
+      idempotencyKey: crypto.randomUUID(),
+      recipientUserId: phone,
+      amount,
+      description: message,
+      transferType: 'SBP',
+    });
   },
 
   // Перевод по номеру карты
-  transferToCard: async (data) => {
-    return post(API_BASE_URLS.TRANSFERS, '', data);
+  transferToCard: async ({ cardNumber, amount, message }) => {
+    return post(API_BASE_URLS.TRANSFERS, '', {
+      idempotencyKey: crypto.randomUUID(),
+      recipientUserId: cardNumber,
+      amount,
+      description: message,
+      transferType: 'PAYMENT_ORDER',
+    });
   },
 
   // Перевод между своими счетами
-  transferBetweenAccounts: async (data) => {
-    return post(API_BASE_URLS.TRANSFERS, '', data);
+  transferBetweenAccounts: async ({ fromAccountId, toAccountId, amount }) => {
+    return post(API_BASE_URLS.TRANSFERS, '', {
+      idempotencyKey: crypto.randomUUID(),
+      recipientUserId: toAccountId,
+      senderAccountId: fromAccountId,
+      amount,
+      transferType: 'PAYMENT_ORDER',
+    });
   },
 
   // Получить все переводы
