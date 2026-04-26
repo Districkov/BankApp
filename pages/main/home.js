@@ -133,16 +133,16 @@ export default function Home() {
   const handleCreateAccount = async () => {
     const existing = accounts.map(a => a.currency?.currencyCode);
     const available = [
-      { id: '1', code: 'RUB', name: 'Рубли', symbol: '₽' },
-      { id: '2', code: 'USD', name: 'Доллары', symbol: '$' },
-      { id: '3', code: 'EUR', name: 'Евро', symbol: '€' },
+      { code: 'RUB', name: 'Рубли', symbol: '₽' },
+      { code: 'USD', name: 'Доллары', symbol: '$' },
+      { code: 'EUR', name: 'Евро', symbol: '€' },
     ].filter(c => !existing.includes(c.code));
 
     if (available.length === 0) return;
 
     const currency = available[0];
     try {
-      await accountsAPI.createAccount(currency.id);
+      await accountsAPI.createAccount(currency.code);
       const accountsData = await accountsAPI.getAccounts();
       setAccounts(accountsData || []);
       const total = (accountsData || []).reduce((sum, acc) => sum + parseFloat(acc.balance || 0), 0);

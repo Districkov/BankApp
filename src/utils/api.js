@@ -256,8 +256,8 @@ export const accountsAPI = {
   },
 
   // Создать новый счёт
-  createAccount: async (currencyId) => {
-    return post(API_BASE_URLS.ACCOUNTS, '', { currencyId });
+  createAccount: async (currencyCode) => {
+    return post(API_BASE_URLS.ACCOUNTS, '', { currencyCode });
   },
 
   // Получить историю счёта
