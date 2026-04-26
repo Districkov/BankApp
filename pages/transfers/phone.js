@@ -36,33 +36,10 @@ export default function TransferPhone() {
       }
       
       setAllContacts([]);
-      
-      if (contactsData && contactsData.length > 0) {
-        setAllContacts(contactsData.map(c => ({
-          id: c.id,
-          name: c.name || 'Контакт',
-          phone: c.phone,
-          initial: c.name ? c.name.charAt(0).toUpperCase() : '?'
-        })));
-      } else {
-        setAllContacts([
-          { id: 1, name: 'Борис Иван', phone: '+7 (900) 123-45-67', initial: 'Б' },
-          { id: 2, name: 'Руслан Диа', phone: '+7 (900) 123-45-68', initial: 'Р' },
-          { id: 3, name: 'Му Angel♥', phone: '+7 (900) 123-45-69', initial: 'М' },
-          { id: 4, name: 'Иван Соломин', phone: '+7 (900) 123-45-60', initial: 'ИС' },
-          { id: 5, name: 'Korzik', phone: '+7 (902) 207-72-41', initial: 'К' },
-        ]);
-      }
     } catch (error) {
       console.error('Error loading data:', error);
-      setUserBalance(22717.98);
-      setAllContacts([
-        { id: 1, name: 'Борис Иван', phone: '+7 (900) 123-45-67', initial: 'Б' },
-        { id: 2, name: 'Руслан Диа', phone: '+7 (900) 123-45-68', initial: 'Р' },
-        { id: 3, name: 'Му Angel♥', phone: '+7 (900) 123-45-69', initial: 'М' },
-        { id: 4, name: 'Иван Соломин', phone: '+7 (900) 123-45-60', initial: 'ИС' },
-        { id: 5, name: 'Korzik', phone: '+7 (902) 207-72-41', initial: 'К' },
-      ]);
+      setUserBalance(0);
+      setAllContacts([]);
     } finally {
       setLoading(false);
     }
