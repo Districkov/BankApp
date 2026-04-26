@@ -309,9 +309,11 @@ export const transactionsAPI = {
 export const transfersAPI = {
   // Перевод по номеру телефона (СБП)
   transferToPhone: async ({ phone, amount, message }) => {
+    const cleanPhone = phone.replace(/\D/g, '');
+    const recipient = await get(API_BASE_URLS.AUTH, `/users/phone/${cleanPhone}`);
     return post(API_BASE_URLS.TRANSFERS, '', {
       idempotencyKey: crypto.randomUUID(),
-      recipientUserId: phone,
+      recipientUserId: recipient.id,
       amount,
       description: message,
       transferType: 'SBP',
