@@ -333,10 +333,12 @@ export const transfersAPI = {
 
   // Перевод между своими счетами
   transferBetweenAccounts: async ({ fromAccountId, toAccountId, amount }) => {
+    const me = await get(API_BASE_URLS.AUTH, '/whoami');
     return post(API_BASE_URLS.TRANSFERS, '', {
       idempotencyKey: crypto.randomUUID(),
-      recipientUserId: toAccountId,
+      recipientUserId: me.id,
       senderAccountId: fromAccountId,
+      recipientAccountId: toAccountId,
       amount,
       transferType: 'PAYMENT_ORDER',
     });
