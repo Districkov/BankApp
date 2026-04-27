@@ -2,7 +2,7 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import Home from '../../../pages/main/home';
-import { accountsAPI, userAPI, transactionsAPI } from '../../../src/utils/api';
+import { accountsAPI, userAPI } from '../../../src/utils/api';
 
 // Mock dependencies
 jest.mock('next/router', () => ({
@@ -14,12 +14,10 @@ jest.mock('next/router', () => ({
 jest.mock('../../../src/utils/api', () => ({
   accountsAPI: {
     getAccounts: jest.fn(),
+    getAccountHistory: jest.fn(),
   },
   userAPI: {
     getProfile: jest.fn(),
-  },
-  transactionsAPI: {
-    getTransactions: jest.fn(),
   },
 }));
 
@@ -30,8 +28,8 @@ describe('Home Page', () => {
 
   it('displays loading state initially', () => {
     accountsAPI.getAccounts.mockReturnValue(new Promise(() => {}));
+    accountsAPI.getAccountHistory.mockReturnValue(new Promise(() => {}));
     userAPI.getProfile.mockReturnValue(new Promise(() => {}));
-    transactionsAPI.getTransactions.mockReturnValue(new Promise(() => {}));
 
     render(<Home />);
     
@@ -47,7 +45,7 @@ describe('Home Page', () => {
 
     userAPI.getProfile.mockResolvedValue(mockUser);
     accountsAPI.getAccounts.mockResolvedValue(mockAccounts);
-    transactionsAPI.getTransactions.mockResolvedValue([]);
+    accountsAPI.getAccountHistory.mockResolvedValue([]);
 
     render(<Home />);
 
@@ -64,7 +62,7 @@ describe('Home Page', () => {
 
     userAPI.getProfile.mockResolvedValue({ first_name: 'Test' });
     accountsAPI.getAccounts.mockResolvedValue(mockAccounts);
-    transactionsAPI.getTransactions.mockResolvedValue([]);
+    accountsAPI.getAccountHistory.mockResolvedValue([]);
 
     render(<Home />);
 
@@ -76,7 +74,7 @@ describe('Home Page', () => {
   it('displays partners section', async () => {
     userAPI.getProfile.mockResolvedValue({ first_name: 'Test' });
     accountsAPI.getAccounts.mockResolvedValue([]);
-    transactionsAPI.getTransactions.mockResolvedValue([]);
+    accountsAPI.getAccountHistory.mockResolvedValue([]);
 
     render(<Home />);
 
@@ -95,7 +93,7 @@ describe('Home Page', () => {
 
     userAPI.getProfile.mockResolvedValue({ first_name: 'Test' });
     accountsAPI.getAccounts.mockResolvedValue([]);
-    transactionsAPI.getTransactions.mockResolvedValue(mockTransactions);
+    accountsAPI.getAccountHistory.mockResolvedValue(mockTransactions);
 
     render(<Home />);
 

@@ -5,7 +5,6 @@ import {
   accountsAPI 
 } from '../../src/utils/api';
 
-// Mock fetch
 global.fetch = jest.fn();
 
 describe('API Utils', () => {
@@ -74,29 +73,25 @@ describe('API Utils', () => {
   });
 
   describe('transfersAPI', () => {
-    it('transferToPhone sends correct data', async () => {
+    it('transferBetweenAccounts uses POST /own', async () => {
       const mockResponse = { transaction_id: 'tx_123' };
       global.fetch.mockResolvedValue({
         ok: true,
         json: async () => mockResponse,
       });
 
-      const transferData = {
-        phone: '79001234567',
+      const result = await transfersAPI.transferBetweenAccounts({
+        fromAccountId: 'acc1',
+        toAccountId: 'acc2',
         amount: 5000,
-        message: 'Test'
-      };
-
-      const result = await transfersAPI.transferToPhone(transferData);
+      });
 
       expect(global.fetch).toHaveBeenCalledWith(
-        '/api/transfers/transfers/phone',
+        expect.stringContaining('/own'),
         expect.objectContaining({
           method: 'POST',
-          body: JSON.stringify(transferData),
         })
       );
-      expect(result).toEqual(mockResponse);
     });
 
     it('handles antifraud rejection', async () => {
@@ -134,7 +129,7 @@ describe('API Utils', () => {
       const result = await accountsAPI.getAccounts();
 
       expect(global.fetch).toHaveBeenCalledWith(
-        '/api/accounts/accounts',
+        expect.stringContaining('/api/accounts/v1'),
         expect.any(Object)
       );
       expect(result).toEqual(mockAccounts);

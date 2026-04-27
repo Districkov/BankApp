@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import { IoHomeOutline, IoPhonePortraitOutline, IoTrendingUp, IoEyeOutline, IoEyeOffOutline, IoChevronForward, IoCheckmarkCircle, IoNotificationsOutline, IoAddCircleOutline } from 'react-icons/io5';
 import { MdOutlineCreditCard } from 'react-icons/md';
 import MainLayout from '../../src/components/MainLayout';
-import { accountsAPI, userAPI, transactionsAPI } from '../../src/utils/api';
+import { accountsAPI, userAPI } from '../../src/utils/api';
 import { useTheme } from '../../src/context/ThemeContext';
 
 const AstraLogo = ({ width = 50, height = 50 }) => (
@@ -55,7 +55,7 @@ export default function Home() {
 
         // Получаем транзакции для первого счёта
         const firstAccountId = accountsData[0].id;
-        const transactionsData = await transactionsAPI.getTransactions(firstAccountId).catch(() => null);
+        const transactionsData = await accountsAPI.getAccountHistory(firstAccountId).catch(() => null);
 
         // Подсчитываем расходы за текущий месяц
         if (transactionsData && transactionsData.length > 0) {
