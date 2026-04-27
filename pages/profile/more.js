@@ -33,9 +33,32 @@ export default function More() {
       }
       
       if (accountsData && accountsData.length > 0) {
+        let ratesMap = {};
+        try {
+          const [currenciesData, ratesData] = await Promise.all([
+            accountsAPI.getCurrencies().catch(() => []),
+            accountsAPI.getExchangeRates().catch(() => []),
+          ]);
+          const idToCode = {};
+          if (Array.isArray(currenciesData)) {
+            currenciesData.forEach(c => { idToCode[c.id] = c.currencyCode; });
+          }
+          if (Array.isArray(ratesData)) {
+            ratesData.forEach(r => {
+              const fromCode = idToCode[r.fromCurrencyId] || r.fromCurrencyId;
+              const toCode = idToCode[r.toCurrencyId] || r.toCurrencyId;
+              ratesMap[`${fromCode}->${toCode}`] = parseFloat(r.rate);
+              ratesMap[`${toCode}->${fromCode}`] = parseFloat(r.inverseRate || (1 / parseFloat(r.rate)));
+            });
+          }
+        } catch {}
+
         const total = accountsData.reduce((sum, acc) => {
           const balance = parseFloat(acc.balance || 0);
-          return sum + balance;
+          const code = acc.currency?.currencyCode || 'RUB';
+          if (code === 'RUB') return sum + balance;
+          const rate = ratesMap[`${code}->RUB`] || 1;
+          return sum + balance * rate;
         }, 0);
         setTotalBalance(total);
       }

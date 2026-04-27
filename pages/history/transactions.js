@@ -58,19 +58,58 @@ export default function TransactionHistory() {
       );
       const rawTransactions = allHistory.flat();
 
+      const accountMap = {};
+      accounts.forEach(acc => {
+        accountMap[acc.id] = {
+          code: acc.currency?.currencyCode || 'RUB',
+          symbol: acc.currency?.symbol || '₽',
+        };
+      });
+
       const mapped = rawTransactions.map(tx => {
         const amount = parseFloat(tx.amount || tx.value || 0);
         const txDate = tx.date || tx.createdAt || tx.timestamp || '';
         const parsedDate = txDate ? new Date(txDate) : null;
         const isValidDate = parsedDate && !isNaN(parsedDate.getTime());
+        const accInfo = accountMap[tx.accountId] || {};
+        const recipientAccInfo = accountMap[tx.recipientAccountId] || {};
+        const currencySymbol = accInfo.symbol || '₽';
+
+        const isOwnTransfer = tx.transferType === 'OWN' || tx.type === 'OWN';
+        let title = tx.description || 'Операция';
+        let category = tx.category || tx.transferType || 'Прочее';
+        let displayAmount = Math.abs(amount);
+        let type = amount >= 0 ? 'income' : 'expense';
+
+        if (isOwnTransfer) {
+          if (amount < 0) {
+            title = `Перевод на счёт ${recipientAccInfo.symbol || currencySymbol}`;
+            category = 'Между счетами';
+            type = 'expense';
+          } else {
+            title = 'Перевод';
+            category = 'На основной счёт';
+            type = 'income';
+          }
+        } else if (tx.transferType === 'SBP' || tx.type === 'SBP') {
+          if (amount < 0) {
+            title = tx.description || 'Перевод по телефону';
+            category = 'Исходящий';
+            type = 'expense';
+          } else {
+            title = tx.description || 'Перевод по телефону';
+            category = 'Входящий';
+            type = 'income';
+          }
+        }
 
         return {
           id: tx.id,
-          title: tx.description || tx.type || 'Операция',
-          category: tx.category || tx.transferType || 'Прочее',
-          amountRaw: amount,
-          amount: `${amount >= 0 ? '+' : ''}${Math.abs(amount).toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₽`,
-          type: amount >= 0 ? 'income' : 'expense',
+          title,
+          category,
+          amountRaw: displayAmount,
+          amount: `${type === 'income' ? '+' : '-'}${displayAmount.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${currencySymbol}`,
+          type,
           status: tx.status || 'completed',
           date: isValidDate ? parsedDate.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
           time: isValidDate ? parsedDate.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) : '',
