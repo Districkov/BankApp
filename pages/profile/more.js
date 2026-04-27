@@ -136,7 +136,7 @@ export default function More() {
 
             <div className="space-y-2 mb-4">
               <div className="flex items-center gap-2">
-                <span className={`text-sm ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>📞 {user?.phone_number || '+7 926 718-55-52'}</span>
+                <span className={`text-sm ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>📞 {user?.phone_number || '—'}</span>
               </div>
               {user?.email && (
                 <div className="flex items-center gap-2">

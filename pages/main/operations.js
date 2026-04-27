@@ -41,7 +41,7 @@ export default function Operations() {
       const transactions = await transactionsAPI.getTransactions().catch(() => null);
       
       if (transactions && transactions.length > 0) {
-        setData(transactions.map(tx => ({
+        const mapped = transactions.map(tx => ({
           id: tx.id,
           title: tx.description || tx.title || 'Операция',
           subtitle: tx.category || 'Прочее',
@@ -49,32 +49,35 @@ export default function Operations() {
           type: tx.amount >= 0 ? 'income' : 'expense',
           date: new Date(tx.date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' }),
           time: new Date(tx.date).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+          dateObj: new Date(tx.date),
           category: tx.category || 'transfer'
-        })));
+        }));
+        mapped.sort((a, b) => b.dateObj - a.dateObj);
+        setData(mapped);
       } else {
         setData([
-          { id: '1', title: 'BMW Motors', subtitle: 'Покупка', amount: '-14 743 211 ₽', type: 'expense', date: '20 окт 2024', time: '14:30', category: 'transport' },
-          { id: '2', title: 'Перевод от Петя', subtitle: 'Перевод', amount: '+8 700 ₽', type: 'income', date: '13 сент 2024', time: '11:15', category: 'transfer' },
-          { id: '3', title: 'Вкусно — и точка', subtitle: 'Еда', amount: '-538 ₽', type: 'expense', date: '12 сент 2024', time: '18:45', category: 'food' },
-          { id: '4', title: 'Аптека', subtitle: 'Здоровье', amount: '-1 240 ₽', type: 'expense', date: '11 сент 2024', time: '09:20', category: 'health' },
-          { id: '5', title: 'Зарплата', subtitle: 'Начисление', amount: '+45 000 ₽', type: 'income', date: '10 сент 2024', time: '08:00', category: 'salary' },
-          { id: '6', title: 'Такси', subtitle: 'Транспорт', amount: '-320 ₽', type: 'expense', date: '9 сент 2024', time: '22:10', category: 'transport' },
-          { id: '7', title: 'Супермаркет', subtitle: 'Продукты', amount: '-2 150 ₽', type: 'expense', date: '8 сент 2024', time: '16:30', category: 'food' },
-          { id: '8', title: 'Кино', subtitle: 'Развлечения', amount: '-800 ₽', type: 'expense', date: '7 сент 2024', time: '20:15', category: 'entertainment' },
-        ]);
+          { id: '1', title: 'BMW Motors', subtitle: 'Покупка', amount: '-14 743 211 ₽', type: 'expense', date: '20 окт 2024', time: '14:30', dateObj: new Date('2024-10-20T14:30'), category: 'transport' },
+          { id: '2', title: 'Перевод от Петя', subtitle: 'Перевод', amount: '+8 700 ₽', type: 'income', date: '13 сент 2024', time: '11:15', dateObj: new Date('2024-09-13T11:15'), category: 'transfer' },
+          { id: '3', title: 'Вкусно — и точка', subtitle: 'Еда', amount: '-538 ₽', type: 'expense', date: '12 сент 2024', time: '18:45', dateObj: new Date('2024-09-12T18:45'), category: 'food' },
+          { id: '4', title: 'Аптека', subtitle: 'Здоровье', amount: '-1 240 ₽', type: 'expense', date: '11 сент 2024', time: '09:20', dateObj: new Date('2024-09-11T09:20'), category: 'health' },
+          { id: '5', title: 'Зарплата', subtitle: 'Начисление', amount: '+45 000 ₽', type: 'income', date: '10 сент 2024', time: '08:00', dateObj: new Date('2024-09-10T08:00'), category: 'salary' },
+          { id: '6', title: 'Такси', subtitle: 'Транспорт', amount: '-320 ₽', type: 'expense', date: '9 сент 2024', time: '22:10', dateObj: new Date('2024-09-09T22:10'), category: 'transport' },
+          { id: '7', title: 'Супермаркет', subtitle: 'Продукты', amount: '-2 150 ₽', type: 'expense', date: '8 сент 2024', time: '16:30', dateObj: new Date('2024-09-08T16:30'), category: 'food' },
+          { id: '8', title: 'Кино', subtitle: 'Развлечения', amount: '-800 ₽', type: 'expense', date: '7 сент 2024', time: '20:15', dateObj: new Date('2024-09-07T20:15'), category: 'entertainment' },
+        ].sort((a, b) => b.dateObj - a.dateObj));
       }
     } catch (error) {
       console.error('Error loading transactions:', error);
       setData([
-        { id: '1', title: 'BMW Motors', subtitle: 'Покупка', amount: '-14 743 211 ₽', type: 'expense', date: '20 окт 2024', time: '14:30', category: 'transport' },
-        { id: '2', title: 'Перевод от Петя', subtitle: 'Перевод', amount: '+8 700 ₽', type: 'income', date: '13 сент 2024', time: '11:15', category: 'transfer' },
-        { id: '3', title: 'Вкусно — и точка', subtitle: 'Еда', amount: '-538 ₽', type: 'expense', date: '12 сент 2024', time: '18:45', category: 'food' },
-        { id: '4', title: 'Аптека', subtitle: 'Здоровье', amount: '-1 240 ₽', type: 'expense', date: '11 сент 2024', time: '09:20', category: 'health' },
-        { id: '5', title: 'Зарплата', subtitle: 'Начисление', amount: '+45 000 ₽', type: 'income', date: '10 сент 2024', time: '08:00', category: 'salary' },
-        { id: '6', title: 'Такси', subtitle: 'Транспорт', amount: '-320 ₽', type: 'expense', date: '9 сент 2024', time: '22:10', category: 'transport' },
-        { id: '7', title: 'Супермаркет', subtitle: 'Продукты', amount: '-2 150 ₽', type: 'expense', date: '8 сент 2024', time: '16:30', category: 'food' },
-        { id: '8', title: 'Кино', subtitle: 'Развлечения', amount: '-800 ₽', type: 'expense', date: '7 сент 2024', time: '20:15', category: 'entertainment' },
-      ]);
+        { id: '1', title: 'BMW Motors', subtitle: 'Покупка', amount: '-14 743 211 ₽', type: 'expense', date: '20 окт 2024', time: '14:30', dateObj: new Date('2024-10-20T14:30'), category: 'transport' },
+        { id: '2', title: 'Перевод от Петя', subtitle: 'Перевод', amount: '+8 700 ₽', type: 'income', date: '13 сент 2024', time: '11:15', dateObj: new Date('2024-09-13T11:15'), category: 'transfer' },
+        { id: '3', title: 'Вкусно — и точка', subtitle: 'Еда', amount: '-538 ₽', type: 'expense', date: '12 сент 2024', time: '18:45', dateObj: new Date('2024-09-12T18:45'), category: 'food' },
+        { id: '4', title: 'Аптека', subtitle: 'Здоровье', amount: '-1 240 ₽', type: 'expense', date: '11 сент 2024', time: '09:20', dateObj: new Date('2024-09-11T09:20'), category: 'health' },
+        { id: '5', title: 'Зарплата', subtitle: 'Начисление', amount: '+45 000 ₽', type: 'income', date: '10 сент 2024', time: '08:00', dateObj: new Date('2024-09-10T08:00'), category: 'salary' },
+        { id: '6', title: 'Такси', subtitle: 'Транспорт', amount: '-320 ₽', type: 'expense', date: '9 сент 2024', time: '22:10', dateObj: new Date('2024-09-09T22:10'), category: 'transport' },
+        { id: '7', title: 'Супермаркет', subtitle: 'Продукты', amount: '-2 150 ₽', type: 'expense', date: '8 сент 2024', time: '16:30', dateObj: new Date('2024-09-08T16:30'), category: 'food' },
+        { id: '8', title: 'Кино', subtitle: 'Развлечения', amount: '-800 ₽', type: 'expense', date: '7 сент 2024', time: '20:15', dateObj: new Date('2024-09-07T20:15'), category: 'entertainment' },
+      ].sort((a, b) => b.dateObj - a.dateObj));
     } finally {
       setLoading(false);
     }

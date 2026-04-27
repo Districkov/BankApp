@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
-import { IoHomeOutline, IoPhonePortraitOutline, IoTrendingUp, IoEyeOutline, IoEyeOffOutline, IoChevronForward, IoCheckmarkCircle, IoNotificationsOutline } from 'react-icons/io5';
+import { IoHomeOutline, IoPhonePortraitOutline, IoTrendingUp, IoEyeOutline, IoEyeOffOutline, IoChevronForward, IoCheckmarkCircle } from 'react-icons/io5';
 import { MdOutlineCreditCard } from 'react-icons/md';
 import MainLayout from '../../src/components/MainLayout';
-import { accountsAPI, userAPI, transactionsAPI } from '../../src/utils/api';
+import { accountsAPI, userAPI } from '../../src/utils/api';
 import { useTheme } from '../../src/context/ThemeContext';
 
 const AstraLogo = ({ width = 50, height = 50 }) => (
@@ -21,14 +21,13 @@ const YanimaLogo = ({ width = 50, height = 50 }) => (
 export default function Home() {
   const router = useRouter();
   const { isDarkMode } = useTheme();
-  const [refreshing, setRefreshing] = useState(false);
   const [isBalanceHidden, setIsBalanceHidden] = useState(false);
   const [user, setUser] = useState(null);
   const [accounts, setAccounts] = useState([]);
-  const [totalBalance, setTotalBalance] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [monthlyExpenses, setMonthlyExpenses] = useState(0);
-  const [expensePercentage, setExpensePercentage] = useState(0);
+  const [currentAccountIndex, setCurrentAccountIndex] = useState(0);
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
 
   useEffect(() => {
     loadData();
@@ -37,50 +36,18 @@ export default function Home() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [userData, accountsData, transactionsData] = await Promise.all([
+      const [userData, accountsData] = await Promise.all([
         userAPI.getProfile(),
-        accountsAPI.getAccounts(),
-        transactionsAPI.getTransactions({ 
-          type: 'expense',
-          from: new Date(new Date().getFullYear(), new Date().getMonth(), 1).toISOString(),
-          to: new Date().toISOString()
-        }).catch(() => null)
+        accountsAPI.getAccounts()
       ]);
-      
+
       setUser(userData);
       setAccounts(accountsData || []);
-      
-      // Подсчитываем общий баланс
-      if (accountsData && accountsData.length > 0) {
-        const total = accountsData.reduce((sum, acc) => {
-          const balance = parseFloat(acc.balance || 0);
-          return sum + balance;
-        }, 0);
-        setTotalBalance(total);
-      }
-
-      // Подсчитываем расходы за текущий месяц
-      if (transactionsData && transactionsData.length > 0) {
-        const expenses = transactionsData.reduce((sum, tx) => {
-          return sum + Math.abs(parseFloat(tx.amount || 0));
-        }, 0);
-        setMonthlyExpenses(expenses);
-        
-        // Рассчитываем процент от лимита (предположим лимит 50000)
-        const limit = 50000;
-        setExpensePercentage(Math.min((expenses / limit) * 100, 100));
-      }
     } catch (error) {
       console.error('Error loading data:', error);
     } finally {
       setLoading(false);
     }
-  };
-
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await loadData();
-    setRefreshing(false);
   };
 
   const quickActions = [
@@ -89,20 +56,20 @@ export default function Home() {
   ];
 
   const partners = [
-    { 
-      id: 1, 
-      name: 'Astra RP', 
-      discount: 'Эксклюзивные бонусы', 
+    {
+      id: 1,
+      name: 'Astra RP',
+      discount: 'Эксклюзивные бонусы',
       description: 'GTA 5 RolePlay проект\nСпециальные условия для клиентов',
       logo: AstraLogo,
       screen: '/partners/astra',
       color: '#FF0000',
       benefits: ['Игровая валюта', 'Премиум аккаунт', 'Эксклюзивный контент']
     },
-    { 
-      id: 2, 
-      name: 'Yanima', 
-      discount: 'Подписка в подарок', 
+    {
+      id: 2,
+      name: 'Yanima',
+      discount: 'Подписка в подарок',
       description: 'Онлайн-просмотр аниме\nСпециальные предложения',
       logo: YanimaLogo,
       screen: '/partners/yanima',
@@ -132,9 +99,8 @@ export default function Home() {
   };
 
   const PartnerLogo = ({ logo: LogoComponent, size = 60, partnerId }) => {
-    // Для Yanima (id=2) используем белый фон, для остальных черный
     const bgColor = partnerId === 2 ? 'bg-white border border-[#E5E5E5]' : 'bg-black';
-    
+
     return (
       <div className={`rounded-2xl ${bgColor} flex items-center justify-center p-2 shadow-lg`} style={{ width: size, height: size }}>
         <LogoComponent width={size - 10} height={size - 10} />
@@ -149,6 +115,31 @@ export default function Home() {
     }).format(balance);
   };
 
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches ? e.touches[0].clientX : e.clientX;
+  };
+
+  const handleTouchMove = (e) => {
+    touchEndX.current = e.touches ? e.touches[0].clientX : e.clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStartX.current || !touchEndX.current) return;
+    const diff = touchStartX.current - touchEndX.current;
+    const minSwipe = 50;
+
+    if (Math.abs(diff) > minSwipe) {
+      if (diff > 0 && currentAccountIndex < accounts.length - 1) {
+        setCurrentAccountIndex(prev => prev + 1);
+      } else if (diff < 0 && currentAccountIndex > 0) {
+        setCurrentAccountIndex(prev => prev - 1);
+      }
+    }
+
+    touchStartX.current = 0;
+    touchEndX.current = 0;
+  };
+
   if (loading) {
     return (
       <MainLayout>
@@ -159,14 +150,15 @@ export default function Home() {
     );
   }
 
+  const currentAccount = accounts[currentAccountIndex];
+
   return (
     <MainLayout>
     <div className={`flex flex-col flex-1 ${isDarkMode ? 'bg-[#121212]' : 'bg-[#F8FAFD]'}`}>
-      {/* Header */}
       <div className={`flex flex-row justify-between items-center px-5 py-4 border-b ${isDarkMode ? 'bg-[#181818] border-[#4d4d4d]' : 'bg-white border-[#F0F0F5]'}`}>
         <button onClick={handleProfilePress} className="flex flex-row items-center gap-3">
           <div className={`w-11 h-11 rounded-[22px] flex items-center justify-center ${isDarkMode ? 'bg-[#1A889F]' : 'bg-primary'}`}>
-            <span className={`font-bold text-base ${isDarkMode ? 'text-white' : 'text-white'}`}>
+            <span className="font-bold text-base text-white">
               {user?.first_name?.[0] || 'И'}
             </span>
           </div>
@@ -174,43 +166,67 @@ export default function Home() {
             <p className={`text-base font-bold ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>{user?.first_name || 'Иван'}</p>
           </div>
         </button>
-        <button className="w-11 h-11 flex items-center justify-center relative">
-          <IoNotificationsOutline size={24} color={isDarkMode ? '#ffffff' : '#1A1A1A'} />
-          <div className="absolute top-2 right-2 bg-danger w-[18px] h-[18px] rounded-full flex items-center justify-center">
-            <span className={`text-[10px] font-bold ${isDarkMode ? 'text-white' : 'text-white'}`}>3</span>
-          </div>
-        </button>
       </div>
 
         <div className="flex-1 overflow-y-auto">
-        <button 
-          className={`mx-5 mt-5 p-6 rounded-[20px] shadow-lg w-[calc(100%-40px)] ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white border border-[#F0F0F5]'}`}
-          onClick={() => router.push('/main/operations')}
-        >
-          <div className="flex flex-row justify-between items-center mb-4">
-            <span className={`text-base font-bold ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Расходы в {new Date().toLocaleDateString('ru-RU', { month: 'long' })}</span>
-            <span className="text-xl font-extrabold text-danger">{formatBalance(monthlyExpenses)} ₽</span>
-          </div>
-          
-          <div className="mb-2">
-            <div className={`h-1.5 rounded-full mb-2 overflow-hidden ${isDarkMode ? 'bg-[#1f1f1f]' : 'bg-[#F0F0F0]'}`}>
-              <div className={`h-full rounded-full ${isDarkMode ? 'bg-[#1A889F]' : 'bg-primary'}`} style={{ width: `${expensePercentage}%` }} />
+        {/* Account Slider */}
+        {accounts.length > 0 && (
+          <div className="mt-5 px-5">
+            <div
+              className={`rounded-[20px] shadow-lg ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white border border-[#F0F0F5]'}`}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              onMouseDown={handleTouchStart}
+              onMouseMove={(e) => { if (e.buttons === 1) handleTouchMove(e); }}
+              onMouseUp={handleTouchEnd}
+              onMouseLeave={() => { touchEndX.current = 0; }}
+            >
+              <div className="p-6">
+                <div className="flex flex-row justify-between items-center mb-1">
+                  <span className={`text-base font-bold ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>{currentAccount?.name || 'Счёт'}</span>
+                  <button onClick={toggleBalanceVisibility}>
+                    {isBalanceHidden ? <IoEyeOffOutline size={20} color={isDarkMode ? '#b3b3b3' : '#666'} /> : <IoEyeOutline size={20} color={isDarkMode ? '#b3b3b3' : '#666'} />}
+                  </button>
+                </div>
+                <p className={`text-[32px] font-extrabold mb-3 tracking-wide ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>
+                  {isBalanceHidden ? '•••••••' : `${formatBalance(parseFloat(currentAccount?.balance || 0))} ₽`}
+                </p>
+                <div className="flex flex-row items-center gap-1.5">
+                  <IoTrendingUp size={16} color={isDarkMode ? '#1A889F' : '#159E3A'} />
+                  <span className={`text-sm font-semibold ${isDarkMode ? 'text-[#1A889F]' : 'text-success'}`}>+5.2% за месяц</span>
+                </div>
+              </div>
+
+              {accounts.length > 1 && (
+                <div className="flex justify-center gap-2 pb-4">
+                  {accounts.map((_, index) => (
+                    <div
+                      key={index}
+                      className={`h-2 rounded-full transition-all ${
+                        index === currentAccountIndex
+                          ? 'w-6 bg-primary'
+                          : (isDarkMode ? 'w-2 bg-[#4d4d4d]' : 'w-2 bg-[#E5E5E5]')
+                      }`}
+                    />
+                  ))}
+                </div>
+              )}
             </div>
-            <span className={`text-xs font-medium ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>{Math.round(expensePercentage)}% от лимита</span>
           </div>
-        </button>
+        )}
 
         {/* Quick Actions */}
         <div className="mb-6 mt-5">
           <h2 className={`text-lg font-bold mb-4 px-5 ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>Быстрые действия</h2>
           <div className="flex flex-row px-5 gap-3">
             {quickActions.map((action, index) => (
-              <button 
+              <button
                 key={index}
                 className="flex-1 flex flex-col items-center"
                 onClick={() => router.push(action.nav)}
               >
-                <div 
+                <div
                   className="w-14 h-14 rounded-2xl flex items-center justify-center mb-2 shadow-lg"
                   style={{ backgroundColor: action.color }}
                 >
@@ -222,28 +238,11 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Total Balance Card */}
-        <div className={`m-5 p-6 rounded-[20px] shadow-lg ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white border border-[#F0F0F5]'}`}>
-          <div className="flex flex-row justify-between items-center mb-3">
-            <span className={`text-base font-bold ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Общий баланс</span>
-            <button onClick={toggleBalanceVisibility}>
-              {isBalanceHidden ? <IoEyeOffOutline size={20} color={isDarkMode ? '#b3b3b3' : '#666'} /> : <IoEyeOutline size={20} color={isDarkMode ? '#b3b3b3' : '#666'} />}
-            </button>
-          </div>
-          <p className={`text-[32px] font-extrabold mb-3 tracking-wide ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>
-            {isBalanceHidden ? '•••••••' : `${formatBalance(totalBalance)} ₽`}
-          </p>
-          <div className="flex flex-row items-center gap-1.5">
-            <IoTrendingUp size={16} color={isDarkMode ? '#1A889F' : '#159E3A'} />
-            <span className={`text-sm font-semibold ${isDarkMode ? 'text-[#1A889F]' : 'text-success'}`}>+5.2% за месяц</span>
-          </div>
-        </div>
-
         {/* Our Partners Section */}
         <div className="mb-6">
           <div className="flex flex-row justify-between items-center px-5 mb-4">
             <h2 className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>Наши партнёры</h2>
-            <button 
+            <button
               className="flex flex-row items-center gap-1"
               onClick={() => router.push('/partners/list')}
             >
@@ -251,10 +250,10 @@ export default function Home() {
               <IoChevronForward size={16} color={isDarkMode ? '#1A889F' : '#1A889F'} />
             </button>
           </div>
-          
+
           <div className="px-5 space-y-4">
             {partners.map((partner) => (
-              <button 
+              <button
                 key={partner.id}
                 className={`p-5 rounded-[20px] shadow-lg w-full text-left ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white border border-[#F0F0F5]'}`}
                 onClick={() => handlePartnerPress(partner)}
@@ -277,7 +276,7 @@ export default function Home() {
                     </div>
                   ))}
                 </div>
-                <div 
+                <div
                   className="py-3 px-4 rounded-xl flex items-center justify-center shadow-lg w-full"
                   style={{ backgroundColor: partner.color }}
                 >

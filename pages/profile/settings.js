@@ -1,30 +1,17 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useRouter } from 'next/router';
 import MainLayout from '../../src/components/MainLayout';
-import { IoArrowBack, IoPersonOutline, IoNotificationsOutline, IoLanguageOutline, IoMoonOutline } from 'react-icons/io5';
+import { IoArrowBack, IoLanguageOutline, IoMoonOutline } from 'react-icons/io5';
 import { useTheme } from '../../src/context/ThemeContext';
 
 export default function Settings() {
   const router = useRouter();
-  const [notifications, setNotifications] = useState(true);
   const { isDarkMode, toggleTheme } = useTheme();
 
   const settingsSections = [
     {
       title: 'Основные',
       items: [
-        {
-          icon: IoPersonOutline,
-          title: 'Личные данные',
-          description: 'Имя, email, телефон',
-          screen: '/profile/personal-data'
-        },
-        {
-          icon: IoNotificationsOutline,
-          title: 'Уведомления',
-          description: 'Настройка оповещений',
-          screen: '/profile/notifications'
-        },
         {
           icon: IoLanguageOutline,
           title: 'Язык',
@@ -49,25 +36,6 @@ export default function Settings() {
         <div className="flex-1 overflow-y-auto pb-5">
           {/* Quick Settings */}
           <div className={`m-4 rounded-2xl p-4 shadow-sm ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white'}`}>
-            <div className="flex items-center justify-between py-3 border-b border-[#F0F0F0]">
-              <div className="flex items-center gap-3">
-                <IoNotificationsOutline size={22} color="#1A889F" />
-                <span className={`text-base font-medium ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>Уведомления</span>
-              </div>
-              <button
-                className={`w-12 h-6 rounded-full transition-colors ${
-                  notifications ? 'bg-primary' : (isDarkMode ? 'bg-[#4d4d4d]' : 'bg-[#E5E5E5]')
-                }`}
-                onClick={() => setNotifications(!notifications)}
-              >
-                <div
-                  className={`w-5 h-5 bg-white rounded-full shadow transition-transform ${
-                    notifications ? 'translate-x-6' : 'translate-x-0.5'
-                  }`}
-                />
-              </button>
-            </div>
-            
             <div className="flex items-center justify-between py-3">
               <div className="flex items-center gap-3">
                 <IoMoonOutline size={22} color="#1A889F" />

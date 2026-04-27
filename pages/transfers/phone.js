@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import MainLayout from '../../src/components/MainLayout';
-import { accountsAPI, contactsAPI, transfersAPI } from '../../src/utils/api';
+import { IoEyeOutline, IoEyeOffOutline } from 'react-icons/io5';
+import { accountsAPI, transfersAPI } from '../../src/utils/api';
 import { useTheme } from '../../src/context/ThemeContext';
 
 export default function TransferPhone() {
@@ -11,9 +12,12 @@ export default function TransferPhone() {
   const [amount, setAmount] = useState('');
   const [message, setMessage] = useState('');
   const [errors, setErrors] = useState({});
-  const [userBalance, setUserBalance] = useState(0);
+  const [accounts, setAccounts] = useState([]);
+  const [currentAccountIndex, setCurrentAccountIndex] = useState(0);
+  const [isBalanceHidden, setIsBalanceHidden] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [allContacts, setAllContacts] = useState([]);
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
 
   useEffect(() => {
     loadData();
@@ -28,46 +32,25 @@ export default function TransferPhone() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [accountsData, contactsData] = await Promise.all([
-        accountsAPI.getAccounts().catch(() => []),
-        contactsAPI.getContacts().catch(() => [])
-      ]);
-      
+      const accountsData = await accountsAPI.getAccounts().catch(() => []);
+
       if (accountsData && accountsData.length > 0) {
-        const balance = accountsData.reduce((sum, acc) => sum + parseFloat(acc.balance || 0), 0);
-        setUserBalance(balance);
-      }
-      
-      if (contactsData && contactsData.length > 0) {
-        setAllContacts(contactsData.map(c => ({
-          id: c.id,
-          name: c.name || 'Контакт',
-          phone: c.phone,
-          initial: c.name ? c.name.charAt(0).toUpperCase() : '?'
+        setAccounts(accountsData.map(acc => ({
+          id: acc.id,
+          name: acc.name || 'Счёт',
+          balance: parseFloat(acc.balance || 0),
+          color: acc.color || '#1A889F'
         })));
-      } else {
-        setAllContacts([
-          { id: 1, name: 'Борис Иван', phone: '+7 (900) 123-45-67', initial: 'Б' },
-          { id: 2, name: 'Руслан Диа', phone: '+7 (900) 123-45-68', initial: 'Р' },
-          { id: 3, name: 'Му Angel♥', phone: '+7 (900) 123-45-69', initial: 'М' },
-          { id: 4, name: 'Иван Соломин', phone: '+7 (900) 123-45-60', initial: 'ИС' },
-          { id: 5, name: 'Korzik', phone: '+7 (902) 207-72-41', initial: 'К' },
-        ]);
       }
     } catch (error) {
       console.error('Error loading data:', error);
-      setUserBalance(22717.98);
-      setAllContacts([
-        { id: 1, name: 'Борис Иван', phone: '+7 (900) 123-45-67', initial: 'Б' },
-        { id: 2, name: 'Руслан Диа', phone: '+7 (900) 123-45-68', initial: 'Р' },
-        { id: 3, name: 'Му Angel♥', phone: '+7 (900) 123-45-69', initial: 'М' },
-        { id: 4, name: 'Иван Соломин', phone: '+7 (900) 123-45-60', initial: 'ИС' },
-        { id: 5, name: 'Korzik', phone: '+7 (902) 207-72-41', initial: 'К' },
-      ]);
     } finally {
       setLoading(false);
     }
   };
+
+  const currentAccount = accounts[currentAccountIndex];
+  const userBalance = currentAccount?.balance || 0;
 
   const formatPhone = (text) => {
     let cleaned = text.replace(/\D/g, '');
@@ -91,17 +74,17 @@ export default function TransferPhone() {
 
   const handleTransfer = async () => {
     const e = {};
-    
+
     if (!validatePhone(phone)) {
       e.phone = 'Неверный номер';
     }
-    
+
     if (!validateAmount(amount)) {
       e.amount = 'Введите сумму > 0';
     }
-    
+
     setErrors(e);
-    
+
     if (Object.keys(e).length === 0) {
       try {
         await transfersAPI.transferToPhone({
@@ -109,11 +92,11 @@ export default function TransferPhone() {
           amount: parseFloat(amount),
           message: message
         });
-        
+
         router.push(`/main/success?amount=${parseFloat(amount).toFixed(2)}&type=Перевод`);
       } catch (error) {
         const errorMessage = error.message || 'Операция отклонена системой безопасности';
-        
+
         if (error.status === 400 || error.status === 403 || error.status === 429) {
           router.push(`/main/failed?amount=${parseFloat(amount).toFixed(2)}&type=Перевод&reason=${encodeURIComponent(errorMessage)}`);
         } else {
@@ -121,6 +104,35 @@ export default function TransferPhone() {
         }
       }
     }
+  };
+
+  const formatBalance = (balance) => {
+    return new Intl.NumberFormat('ru-RU', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(balance);
+  };
+
+  const handleTouchStart = (e) => {
+    touchStartX.current = e.touches ? e.touches[0].clientX : e.clientX;
+  };
+
+  const handleTouchMove = (e) => {
+    touchEndX.current = e.touches ? e.touches[0].clientX : e.clientX;
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStartX.current || !touchEndX.current) return;
+    const diff = touchStartX.current - touchEndX.current;
+    if (Math.abs(diff) > 50) {
+      if (diff > 0 && currentAccountIndex < accounts.length - 1) {
+        setCurrentAccountIndex(prev => prev + 1);
+      } else if (diff < 0 && currentAccountIndex > 0) {
+        setCurrentAccountIndex(prev => prev - 1);
+      }
+    }
+    touchStartX.current = 0;
+    touchEndX.current = 0;
   };
 
   const isFormValid = validatePhone(phone) && validateAmount(amount);
@@ -147,6 +159,48 @@ export default function TransferPhone() {
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 pb-6">
+          {accounts.length > 0 && (
+            <div
+              className={`rounded-[20px] shadow-lg mb-4 ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white border border-[#F0F0F5]'}`}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              onMouseDown={handleTouchStart}
+              onMouseMove={(e) => { if (e.buttons === 1) handleTouchMove(e); }}
+              onMouseUp={handleTouchEnd}
+            >
+              <div className="p-5">
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: currentAccount?.color || '#1A889F' }} />
+                    <span className={`text-base font-bold ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>{currentAccount?.name || 'Счёт'}</span>
+                  </div>
+                  <button onClick={() => setIsBalanceHidden(!isBalanceHidden)}>
+                    {isBalanceHidden ? <IoEyeOffOutline size={18} color={isDarkMode ? '#b3b3b3' : '#666'} /> : <IoEyeOutline size={18} color={isDarkMode ? '#b3b3b3' : '#666'} />}
+                  </button>
+                </div>
+                <p className={`text-[24px] font-extrabold ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>
+                  {isBalanceHidden ? '•••••••' : `${formatBalance(userBalance)} ₽`}
+                </p>
+              </div>
+
+              {accounts.length > 1 && (
+                <div className="flex justify-center gap-2 pb-3">
+                  {accounts.map((_, index) => (
+                    <div
+                      key={index}
+                      className={`h-2 rounded-full transition-all ${
+                        index === currentAccountIndex
+                          ? 'w-6 bg-primary'
+                          : (isDarkMode ? 'w-2 bg-[#4d4d4d]' : 'w-2 bg-[#E5E5E5]')
+                      }`}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           <div className={`p-4 rounded-xl shadow-sm mb-4 ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white'}`}>
             <label className={`text-sm font-semibold mb-2 block ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Номер телефона</label>
             <input
@@ -176,7 +230,7 @@ export default function TransferPhone() {
               }}
             />
             <div className={`text-sm mt-2 ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>
-              Доступно: {userBalance.toLocaleString('ru-RU', { minimumFractionDigits: 2 })} ₽
+              Доступно: {formatBalance(userBalance)} ₽
             </div>
             {errors.amount && <p className="text-danger text-sm mt-1">{errors.amount}</p>}
           </div>
@@ -192,26 +246,6 @@ export default function TransferPhone() {
               maxLength={100}
             />
           </div>
-
-          {allContacts.length > 0 && (
-            <div className="mb-4">
-              <h3 className={`text-sm font-semibold mb-3 ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Недавние контакты</h3>
-              <div className="flex gap-4 overflow-x-auto pb-2">
-                {allContacts.slice(0, 5).map((contact) => (
-                  <button
-                    key={contact.id}
-                    className="flex flex-col items-center min-w-[64px]"
-                    onClick={() => setPhone(contact.phone)}
-                  >
-                    <div className="w-14 h-14 rounded-full bg-primary flex items-center justify-center mb-2 shadow">
-                      <span className="text-white font-bold text-base">{contact.initial}</span>
-                    </div>
-                    <span className={`text-xs font-medium text-center ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>{contact.name}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
 
           <button
             className={`w-full py-4 rounded-xl font-semibold text-base ${

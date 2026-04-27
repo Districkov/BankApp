@@ -10,14 +10,6 @@ export default function Payments() {
   const [phoneNumber, setPhoneNumber] = useState('');
   const [phoneError, setPhoneError] = useState('');
 
-  const contacts = [
-    { id: 1, name: 'Борис Иван', initial: 'Б', phone: '+7 (900) 123-45-67' },
-    { id: 2, name: 'Руслан Диа', initial: 'Р', phone: '+7 (900) 123-45-68' },
-    { id: 3, name: 'Му Angel♥', initial: 'М', phone: '+7 (900) 123-45-69' },
-    { id: 4, name: 'Иван Соломин', initial: 'ИС', phone: '+7 (900) 123-45-60' },
-    { id: 5, name: 'Korzik', initial: 'K', phone: '+7 (902) 207-72-41' },
-  ];
-
   const formatPhoneNumber = (text) => {
     const clean = text.replace(/\D/g, '');
     if (clean.startsWith('7') || clean.startsWith('8')) {
@@ -45,11 +37,6 @@ export default function Payments() {
     } else {
       setPhoneError('');
     }
-  };
-
-  const handleContactPress = (contact) => {
-    setPhoneNumber(contact.phone);
-    setPhoneError('');
   };
 
   const handlePhoneTransfer = () => {
@@ -91,22 +78,6 @@ export default function Payments() {
               </button>
             </div>
             {phoneError && <p className="text-danger text-sm mb-2">{phoneError}</p>}
-
-            <h3 className={`text-sm font-semibold mt-5 mb-3 ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Недавние контакты</h3>
-            <div className="flex gap-5 overflow-x-auto">
-              {contacts.map((contact) => (
-                <button
-                  key={contact.id}
-                  className="flex flex-col items-center min-w-[64px]"
-                  onClick={() => handleContactPress(contact)}
-                >
-                  <div className="w-14 h-14 rounded-full bg-primary flex items-center justify-center mb-2 shadow">
-                    <span className="text-white font-bold text-base">{contact.initial}</span>
-                  </div>
-                  <span className={`text-xs font-medium text-center ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>{contact.name}</span>
-                </button>
-              ))}
-            </div>
           </div>
         </div>
       </div>

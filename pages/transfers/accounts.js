@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import MainLayout from '../../src/components/MainLayout';
-import { IoClose, IoSwapVertical } from 'react-icons/io5';
+import { IoClose, IoSwapVertical, IoEyeOutline, IoEyeOffOutline } from 'react-icons/io5';
 import { accountsAPI, transfersAPI } from '../../src/utils/api';
 import { useTheme } from '../../src/context/ThemeContext';
 
@@ -13,7 +13,14 @@ export default function TransferAccounts() {
   const [toAccount, setToAccount] = useState(null);
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [swapped, setSwapped] = useState(false);
+  const [isBalanceHidden, setIsBalanceHidden] = useState(false);
+
+  const [fromIndex, setFromIndex] = useState(0);
+  const [toIndex, setToIndex] = useState(1);
+  const fromTouchStartX = useRef(0);
+  const fromTouchEndX = useRef(0);
+  const toTouchStartX = useRef(0);
+  const toTouchEndX = useRef(0);
 
   useEffect(() => {
     loadAccounts();
@@ -23,35 +30,38 @@ export default function TransferAccounts() {
     try {
       setLoading(true);
       const accountsData = await accountsAPI.getAccounts().catch(() => null);
-      
+
       if (accountsData && accountsData.length > 0) {
-        setAccounts(accountsData.map(acc => ({
+        const mapped = accountsData.map(acc => ({
           id: acc.id,
           name: acc.name || 'Счёт',
           amount: parseFloat(acc.balance || 0),
           color: acc.color || '#1A889F'
-        })));
-        
-        if (accountsData.length >= 2) {
-          setFromAccount(accountsData[0].id);
-          setToAccount(accountsData[1].id);
-        } else if (accountsData.length === 1) {
-          setFromAccount(accountsData[0].id);
+        }));
+        setAccounts(mapped);
+
+        if (mapped.length >= 2) {
+          setFromAccount(mapped[0].id);
+          setToAccount(mapped[1].id);
+        } else if (mapped.length === 1) {
+          setFromAccount(mapped[0].id);
         }
       } else {
-        setAccounts([
+        const fallback = [
           { id: 'account1', name: 'Основной счёт', amount: 22717.98, color: '#1A889F' },
           { id: 'account2', name: 'Накопительный счёт', amount: 50000.00, color: '#159E3A' }
-        ]);
+        ];
+        setAccounts(fallback);
         setFromAccount('account1');
         setToAccount('account2');
       }
     } catch (error) {
       console.error('Error loading accounts:', error);
-      setAccounts([
+      const fallback = [
         { id: 'account1', name: 'Основной счёт', amount: 22717.98, color: '#1A889F' },
         { id: 'account2', name: 'Накопительный счёт', amount: 50000.00, color: '#159E3A' }
-      ]);
+      ];
+      setAccounts(fallback);
       setFromAccount('account1');
       setToAccount('account2');
     } finally {
@@ -60,10 +70,60 @@ export default function TransferAccounts() {
   };
 
   const swapAccounts = () => {
-    const temp = fromAccount;
+    const tempIdx = fromIndex;
+    setFromIndex(toIndex);
+    setToIndex(tempIdx);
+    const tempId = fromAccount;
     setFromAccount(toAccount);
-    setToAccount(temp);
-    setSwapped(prev => !prev);
+    setToAccount(tempId);
+  };
+
+  const handleFromSwipeStart = (e) => {
+    fromTouchStartX.current = e.touches ? e.touches[0].clientX : e.clientX;
+  };
+  const handleFromSwipeMove = (e) => {
+    fromTouchEndX.current = e.touches ? e.touches[0].clientX : e.clientX;
+  };
+  const handleFromSwipeEnd = () => {
+    if (!fromTouchStartX.current || !fromTouchEndX.current) return;
+    const diff = fromTouchStartX.current - fromTouchEndX.current;
+    if (Math.abs(diff) > 50) {
+      if (diff > 0 && fromIndex < accounts.length - 1) {
+        const newIdx = fromIndex + 1;
+        setFromIndex(newIdx);
+        setFromAccount(accounts[newIdx].id);
+      } else if (diff < 0 && fromIndex > 0) {
+        const newIdx = fromIndex - 1;
+        setFromIndex(newIdx);
+        setFromAccount(accounts[newIdx].id);
+      }
+    }
+    fromTouchStartX.current = 0;
+    fromTouchEndX.current = 0;
+  };
+
+  const handleToSwipeStart = (e) => {
+    toTouchStartX.current = e.touches ? e.touches[0].clientX : e.clientX;
+  };
+  const handleToSwipeMove = (e) => {
+    toTouchEndX.current = e.touches ? e.touches[0].clientX : e.clientX;
+  };
+  const handleToSwipeEnd = () => {
+    if (!toTouchStartX.current || !toTouchEndX.current) return;
+    const diff = toTouchStartX.current - toTouchEndX.current;
+    if (Math.abs(diff) > 50) {
+      if (diff > 0 && toIndex < accounts.length - 1) {
+        const newIdx = toIndex + 1;
+        setToIndex(newIdx);
+        setToAccount(accounts[newIdx].id);
+      } else if (diff < 0 && toIndex > 0) {
+        const newIdx = toIndex - 1;
+        setToIndex(newIdx);
+        setToAccount(accounts[newIdx].id);
+      }
+    }
+    toTouchStartX.current = 0;
+    toTouchEndX.current = 0;
   };
 
   const handleTransfer = async () => {
@@ -74,7 +134,7 @@ export default function TransferAccounts() {
 
     const amountNum = parseFloat(amount);
     const fromAcc = accounts.find(a => a.id === fromAccount);
-    
+
     if (!fromAcc) {
       alert('Выберите счёт для списания');
       return;
@@ -91,17 +151,24 @@ export default function TransferAccounts() {
         toAccountId: toAccount,
         amount: amountNum
       });
-      
+
       router.push(`/main/success?amount=${amountNum.toFixed(2)}&type=Перевод между счетами`);
     } catch (error) {
       const errorMessage = error.message || 'Операция отклонена системой безопасности';
-      
+
       if (error.status === 400 || error.status === 403 || error.status === 429) {
         router.push(`/main/failed?amount=${amountNum.toFixed(2)}&type=Перевод между счетами&reason=${encodeURIComponent(errorMessage)}`);
       } else {
         alert(errorMessage);
       }
     }
+  };
+
+  const formatBalance = (balance) => {
+    return new Intl.NumberFormat('ru-RU', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(balance);
   };
 
   const isFormValid = amount && parseFloat(amount) > 0 && fromAccount && toAccount && fromAccount !== toAccount;
@@ -116,8 +183,8 @@ export default function TransferAccounts() {
     );
   }
 
-  const fromAcc = accounts.find(a => a.id === fromAccount);
-  const toAcc = accounts.find(a => a.id === toAccount);
+  const fromAcc = accounts[fromIndex];
+  const toAcc = accounts[toIndex];
 
   return (
     <MainLayout>
@@ -130,18 +197,30 @@ export default function TransferAccounts() {
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 pb-5">
-          {/* Списать с */}
           <div className="mb-3">
             <label className={`text-base font-medium mb-3 block px-1 ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Списать с</label>
-            {fromAcc && (
-              <div
-                key={fromAcc.id + (swapped ? '-s' : '')}
-                className={`w-full p-5 rounded-2xl border-2 border-primary shadow-sm transition-all duration-300 ${isDarkMode ? 'bg-[#181818]' : 'bg-[#F8F5FF]'}`}
-              >
-                <div className="flex items-center mb-3">
-                  <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: fromAcc.color }} />
-                  <span className={`text-base font-semibold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>{fromAcc.name}</span>
+            <div
+              className={`rounded-[20px] border-2 border-primary shadow-sm ${isDarkMode ? 'bg-[#181818]' : 'bg-white'}`}
+              onTouchStart={handleFromSwipeStart}
+              onTouchMove={handleFromSwipeMove}
+              onTouchEnd={handleFromSwipeEnd}
+              onMouseDown={handleFromSwipeStart}
+              onMouseMove={(e) => { if (e.buttons === 1) handleFromSwipeMove(e); }}
+              onMouseUp={handleFromSwipeEnd}
+            >
+              <div className="p-6">
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: fromAcc?.color || '#1A889F' }} />
+                    <span className={`text-base font-bold ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>{fromAcc?.name || 'Счёт'}</span>
+                  </div>
+                  <button onClick={() => setIsBalanceHidden(!isBalanceHidden)}>
+                    {isBalanceHidden ? <IoEyeOffOutline size={18} color={isDarkMode ? '#b3b3b3' : '#666'} /> : <IoEyeOutline size={18} color={isDarkMode ? '#b3b3b3' : '#666'} />}
+                  </button>
                 </div>
+                <p className={`text-[28px] font-extrabold mb-4 ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>
+                  {isBalanceHidden ? '•••••••' : `${formatBalance(fromAcc?.amount || 0)} ₽`}
+                </p>
                 <div className="flex items-center gap-2">
                   <input
                     type="text"
@@ -155,19 +234,30 @@ export default function TransferAccounts() {
                       }
                       setAmount(cleaned);
                     }}
-                    className={`w-full text-[32px] font-bold bg-transparent focus:outline-none ${isDarkMode ? 'text-white placeholder-[#666]' : 'text-[#000]'}`}
+                    className={`flex-1 text-[32px] font-bold bg-transparent focus:outline-none ${isDarkMode ? 'text-white placeholder-[#666]' : 'text-[#000]'}`}
                     placeholder="0"
                   />
                   <span className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>₽</span>
                 </div>
-                <p className={`text-sm mt-2 ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>
-                  Доступно: {fromAcc.amount.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₽
-                </p>
               </div>
-            )}
+
+              {accounts.length > 1 && (
+                <div className="flex justify-center gap-2 pb-4">
+                  {accounts.map((_, index) => (
+                    <div
+                      key={index}
+                      className={`h-2 rounded-full transition-all ${
+                        index === fromIndex
+                          ? 'w-6 bg-primary'
+                          : (isDarkMode ? 'w-2 bg-[#4d4d4d]' : 'w-2 bg-[#E5E5E5]')
+                      }`}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Кнопка смены */}
           <div className="flex justify-center my-4">
             <button
               onClick={swapAccounts}
@@ -177,21 +267,42 @@ export default function TransferAccounts() {
             </button>
           </div>
 
-          {/* Зачислить на */}
           <div className="mb-6">
             <label className={`text-base font-medium mb-3 block px-1 ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Зачислить на</label>
-            {toAcc && (
-              <div
-                key={toAcc.id + (swapped ? '-s' : '')}
-                className={`w-full p-5 rounded-2xl border-2 border-primary shadow-sm transition-all duration-300 ${isDarkMode ? 'bg-[#181818]' : 'bg-[#F8F5FF]'}`}
-              >
-                <div className="flex items-center mb-3">
-                  <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: toAcc.color }} />
-                  <span className={`text-base font-semibold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>{toAcc.name}</span>
+            <div
+              className={`rounded-[20px] border-2 border-primary shadow-sm ${isDarkMode ? 'bg-[#181818]' : 'bg-white'}`}
+              onTouchStart={handleToSwipeStart}
+              onTouchMove={handleToSwipeMove}
+              onTouchEnd={handleToSwipeEnd}
+              onMouseDown={handleToSwipeStart}
+              onMouseMove={(e) => { if (e.buttons === 1) handleToSwipeMove(e); }}
+              onMouseUp={handleToSwipeEnd}
+            >
+              <div className="p-6">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: toAcc?.color || '#159E3A' }} />
+                  <span className={`text-base font-bold ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>{toAcc?.name || 'Счёт'}</span>
                 </div>
-                <p className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>{toAcc.amount.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₽</p>
+                <p className={`text-[28px] font-extrabold ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>
+                  {formatBalance(toAcc?.amount || 0)} ₽
+                </p>
               </div>
-            )}
+
+              {accounts.length > 1 && (
+                <div className="flex justify-center gap-2 pb-4">
+                  {accounts.map((_, index) => (
+                    <div
+                      key={index}
+                      className={`h-2 rounded-full transition-all ${
+                        index === toIndex
+                          ? 'w-6 bg-primary'
+                          : (isDarkMode ? 'w-2 bg-[#4d4d4d]' : 'w-2 bg-[#E5E5E5]')
+                      }`}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
 
           <button
