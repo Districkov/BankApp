@@ -109,7 +109,6 @@ export const authAPI = {
   getYandexAuthUrl: async () => {
     const response = await fetch(`${API_BASE_URLS.AUTH}/simple/yandex/url`, {
       method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
       credentials: 'include',
     });
     if (!response.ok) {
