@@ -53,7 +53,7 @@ export default function Operations() {
       accounts.forEach(acc => {
         accountMap[acc.id] = {
           code: acc.currency?.currencyCode || 'RUB',
-          symbol: acc.currency?.symbol || '₽',
+          symbol: (acc.currency?.symbol && acc.currency.symbol !== '?') ? acc.currency.symbol : (acc.currency?.currencyCode === 'USD' ? '$' : acc.currency?.currencyCode === 'EUR' ? '€' : '₽'),
         };
       });
 

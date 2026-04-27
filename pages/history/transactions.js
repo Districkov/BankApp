@@ -62,7 +62,7 @@ export default function TransactionHistory() {
       accounts.forEach(acc => {
         accountMap[acc.id] = {
           code: acc.currency?.currencyCode || 'RUB',
-          symbol: acc.currency?.symbol || '₽',
+          symbol: (acc.currency?.symbol && acc.currency.symbol !== '?') ? acc.currency.symbol : (acc.currency?.currencyCode === 'USD' ? '$' : acc.currency?.currencyCode === 'EUR' ? '€' : '₽'),
         };
       });
 
@@ -259,7 +259,7 @@ export default function TransactionHistory() {
                   }`}
                   onClick={() => setSelectedAccountId(acc.id)}
                 >
-                  {acc.currency?.symbol ? `${acc.currency.symbol}` : '₽'} {parseFloat(acc.balance || 0).toLocaleString('ru-RU', {maximumFractionDigits: 0})}
+                  {(() => { const s = acc.currency?.symbol; return (s && s !== '?') ? s : (acc.currency?.currencyCode === 'USD' ? '$' : acc.currency?.currencyCode === 'EUR' ? '€' : '₽'); })()} {parseFloat(acc.balance || 0).toLocaleString('ru-RU', {maximumFractionDigits: 0})}
                 </button>
               ))}
             </div>

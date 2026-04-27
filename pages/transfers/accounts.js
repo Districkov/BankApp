@@ -31,11 +31,11 @@ export default function TransferAccounts() {
       if (accountsData && accountsData.length > 0) {
         setAccounts(accountsData.map(acc => ({
           id: acc.id,
-          name: acc.currency?.symbol ? `Счёт ${acc.currency.symbol}` : 'Счёт',
+          name: (acc.currency?.symbol && acc.currency.symbol !== '?') ? `Счёт ${acc.currency.symbol}` : `Счёт ${CURRENCY_SYMBOLS[acc.currency?.currencyCode] || '₽'}`,
           amount: parseFloat(acc.balance || 0),
           currency: acc.currency?.currencyCode || 'RUB',
           color: CURRENCY_COLORS[acc.currency?.currencyCode] || '#1A889F',
-          symbol: acc.currency?.symbol || CURRENCY_SYMBOLS[acc.currency?.currencyCode] || '₽',
+          symbol: (acc.currency?.symbol && acc.currency.symbol !== '?') ? acc.currency.symbol : CURRENCY_SYMBOLS[acc.currency?.currencyCode] || '₽',
         })));
 
         if (accountsData.length >= 2) {

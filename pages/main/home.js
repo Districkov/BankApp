@@ -293,7 +293,7 @@ export default function Home() {
           
           <div className="px-5 space-y-3">
             {accounts.map((acc) => {
-              const symbol = acc.currency?.symbol || '₽';
+              const symbol = (acc.currency?.symbol && acc.currency.symbol !== '?') ? acc.currency.symbol : (acc.currency?.currencyCode === 'USD' ? '$' : acc.currency?.currencyCode === 'EUR' ? '€' : '₽');
               const color = acc.currency?.currencyCode === 'USD' ? '#159E3A' : acc.currency?.currencyCode === 'EUR' ? '#E5A100' : '#1A889F';
               return (
                 <div 
