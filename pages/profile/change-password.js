@@ -8,24 +8,20 @@ import { authAPI } from '../../src/utils/api';
 export default function ChangePassword() {
   const router = useRouter();
   const { isDarkMode } = useTheme();
-  const [oldPassword, setOldPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [showOld, setShowOld] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
 
   const handleChangePassword = async () => {
-    const e = {};
-    if (!oldPassword) e.oldPassword = 'Введите текущий пароль';
-    if (!newPassword || newPassword.length < 6) e.newPassword = 'Пароль должен содержать минимум 6 символов';
-    if (newPassword !== confirmPassword) e.confirmPassword = 'Пароли не совпадают';
-    if (oldPassword === newPassword) e.newPassword = 'Новый пароль должен отличаться от текущего';
-
-    if (Object.keys(e).length > 0) {
-      setError(Object.values(e)[0]);
+    if (!newPassword || newPassword.length < 6) {
+      setError('Пароль должен содержать минимум 6 символов');
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      setError('Пароли не совпадают');
       return;
     }
 
@@ -33,13 +29,13 @@ export default function ChangePassword() {
     setError('');
 
     try {
-      await authAPI.changePassword(oldPassword, newPassword);
+      await authAPI.changePassword(newPassword);
       setSuccess(true);
     } catch (err) {
       if (err.status === 401) {
-        setError('Неверный текущий пароль');
+        setError('Сессия устарела, войдите заново');
       } else if (err.status === 400) {
-        setError(err.message || 'Некорректные данные');
+        setError(err.message || 'Некорректный пароль');
       } else {
         setError(err.message || 'Ошибка при смене пароля');
       }
@@ -48,13 +44,13 @@ export default function ChangePassword() {
     }
   };
 
-  const isFormValid = oldPassword && newPassword.length >= 6 && newPassword === confirmPassword && oldPassword !== newPassword;
+  const isFormValid = newPassword.length >= 6 && newPassword === confirmPassword;
 
   if (success) {
     return (
       <MainLayout>
         <div className={`flex flex-col flex-1 items-center justify-center px-8 ${isDarkMode ? 'bg-[#121212]' : 'bg-[#F7F7FB]'}`}>
-          <div className={`w-20 h-20 rounded-full bg-success flex items-center justify-center mb-6`}>
+          <div className="w-20 h-20 rounded-full bg-success flex items-center justify-center mb-6">
             <IoCheckmarkCircle size={48} color="#fff" />
           </div>
           <h1 className={`text-2xl font-bold mb-3 ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>Пароль изменён</h1>
@@ -91,22 +87,6 @@ export default function ChangePassword() {
           )}
 
           <div className={`rounded-2xl p-6 shadow-sm ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white'}`}>
-            <div className="mb-4">
-              <label className={`text-sm font-semibold mb-2 block ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Текущий пароль</label>
-              <div className="relative">
-                <input
-                  type={showOld ? 'text' : 'password'}
-                  placeholder="Введите текущий пароль"
-                  className={`w-full text-base font-semibold py-3 px-4 pr-12 rounded-xl ${isDarkMode ? 'bg-[#1f1f1f] text-white border border-[#4d4d4d]' : 'bg-[#F7F7FB] text-[#000] border border-[#E5E5E5]'} focus:outline-none focus:border-primary`}
-                  value={oldPassword}
-                  onChange={(e) => { setOldPassword(e.target.value); setError(''); }}
-                />
-                <button type="button" className="absolute right-3 top-1/2 -translate-y-1/2" onClick={() => setShowOld(!showOld)}>
-                  {showOld ? <IoEyeOffOutline size={20} color={isDarkMode ? '#666' : '#999'} /> : <IoEyeOutline size={20} color={isDarkMode ? '#666' : '#999'} />}
-                </button>
-              </div>
-            </div>
-
             <div className="mb-4">
               <label className={`text-sm font-semibold mb-2 block ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Новый пароль</label>
               <div className="relative">

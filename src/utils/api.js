@@ -158,8 +158,8 @@ export const authAPI = {
     return post(API_BASE_URLS.AUTH, '/login', { phone_number, password });
   },
 
-  changePassword: async (oldPassword, newPassword) => {
-    return patch(API_BASE_URLS.AUTH, '/password', { oldPassword, newPassword });
+  changePassword: async (password) => {
+    return patch(API_BASE_URLS.AUTH, '/password', { password });
   },
 
   whoami: async () => {
