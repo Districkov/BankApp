@@ -191,23 +191,23 @@ export default function TransferAccounts() {
             <label className={`text-base font-medium mb-3 block px-1 ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Списать с</label>
             <AccountCard acc={fromAcc} onClick={() => setShowFromPicker(true)} />
             {fromAcc && (
-              <div className="mt-3 flex items-baseline">
+              <div className="mt-3">
                 <input
                   type="text"
-                  value={amount}
+                  value={amount ? `${amount} ${fromAcc.symbol}` : ''}
                   onChange={(e) => {
-                    let cleaned = e.target.value.replace(/[^\d,.]/g, '');
-                    cleaned = cleaned.replace(',', '.');
-                    const parts = cleaned.split('.');
+                    let raw = e.target.value.replace(new RegExp(`\\s*${fromAcc.symbol.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`), '');
+                    raw = raw.replace(/[^\d,.]/g, '');
+                    raw = raw.replace(',', '.');
+                    const parts = raw.split('.');
                     if (parts.length > 2) {
-                      cleaned = parts[0] + '.' + parts[1];
+                      raw = parts[0] + '.' + parts[1];
                     }
-                    setAmount(cleaned);
+                    setAmount(raw);
                   }}
-                  className={`flex-1 text-[32px] font-bold bg-transparent focus:outline-none ${isDarkMode ? 'text-white placeholder-[#666]' : 'text-[#000]'}`}
-                  placeholder="0"
+                  className={`w-full text-[32px] font-bold bg-transparent focus:outline-none ${isDarkMode ? 'text-white placeholder-[#666]' : 'text-[#000]'}`}
+                  placeholder={fromAcc.symbol}
                 />
-                <span className={`text-2xl font-bold ml-2 ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>{fromAcc.symbol}</span>
               </div>
             )}
           </div>
