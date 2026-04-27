@@ -184,9 +184,7 @@ export const authAPI = {
 
 export const userAPI = {
   getProfile: async () => {
-    const res = await fetch(`${API_BASE_URLS.AUTH}/whoami`, { method: 'GET', credentials: 'include' });
-    if (!res.ok) throw { status: res.status, message: 'Unauthorized' };
-    return res.json();
+    return get(API_BASE_URLS.AUTH, '/whoami');
   },
 
   createUser: async (data) => {
