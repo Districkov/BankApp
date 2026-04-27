@@ -204,7 +204,8 @@ export default function TransferAccounts() {
                     }
                     setAmount(raw);
                   }}
-                  className={`text-[32px] font-bold bg-transparent focus:outline-none w-fit min-w-[40px] ${isDarkMode ? 'text-white placeholder-[#666]' : 'text-[#000]'}`}
+                  style={{ width: `${Math.max(amount.length, 1)}ch` }}
+                  className={`text-[32px] font-bold bg-transparent focus:outline-none ${isDarkMode ? 'text-white placeholder-[#666]' : 'text-[#000]'}`}
                   placeholder="0"
                 />
                 <span className={`text-[32px] font-bold ${amount ? (isDarkMode ? 'text-white' : 'text-[#000]') : (isDarkMode ? 'text-[#666]' : 'text-[#999]')}`}>
