@@ -84,11 +84,11 @@ export default function TransferAccounts() {
         amount: amountNum
       });
 
-      router.push(`/main/success?amount=${amountNum.toFixed(2)}&type=Перевод между счетами`);
+      router.push(`/main/success?amount=${amountNum.toFixed(2)}&type=Перевод между счетами&symbol=${encodeURIComponent(fromAccount?.symbol || '₽')}`);
     } catch (error) {
       const errorMessage = error.message || 'Операция отклонена';
       if (error.status === 400 || error.status === 403 || error.status === 429) {
-        router.push(`/main/failed?amount=${amountNum.toFixed(2)}&type=Перевод между счетами&reason=${encodeURIComponent(errorMessage)}`);
+        router.push(`/main/failed?amount=${amountNum.toFixed(2)}&type=Перевод между счетами&reason=${encodeURIComponent(errorMessage)}&symbol=${encodeURIComponent(fromAccount?.symbol || '₽')}`);
       } else {
         alert(errorMessage);
       }

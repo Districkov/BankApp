@@ -30,6 +30,8 @@ export default function Home() {
   const [accounts, setAccounts] = useState([]);
   const [sliderAccounts, setSliderAccounts] = useState([]);
   const [selectedAccountId, setSelectedAccountId] = useState(null);
+  const [monthlyExpenses, setMonthlyExpenses] = useState(0);
+  const [expenseByAccount, setExpenseByAccount] = useState({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -61,6 +63,28 @@ export default function Home() {
         });
         setSliderAccounts(mapped);
         setSelectedAccountId(accountsData[0].id);
+
+        const allHistory = await Promise.all(
+          accountsData.map(acc => accountsAPI.getAccountHistory(acc.id).catch(() => []))
+        );
+
+        const accountHistoryMap = {};
+        accountsData.forEach((acc, i) => {
+          accountHistoryMap[acc.id] = allHistory[i] || [];
+        });
+
+        const computeExpenses = (accId) => {
+          const txs = accountHistoryMap[accId] || [];
+          return txs.reduce((sum, tx) => {
+            const val = parseFloat(tx.amountChange ?? tx.amount ?? tx.value ?? 0);
+            return sum + (val < 0 ? Math.abs(val) : 0);
+          }, 0);
+        };
+
+        setMonthlyExpenses(computeExpenses(accountsData[0].id));
+        setExpenseByAccount(Object.fromEntries(
+          accountsData.map(acc => [acc.id, computeExpenses(acc.id)])
+        ));
       }
     } catch (error) {
       console.error('Error loading data:', error);
@@ -68,6 +92,12 @@ export default function Home() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (selectedAccountId && expenseByAccount[selectedAccountId] !== undefined) {
+      setMonthlyExpenses(expenseByAccount[selectedAccountId]);
+    }
+  }, [selectedAccountId, expenseByAccount]);
 
   const quickActions = [
     { title: 'Перевод по номеру', icon: 'phone', nav: '/transfers/phone', color: '#159E3A' },
@@ -218,6 +248,17 @@ export default function Home() {
             />
           </div>
         )}
+
+        {/* Monthly Expenses */}
+        <button
+          className={`mx-5 mt-4 p-6 rounded-[20px] shadow-lg w-[calc(100%-40px)] text-left ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white border border-[#F0F0F5]'}`}
+          onClick={() => router.push('/main/operations')}
+        >
+          <div className="flex flex-row justify-between items-center">
+            <span className={`text-base font-bold ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Расходы в {new Date().toLocaleDateString('ru-RU', { month: 'long' })}</span>
+            <span className="text-xl font-extrabold text-danger">{formatBalance(monthlyExpenses)} {sliderAccounts.find(a => a.id === selectedAccountId)?.symbol || '₽'}</span>
+          </div>
+        </button>
 
         {/* Quick Actions */}
         <div className="mb-6 mt-5">

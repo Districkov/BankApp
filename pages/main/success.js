@@ -6,7 +6,7 @@ import { useTheme } from '../../src/context/ThemeContext';
 export default function Success() {
   const router = useRouter();
   const { isDarkMode } = useTheme();
-  const { amount, type = 'перевод' } = router.query;
+  const { amount, type = 'перевод', symbol = '₽' } = router.query;
   const [secondsLeft, setSecondsLeft] = useState(6);
   const [showContent, setShowContent] = useState(false);
   const [animationPhase, setAnimationPhase] = useState('initial');
@@ -71,7 +71,7 @@ export default function Success() {
         <p className={`text-base leading-6 mb-8 ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>
           {type} на сумму
           <br />
-          <span className="text-[28px] font-bold text-success">{amount} ₽</span>
+          <span className="text-[28px] font-bold text-success">{amount} {symbol}</span>
           <br />
           выполнен успешно
         </p>

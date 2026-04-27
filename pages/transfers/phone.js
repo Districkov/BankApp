@@ -101,13 +101,12 @@ export default function TransferPhone() {
           message: message
         });
 
-        router.push(`/main/success?amount=${parseFloat(amount).toFixed(2)}&type=Перевод`);
+        router.push(`/main/success?amount=${parseFloat(amount).toFixed(2)}&type=Перевод&symbol=${encodeURIComponent(currencySymbol)}`);
       } catch (error) {
         const errorMessage = error.message || 'Операция отклонена';
 
         if (error.status === 400 || error.status === 403 || error.status === 429) {
-          router.push(`/main/failed?amount=${parseFloat(amount).toFixed(2)}&type=Перевод&reason=${encodeURIComponent(errorMessage)}`);
-        } else {
+          router.push(`/main/failed?amount=${parseFloat(amount).toFixed(2)}&type=Перевод&reason=${encodeURIComponent(errorMessage)}&symbol=${encodeURIComponent(currencySymbol)}`);        } else {
           setErrors({ amount: errorMessage });
         }
       }

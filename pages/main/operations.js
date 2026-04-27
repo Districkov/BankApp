@@ -60,8 +60,21 @@ export default function Operations() {
       const mapped = transactions.map(tx => {
         const amount = parseFloat(tx.amountChange ?? tx.amount ?? tx.value ?? 0);
         const txDate = tx.createdAt || tx.date || tx.timestamp || '';
-        const parsedDate = txDate ? new Date(txDate) : null;
-        const isValidDate = parsedDate && !isNaN(parsedDate.getTime());
+        let parsedDate = null;
+        let dateObj = 0;
+        if (txDate) {
+          parsedDate = new Date(txDate);
+          if (isNaN(parsedDate.getTime())) {
+            const parts = String(txDate).match(/(\d{4})-(\d{2})-(\d{2})[T ](\d{2}):(\d{2}):(\d{2})/);
+            if (parts) {
+              parsedDate = new Date(+parts[1], +parts[2]-1, +parts[3], +parts[4], +parts[5], +parts[6]);
+            }
+          }
+          if (parsedDate && !isNaN(parsedDate.getTime())) {
+            dateObj = parsedDate.getTime();
+          }
+        }
+        const isValidDate = dateObj > 0;
 
         const reason = tx.reason || tx.transferType || '';
         const accInfo = accountMap[tx.accountId] || {};
