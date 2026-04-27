@@ -37,6 +37,10 @@ export default function SessionLimit() {
     setError('');
 
     try {
+      if (preauthSessionId) {
+        await authAPI.preauth(sessionId, preauthSessionId);
+      }
+
       await authAPI.deleteSession(sessionId);
 
       document.cookie = 'YAA_SESS_ID=; Path=/; Max-Age=0';
