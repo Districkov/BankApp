@@ -1,12 +1,20 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import MainLayout from '../../src/components/MainLayout';
-import { IoArrowBack, IoLanguageOutline, IoMoonOutline, IoLockClosedOutline } from 'react-icons/io5';
+import { IoArrowBack, IoLanguageOutline, IoMoonOutline, IoLockClosedOutline, IoPersonOutline, IoMailOutline, IoCallOutline } from 'react-icons/io5';
 import { useTheme } from '../../src/context/ThemeContext';
+import { userAPI } from '../../src/utils/api';
 
 export default function Settings() {
   const router = useRouter();
   const { isDarkMode, toggleTheme } = useTheme();
+  const [profileData, setProfileData] = useState(null);
+
+  useEffect(() => {
+    userAPI.getProfile().then(setProfileData).catch(() => {});
+  }, []);
+
+  const user = profileData;
 
   const settingsSections = [
     {
@@ -45,6 +53,36 @@ export default function Settings() {
         </div>
 
         <div className="flex-1 overflow-y-auto pb-5">
+          {/* User Info */}
+          {user && (
+            <div className={`m-4 rounded-2xl p-4 shadow-sm ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white'}`}>
+              <h2 className={`text-base font-semibold mb-3 ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Профиль</h2>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <IoPersonOutline size={20} color="#1A889F" />
+                  <div>
+                    <p className={`text-sm ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Имя</p>
+                    <p className={`text-base font-medium ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>{user.first_name} {user.last_name}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <IoMailOutline size={20} color="#1A889F" />
+                  <div>
+                    <p className={`text-sm ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Email</p>
+                    <p className={`text-base font-medium ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>{user.email || '—'}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <IoCallOutline size={20} color="#1A889F" />
+                  <div>
+                    <p className={`text-sm ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Телефон</p>
+                    <p className={`text-base font-medium ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>{user.phone_number ? `+${user.phone_number}` : '—'}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Quick Settings */}
           <div className={`m-4 rounded-2xl p-4 shadow-sm ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white'}`}>
             <div className="flex items-center justify-between py-3">

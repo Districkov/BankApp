@@ -1,5 +1,5 @@
 import React, { useRef, useState } from 'react';
-import { IoEyeOutline, IoEyeOffOutline } from 'react-icons/io5';
+import { IoEyeOutline, IoEyeOffOutline, IoChevronBack, IoChevronForward } from 'react-icons/io5';
 import { useTheme } from '../context/ThemeContext';
 
 const CURRENCY_COLORS = { RUB: '#1A889F', USD: '#159E3A', EUR: '#E5A100' };
@@ -60,16 +60,33 @@ export default function AccountSlider({ accounts, selectedId, onSelect, label, e
       {label && (
         <label className={`text-sm font-semibold mb-2 block px-5 ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>{label}</label>
       )}
-      <div
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
-        className="relative overflow-hidden"
-        style={{ touchAction: 'pan-y' }}
-      >
         <div
-          className={`mx-5 p-6 rounded-[20px] shadow-lg border-2 ${isDarkMode ? 'bg-[#181818] border-primary' : 'bg-white border-primary'}`}
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
+          className="relative"
+          style={{ touchAction: 'pan-y' }}
         >
+          {visibleAccounts.length > 1 && selectedIdx > 0 && (
+            <button
+              className={`absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full flex items-center justify-center shadow ${isDarkMode ? 'bg-[#2d2d2d]' : 'bg-white border border-[#E5E5E5]'}`}
+              onClick={() => goTo(selectedIdx - 1)}
+            >
+              <IoChevronBack size={16} color={isDarkMode ? '#fff' : '#000'} />
+            </button>
+          )}
+          {visibleAccounts.length > 1 && selectedIdx < visibleAccounts.length - 1 && (
+            <button
+              className={`absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full flex items-center justify-center shadow ${isDarkMode ? 'bg-[#2d2d2d]' : 'bg-white border border-[#E5E5E5]'}`}
+              onClick={() => goTo(selectedIdx + 1)}
+            >
+              <IoChevronForward size={16} color={isDarkMode ? '#fff' : '#000'} />
+            </button>
+          )}
+
+          <div
+            className={`mx-5 p-6 rounded-[20px] shadow-lg border-2 ${isDarkMode ? 'bg-[#181818] border-primary' : 'bg-white border-primary'}`}
+          >
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
