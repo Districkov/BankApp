@@ -120,9 +120,9 @@ export const authAPI = {
   verifyCode: async (code) => {
     return fetch(`${API_BASE_URLS.AUTH}/simple/yandex/callback`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       credentials: 'include',
-      body: JSON.stringify({ code }),
+      body: `code=${encodeURIComponent(code)}`,
     })
       .then(async res => {
         if (res.status === 300) {
