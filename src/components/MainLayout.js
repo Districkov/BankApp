@@ -17,13 +17,19 @@ export default function MainLayout({ children }) {
   ];
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-screen" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
       <main className="flex-1 overflow-y-auto flex flex-col">
         {children}
       </main>
       
       {/* Bottom Tab Navigation */}
-      <nav className={`h-[72px] pb-2.5 border-t flex flex-row ${isDarkMode ? 'bg-[#181818] border-[#4d4d4d]' : 'bg-white border-[#E5E5E5]'}`}>
+      <nav
+        className={`border-t flex flex-row ${isDarkMode ? 'bg-[#181818] border-[#4d4d4d]' : 'bg-white border-[#E5E5E5]'}`}
+        style={{
+          height: 'calc(72px + env(safe-area-inset-bottom, 0px))',
+          paddingBottom: 'calc(10px + env(safe-area-inset-bottom, 0px))',
+        }}
+      >
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = currentPath === tab.path;
