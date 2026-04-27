@@ -1,0 +1,8 @@
+{
+    "message": [
+        "recipientUserId must be a number string",
+        "recipientUserId should not be empty"
+    ],
+    "error": "Bad Request",
+    "statusCode": 400
+}

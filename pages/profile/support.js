@@ -1,163 +1,144 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import MainLayout from '../../src/components/MainLayout';
-import { IoArrowBack, IoSearch, IoWarningOutline, IoCardOutline, IoSwapHorizontalOutline, IoLockClosedOutline, IoPhonePortraitOutline, IoCallOutline, IoChatbubbleOutline, IoMailOutline, IoLocationOutline } from 'react-icons/io5';
+import { IoArrowBack, IoSearch, IoCardOutline, IoSwapHorizontalOutline, IoLockClosedOutline, IoPhonePortraitOutline, IoCallOutline, IoChatbubbleOutline, IoMailOutline, IoLocationOutline, IoGlobeOutline } from 'react-icons/io5';
+import { useTheme } from '../../src/context/ThemeContext';
 
 export default function Support() {
   const router = useRouter();
+  const { isDarkMode } = useTheme();
   const [searchQuery, setSearchQuery] = useState('');
 
   const faqCategories = [
-    { icon: IoCardOutline, title: 'Карты и счета', count: '12 вопросов', color: '#1A889F' },
-    { icon: IoSwapHorizontalOutline, title: 'Переводы и платежи', count: '8 вопросов', color: '#FF6B6B' },
-    { icon: IoLockClosedOutline, title: 'Безопасность', count: '6 вопросов', color: '#4ECDC4' },
-    { icon: IoPhonePortraitOutline, title: 'Приложение', count: '5 вопросов', color: '#45B7D1' }
+    { icon: IoCardOutline, title: 'Счета и валюта', count: '8 вопросов', color: '#1A889F' },
+    { icon: IoSwapHorizontalOutline, title: 'Переводы', count: '6 вопросов', color: '#FF6B6B' },
+    { icon: IoLockClosedOutline, title: 'Безопасность', count: '5 вопросов', color: '#4ECDC4' },
+    { icon: IoPhonePortraitOutline, title: 'Приложение', count: '4 вопроса', color: '#45B7D1' }
   ];
 
   const popularQuestions = [
-    { question: 'Как заблокировать карту?', answer: 'Карту можно заблокировать в разделе "Безопасность" или позвонив в поддержку.' },
-    { question: 'Не приходит SMS с кодом', answer: 'Проверьте баланс телефона и настройки блокировки SMS от банка.' }
+    { question: 'Как создать счёт в валюте?', answer: 'На главной странице нажмите «Создать счёт» и выберите валюту: RUB, USD или EUR.' },
+    { question: 'Какие лимиты на переводы?', answer: 'Лимиты зависят от вашего KYC-статуса и могут быть изменены оператором.' },
+    { question: 'Как перевести между своими счетами?', answer: 'Перейдите в «Перевести» → «Между счетами», выберите счёт списания и зачисления.' },
+    { question: 'Не проходит перевод по телефону', answer: 'Убедитесь, что получатель зарегистрирован в системе. Проверьте, что номер введён корректно.' }
   ];
 
   const contactMethods = [
     { icon: IoCallOutline, title: 'Телефон поддержки', subtitle: '8 800 555-35-35', color: '#159E3A', action: () => window.open('tel:88005553535') },
     { icon: IoChatbubbleOutline, title: 'Онлайн-чат', subtitle: 'Круглосуточно', color: '#1A889F', action: () => console.log('Open chat') },
-    { icon: IoMailOutline, title: 'Электронная почта', subtitle: 'support@bank.ru', color: '#FFA726', action: () => window.open('mailto:support@bank.ru') },
-    { icon: IoLocationOutline, title: 'Отделения банка', subtitle: 'Найти ближайшее', color: '#FF3B30', action: () => console.log('Open map') }
+    { icon: IoMailOutline, title: 'Электронная почта', subtitle: 'support@bank.korzik.space', color: '#FFA726', action: () => window.open('mailto:support@bank.korzik.space') },
+    { icon: IoGlobeOutline, title: 'Сайт', subtitle: 'bank.korzik.space', color: '#AB47BC', action: () => window.open('https://bank.korzik.space', '_blank') }
   ];
+
+  const filteredQuestions = popularQuestions.filter(q =>
+    q.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    q.answer.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <MainLayout>
-      <div className="flex flex-col flex-1 bg-[#F7F7FB]">
-        <div className="bg-white px-4 py-4 border-b border-[#E5E5E5] flex justify-between items-center">
-          <button onClick={() => router.back()}>
-            <IoArrowBack size={24} color="#000" />
+      <div className={`flex flex-col flex-1 ${isDarkMode ? 'bg-[#121212]' : 'bg-[#F8FAFD]'}`}>
+        {/* Header */}
+        <div className={`flex items-center px-5 py-4 border-b ${isDarkMode ? 'bg-[#181818] border-[#4d4d4d]' : 'bg-white border-[#F0F0F5]'}`}>
+          <button onClick={() => router.back()} className="mr-3">
+            <IoArrowBack size={24} color={isDarkMode ? '#ffffff' : '#1A1A1A'} />
           </button>
-          <h1 className="text-lg font-semibold text-[#000]">Помощь и поддержка</h1>
-          <div className="w-8" />
+          <h1 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>Поддержка</h1>
         </div>
 
-        <div className="flex-1 overflow-y-auto pb-5">
-          {/* Search */}
-          <div className="p-4">
-            <div className="flex items-center bg-white px-4 rounded-xl border border-[#E5E5E5]">
-              <IoSearch size={20} color="#666" className="mr-2" />
+        <div className="flex-1 overflow-y-auto">
+          {/* Поиск */}
+          <div className="px-5 mt-4 mb-4">
+            <div className={`flex items-center rounded-xl px-4 py-3 ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white border border-[#F0F0F5]'}`}>
+              <IoSearch size={18} color={isDarkMode ? '#b3b3b3' : '#999'} className="mr-3" />
               <input
                 type="text"
-                className="flex-1 py-3.5 text-base text-[#000] bg-transparent"
-                placeholder="Поиск по вопросам..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Найти ответ"
+                className={`flex-1 bg-transparent focus:outline-none text-base ${isDarkMode ? 'text-white placeholder-[#666]' : 'text-[#000] placeholder-[#999]'}`}
               />
             </div>
           </div>
 
-          {/* Quick Help */}
-          <div className="px-4 mb-6">
-            <h2 className="text-base font-semibold text-[#666] mb-3">Нужна срочная помощь?</h2>
-            <button className="flex items-center bg-[#FFE8E8] p-4 rounded-xl border-l-4 border-danger w-full">
-              <div className="mr-3">
-                <IoWarningOutline size={24} color="#FF3B30" />
-              </div>
-              <div className="flex-1 text-left">
-                <p className="text-base font-semibold text-[#000] mb-1">Экстренная блокировка</p>
-                <p className="text-sm text-[#666]">Заблокируйте карту, если она утеряна</p>
-              </div>
-              <span className="text-[#999]">›</span>
-            </button>
-          </div>
-
-          {/* FAQ Categories */}
-          <div className="mb-6">
-            <h2 className="text-base font-semibold text-[#666] mb-3 px-4">Частые вопросы</h2>
-            <div className="flex flex-wrap gap-3 px-4">
-              {faqCategories.map((category, index) => (
-                <button
-                  key={index}
-                  className="w-[calc(50%-6px)] bg-white p-4 rounded-xl shadow-sm text-center"
-                  onClick={() => console.log('Open category', category.title)}
+          {/* Категории */}
+          <div className="px-5 mb-5">
+            <h2 className={`text-base font-semibold mb-3 ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>Категории</h2>
+            <div className="grid grid-cols-2 gap-3">
+              {faqCategories.map((cat, idx) => (
+                <div
+                  key={idx}
+                  className={`rounded-xl p-4 ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white border border-[#F0F0F5] shadow-sm'}`}
                 >
-                  <div
-                    className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2"
-                    style={{ backgroundColor: category.color }}
-                  >
-                    <category.icon size={20} color="#fff" />
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center mb-2" style={{ backgroundColor: cat.color + '20' }}>
+                    <cat.icon size={20} color={cat.color} />
                   </div>
-                  <p className="text-sm font-semibold text-[#000] mb-1">{category.title}</p>
-                  <p className="text-xs text-[#666]">{category.count}</p>
-                </button>
+                  <p className={`text-sm font-semibold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>{cat.title}</p>
+                  <p className={`text-xs ${isDarkMode ? 'text-[#666]' : 'text-[#999]'}`}>{cat.count}</p>
+                </div>
               ))}
             </div>
           </div>
 
-          {/* Popular Questions */}
-          <div className="mb-6">
-            <h2 className="text-base font-semibold text-[#666] mb-3 px-4">Популярные вопросы</h2>
-            <div className="px-4 space-y-2">
-              {popularQuestions.map((item, index) => (
-                <button
-                  key={index}
-                  className="flex items-center bg-white p-4 rounded-xl shadow-sm w-full"
-                  onClick={() => console.log('Open question', item.question)}
-                >
-                  <div className="flex-1 text-left">
-                    <p className="text-base font-medium text-[#000] mb-1">{item.question}</p>
-                    <p className="text-sm text-[#666] leading-tight">{item.answer}</p>
-                  </div>
-                  <span className="text-[#999] ml-2">›</span>
-                </button>
+          {/* Популярные вопросы */}
+          <div className="px-5 mb-5">
+            <h2 className={`text-base font-semibold mb-3 ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>Популярные вопросы</h2>
+            <div className="space-y-2">
+              {filteredQuestions.map((q, idx) => (
+                <FAQItem key={idx} question={q.question} answer={q.answer} isDarkMode={isDarkMode} />
               ))}
             </div>
           </div>
 
-          {/* Contact Methods */}
-          <div className="mb-6">
-            <h2 className="text-base font-semibold text-[#666] mb-3 px-4">Свяжитесь с нами</h2>
-            <div className="flex flex-wrap gap-3 px-4">
-              {contactMethods.map((method, index) => (
+          {/* Контакты */}
+          <div className="px-5 mb-8">
+            <h2 className={`text-base font-semibold mb-3 ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>Связаться с нами</h2>
+            <div className="space-y-2">
+              {contactMethods.map((method, idx) => (
                 <button
-                  key={index}
-                  className="w-[calc(50%-6px)] bg-white p-4 rounded-xl shadow-sm text-center"
+                  key={idx}
                   onClick={method.action}
+                  className={`w-full flex items-center p-4 rounded-xl ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white border border-[#F0F0F5] shadow-sm'}`}
                 >
-                  <div
-                    className="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-2"
-                    style={{ backgroundColor: method.color }}
-                  >
-                    <method.icon size={20} color="#fff" />
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center mr-3" style={{ backgroundColor: method.color + '20' }}>
+                    <method.icon size={20} color={method.color} />
                   </div>
-                  <p className="text-sm font-semibold text-[#000] mb-1">{method.title}</p>
-                  <p className="text-xs text-[#666]">{method.subtitle}</p>
+                  <div className="flex-1 text-left">
+                    <p className={`text-sm font-semibold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>{method.title}</p>
+                    <p className={`text-xs ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>{method.subtitle}</p>
+                  </div>
                 </button>
               ))}
-            </div>
-          </div>
-
-          {/* App Info */}
-          <div className="px-4 mb-6">
-            <div className="bg-white p-4 rounded-xl shadow-sm">
-              <div className="flex items-center gap-2 mb-4">
-                <IoPhonePortraitOutline size={24} color="#1A889F" />
-                <h3 className="text-base font-semibold text-[#000]">О приложении</h3>
-              </div>
-              <div className="space-y-2">
-                <div className="flex justify-between items-center py-2 border-b border-[#F0F0F0]">
-                  <span className="text-sm text-[#666]">Версия</span>
-                  <span className="text-sm font-medium text-[#000]">1.0.0 (12345)</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-[#F0F0F0]">
-                  <span className="text-sm text-[#666]">Обновлено</span>
-                  <span className="text-sm font-medium text-[#000]">15 сентября 2024</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-[#F0F0F0]">
-                  <span className="text-sm text-[#666]">Разработчик</span>
-                  <span className="text-sm font-medium text-[#000]">Verdical Bank</span>
-                </div>
-              </div>
             </div>
           </div>
         </div>
       </div>
     </MainLayout>
+  );
+}
+
+function FAQItem({ question, answer, isDarkMode }) {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className={`rounded-xl overflow-hidden ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white border border-[#F0F0F5] shadow-sm'}`}>
+      <button
+        className="w-full flex items-center justify-between p-4 text-left"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <span className={`text-sm font-medium pr-3 ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>{question}</span>
+        <IoArrowBack
+          size={16}
+          color={isDarkMode ? '#b3b3b3' : '#999'}
+          className={`transform transition-transform ${isOpen ? 'rotate-[-90deg]' : 'rotate-[-90deg]'}`}
+          style={{ transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)' }}
+        />
+      </button>
+      {isOpen && (
+        <div className={`px-4 pb-4 ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>
+          <p className="text-sm">{answer}</p>
+        </div>
+      )}
+    </div>
   );
 }

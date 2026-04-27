@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '../../src/context/AuthContext';
 import { useTheme } from '../../src/context/ThemeContext';
@@ -10,28 +10,29 @@ export default function YandexCallback() {
   const { login } = useAuth();
   const { isDarkMode } = useTheme();
   const router = useRouter();
+  const processed = useRef(false);
 
   useEffect(() => {
+    if (processed.current) return;
+
     const handleCallback = async () => {
       const urlParams = new URLSearchParams(window.location.search);
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
       const code = urlParams.get('code') || hashParams.get('code');
-
-      console.log('Callback page - Code:', code);
 
       if (!code) {
         router.replace('/');
         return;
       }
 
+      processed.current = true;
+
       try {
         const response = await authAPI.verifyCode(code);
-        console.log('verifyCode FULL response:', JSON.stringify(response));
 
         if (response && response.verified) {
           try {
             const userData = await authAPI.whoami();
-            console.log('whoami after verify:', userData);
             if (userData) {
               localStorage.setItem('session_cookie', 'YAA_SESS_ID=httponly');
               localStorage.setItem('user_data', JSON.stringify(userData));
@@ -40,14 +41,12 @@ export default function YandexCallback() {
               throw new Error('whoami вернул пустые данные');
             }
           } catch (whoamiErr) {
-            console.error('whoami failed after verify:', whoamiErr);
             localStorage.setItem('session_cookie', 'YAA_SESS_ID=httponly');
             router.replace('/welcome');
             return;
           }
         } else {
-          console.error('verifyCode returned non-success:', response);
-          setStatus('error');
+          console.error('verifyCode returned non-success:', response);          setStatus('error');
           setError('Не удалось подтвердить код авторизации');
           setTimeout(() => { router.replace('/'); }, 3000);
           return;
@@ -59,7 +58,6 @@ export default function YandexCallback() {
         }, 1000);
       } catch (err) {
         if (err.status === 300 && err.data) {
-          console.log('Session limit reached, redirecting to session-limit');
           router.replace({
             pathname: '/auth/session-limit',
             query: {
@@ -79,10 +77,10 @@ export default function YandexCallback() {
       }
     };
 
-    if (router.isReady) {
+    if (router.isReady && !processed.current) {
       handleCallback();
     }
-  }, [router.isReady, login, router]);
+  }, [router.isReady]);
 
   return (
     <div className={`flex-1 flex justify-center items-center w-full min-h-screen ${isDarkMode ? 'bg-[#121212]' : 'bg-[#F7F7FB]'}`}>

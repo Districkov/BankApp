@@ -77,13 +77,10 @@ export default function YandexAuthScreen() {
     try {
       const authUrl = await authAPI.getYandexAuthUrl();
 
-      console.log('Received auth URL from backend:', authUrl);
-
       if (!authUrl) {
         throw new Error('URL авторизации не получен');
       }
 
-      console.log('Redirecting to:', authUrl);
       window.location.href = authUrl;
     } catch (err) {
       setError(err.message || 'Ошибка при получении URL авторизации');
