@@ -1,19 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import MainLayout from '../../src/components/MainLayout';
-import { IoClose, IoSwapVertical } from 'react-icons/io5';
+import { IoClose, IoSwapVertical, IoChevronDown } from 'react-icons/io5';
 import { accountsAPI, transfersAPI } from '../../src/utils/api';
 import { useTheme } from '../../src/context/ThemeContext';
+
+const CURRENCY_SYMBOLS = { RUB: '₽', USD: '$', EUR: '€' };
+const CURRENCY_COLORS = { RUB: '#1A889F', USD: '#159E3A', EUR: '#E5A100' };
 
 export default function TransferAccounts() {
   const router = useRouter();
   const { isDarkMode } = useTheme();
   const [amount, setAmount] = useState('');
-  const [fromAccount, setFromAccount] = useState(null);
-  const [toAccount, setToAccount] = useState(null);
+  const [fromAccountId, setFromAccountId] = useState(null);
+  const [toAccountId, setToAccountId] = useState(null);
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [swapped, setSwapped] = useState(false);
+  const [showFromPicker, setShowFromPicker] = useState(false);
+  const [showToPicker, setShowToPicker] = useState(false);
 
   useEffect(() => {
     loadAccounts();
@@ -30,14 +34,15 @@ export default function TransferAccounts() {
           name: acc.currency?.symbol ? `Счёт ${acc.currency.symbol}` : 'Счёт',
           amount: parseFloat(acc.balance || 0),
           currency: acc.currency?.currencyCode || 'RUB',
-          color: acc.currency?.currencyCode === 'RUB' ? '#1A889F' : acc.currency?.currencyCode === 'USD' ? '#159E3A' : '#E5A100'
+          color: CURRENCY_COLORS[acc.currency?.currencyCode] || '#1A889F',
+          symbol: acc.currency?.symbol || CURRENCY_SYMBOLS[acc.currency?.currencyCode] || '₽',
         })));
-        
+
         if (accountsData.length >= 2) {
-          setFromAccount(accountsData[0].id);
-          setToAccount(accountsData[1].id);
+          setFromAccountId(accountsData[0].id);
+          setToAccountId(accountsData[1].id);
         } else if (accountsData.length === 1) {
-          setFromAccount(accountsData[0].id);
+          setFromAccountId(accountsData[0].id);
         }
       }
     } catch (error) {
@@ -48,10 +53,9 @@ export default function TransferAccounts() {
   };
 
   const swapAccounts = () => {
-    const temp = fromAccount;
-    setFromAccount(toAccount);
-    setToAccount(temp);
-    setSwapped(prev => !prev);
+    const temp = fromAccountId;
+    setFromAccountId(toAccountId);
+    setToAccountId(temp);
   };
 
   const handleTransfer = async () => {
@@ -61,8 +65,8 @@ export default function TransferAccounts() {
     }
 
     const amountNum = parseFloat(amount);
-    const fromAcc = accounts.find(a => a.id === fromAccount);
-    
+    const fromAcc = accounts.find(a => a.id === fromAccountId);
+
     if (!fromAcc) {
       alert('Выберите счёт для списания');
       return;
@@ -75,8 +79,8 @@ export default function TransferAccounts() {
 
     try {
       await transfersAPI.transferBetweenAccounts({
-        fromAccountId: fromAccount,
-        toAccountId: toAccount,
+        fromAccountId,
+        toAccountId,
         amount: amountNum
       });
       
@@ -92,7 +96,7 @@ export default function TransferAccounts() {
     }
   };
 
-  const isFormValid = amount && parseFloat(amount) > 0 && fromAccount && toAccount && fromAccount !== toAccount;
+  const isFormValid = amount && parseFloat(amount) > 0 && fromAccountId && toAccountId && fromAccountId !== toAccountId;
 
   if (loading) {
     return (
@@ -104,8 +108,72 @@ export default function TransferAccounts() {
     );
   }
 
-  const fromAcc = accounts.find(a => a.id === fromAccount);
-  const toAcc = accounts.find(a => a.id === toAccount);
+  const fromAcc = accounts.find(a => a.id === fromAccountId);
+  const toAcc = accounts.find(a => a.id === toAccountId);
+
+  const AccountCard = ({ acc, label, onClick }) => {
+    if (!acc) {
+      return (
+        <button
+          onClick={onClick}
+          className={`w-full p-5 rounded-2xl border-2 border-dashed border-primary/40 shadow-sm ${isDarkMode ? 'bg-[#181818]' : 'bg-[#F8F5FF]'}`}
+        >
+          <p className={`text-base font-semibold ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Выберите счёт</p>
+        </button>
+      );
+    }
+    return (
+      <button
+        onClick={onClick}
+        className={`w-full p-5 rounded-2xl border-2 border-primary shadow-sm text-left ${isDarkMode ? 'bg-[#181818]' : 'bg-[#F8F5FF]'}`}
+      >
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center">
+            <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: acc.color }} />
+            <span className={`text-base font-semibold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>{acc.name}</span>
+          </div>
+          <IoChevronDown size={18} color={isDarkMode ? '#b3b3b3' : '#666'} />
+        </div>
+        <p className={`text-sm ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>
+          Доступно: {acc.amount.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {acc.symbol}
+        </p>
+      </button>
+    );
+  };
+
+  const AccountPicker = ({ show, onClose, onSelect, excludeId }) => {
+    if (!show) return null;
+    const filtered = accounts.filter(a => a.id !== excludeId);
+    return (
+      <div className="fixed inset-0 z-50 flex items-end justify-center" onClick={onClose}>
+        <div className="absolute inset-0 bg-black/50" />
+        <div
+          className={`relative w-full max-w-lg rounded-t-2xl p-5 pb-8 ${isDarkMode ? 'bg-[#181818]' : 'bg-white'}`}
+          onClick={e => e.stopPropagation()}
+        >
+          <div className={`w-10 h-1 rounded-full mx-auto mb-4 ${isDarkMode ? 'bg-[#4d4d4d]' : 'bg-[#E5E5E5]'}`} />
+          <h3 className={`text-lg font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>Выберите счёт</h3>
+          <div className="space-y-2">
+            {filtered.map(acc => (
+              <button
+                key={acc.id}
+                className={`w-full p-4 rounded-xl flex items-center justify-between ${isDarkMode ? 'bg-[#121212] border border-[#4d4d4d]' : 'bg-[#F8FAFD] border border-[#E5E5E5]'}`}
+                onClick={() => { onSelect(acc.id); onClose(); }}
+              >
+                <div className="flex items-center">
+                  <div className="w-3 h-3 rounded-full mr-3" style={{ backgroundColor: acc.color }} />
+                  <span className={`text-base font-semibold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>{acc.name}</span>
+                </div>
+                <span className={`text-base font-bold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>
+                  {acc.amount.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} {acc.symbol}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   return (
     <MainLayout>
@@ -121,36 +189,25 @@ export default function TransferAccounts() {
           {/* Списать с */}
           <div className="mb-3">
             <label className={`text-base font-medium mb-3 block px-1 ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Списать с</label>
+            <AccountCard acc={fromAcc} onClick={() => setShowFromPicker(true)} />
             {fromAcc && (
-              <div
-                key={fromAcc.id + (swapped ? '-s' : '')}
-                className={`w-full p-5 rounded-2xl border-2 border-primary shadow-sm transition-all duration-300 ${isDarkMode ? 'bg-[#181818]' : 'bg-[#F8F5FF]'}`}
-              >
-                <div className="flex items-center mb-3">
-                  <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: fromAcc.color }} />
-                  <span className={`text-base font-semibold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>{fromAcc.name}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={amount}
-                    onChange={(e) => {
-                      let cleaned = e.target.value.replace(/[^\d,.]/g, '');
-                      cleaned = cleaned.replace(',', '.');
-                      const parts = cleaned.split('.');
-                      if (parts.length > 2) {
-                        cleaned = parts[0] + '.' + parts[1];
-                      }
-                      setAmount(cleaned);
-                    }}
-                    className={`w-full text-[32px] font-bold bg-transparent focus:outline-none ${isDarkMode ? 'text-white placeholder-[#666]' : 'text-[#000]'}`}
-                    placeholder="0"
-                  />
-                  <span className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>₽</span>
-                </div>
-                <p className={`text-sm mt-2 ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>
-                  Доступно: {fromAcc.amount.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₽
-                </p>
+              <div className="mt-3">
+                <input
+                  type="text"
+                  value={amount}
+                  onChange={(e) => {
+                    let cleaned = e.target.value.replace(/[^\d,.]/g, '');
+                    cleaned = cleaned.replace(',', '.');
+                    const parts = cleaned.split('.');
+                    if (parts.length > 2) {
+                      cleaned = parts[0] + '.' + parts[1];
+                    }
+                    setAmount(cleaned);
+                  }}
+                  className={`w-full text-[32px] font-bold bg-transparent focus:outline-none ${isDarkMode ? 'text-white placeholder-[#666]' : 'text-[#000]'}`}
+                  placeholder="0"
+                />
+                <span className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>{fromAcc.symbol}</span>
               </div>
             )}
           </div>
@@ -168,18 +225,7 @@ export default function TransferAccounts() {
           {/* Зачислить на */}
           <div className="mb-6">
             <label className={`text-base font-medium mb-3 block px-1 ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Зачислить на</label>
-            {toAcc && (
-              <div
-                key={toAcc.id + (swapped ? '-s' : '')}
-                className={`w-full p-5 rounded-2xl border-2 border-primary shadow-sm transition-all duration-300 ${isDarkMode ? 'bg-[#181818]' : 'bg-[#F8F5FF]'}`}
-              >
-                <div className="flex items-center mb-3">
-                  <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: toAcc.color }} />
-                  <span className={`text-base font-semibold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>{toAcc.name}</span>
-                </div>
-                <p className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>{toAcc.amount.toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₽</p>
-              </div>
-            )}
+            <AccountCard acc={toAcc} onClick={() => setShowToPicker(true)} />
           </div>
 
           <button
@@ -192,6 +238,19 @@ export default function TransferAccounts() {
             Перевести {amount ? parseFloat(amount).toFixed(2) + ' ₽' : ''}
           </button>
         </div>
+
+        <AccountPicker
+          show={showFromPicker}
+          onClose={() => setShowFromPicker(false)}
+          onSelect={(id) => { setFromAccountId(id); if (id === toAccountId) setToAccountId(null); }}
+          excludeId={fromAccountId}
+        />
+        <AccountPicker
+          show={showToPicker}
+          onClose={() => setShowToPicker(false)}
+          onSelect={(id) => { setToAccountId(id); if (id === fromAccountId) setFromAccountId(null); }}
+          excludeId={toAccountId}
+        />
       </div>
     </MainLayout>
   );

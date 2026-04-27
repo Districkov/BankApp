@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { IoHomeOutline, IoPhonePortraitOutline, IoTrendingUp, IoEyeOutline, IoEyeOffOutline, IoChevronForward, IoCheckmarkCircle, IoNotificationsOutline, IoAddCircleOutline } from 'react-icons/io5';
+import { IoHomeOutline, IoPhonePortraitOutline, IoTrendingUp, IoEyeOutline, IoEyeOffOutline, IoChevronForward, IoCheckmarkCircle, IoAddCircleOutline } from 'react-icons/io5';
 import { MdOutlineCreditCard } from 'react-icons/md';
 import MainLayout from '../../src/components/MainLayout';
 import { accountsAPI, userAPI } from '../../src/utils/api';
@@ -45,17 +45,30 @@ export default function Home() {
       setUser(userData);
       setAccounts(accountsData || []);
       
-      // Подсчитываем общий баланс
       if (accountsData && accountsData.length > 0) {
+        let rates = {};
+        try {
+          const ratesData = await accountsAPI.getExchangeRates();
+          if (Array.isArray(ratesData)) {
+            ratesData.forEach(r => { rates[r.from || r.source] = rates[r.from || r.source] || {}; rates[r.from || r.source][r.to || r.target] = parseFloat(r.rate || r.value || 1); });
+          } else if (ratesData && typeof ratesData === 'object') {
+            rates = ratesData;
+          }
+        } catch {}
+
         const total = accountsData.reduce((sum, acc) => {
           const balance = parseFloat(acc.balance || 0);
-          return sum + balance;
+          const code = acc.currency?.currencyCode || 'RUB';
+          if (code === 'RUB') return sum + balance;
+          const rate = rates[code]?.RUB || rates[code]?.rub || 1;
+          return sum + balance * rate;
         }, 0);
         setTotalBalance(total);
 
-        // Получаем транзакции для первого счёта
-        const firstAccountId = accountsData[0].id;
-        const transactionsData = await accountsAPI.getAccountHistory(firstAccountId).catch(() => null);
+        const allHistory = await Promise.all(
+          accountsData.map(acc => accountsAPI.getAccountHistory(acc.id).catch(() => []))
+        );
+        const transactionsData = allHistory.flat();
 
         // Подсчитываем расходы за текущий месяц
         if (transactionsData && transactionsData.length > 0) {
@@ -193,12 +206,6 @@ export default function Home() {
           </div>
           <div>
             <p className={`text-base font-bold ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>{user?.first_name || 'Иван'}</p>
-          </div>
-        </button>
-        <button className="w-11 h-11 flex items-center justify-center relative">
-          <IoNotificationsOutline size={24} color={isDarkMode ? '#ffffff' : '#1A1A1A'} />
-          <div className="absolute top-2 right-2 bg-danger w-[18px] h-[18px] rounded-full flex items-center justify-center">
-            <span className={`text-[10px] font-bold ${isDarkMode ? 'text-white' : 'text-white'}`}>3</span>
           </div>
         </button>
       </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import MainLayout from '../../src/components/MainLayout';
-import { IoArrowBack, IoCarOutline, IoFastFoodOutline, IoMedicalOutline, IoCardOutline, IoSwapHorizontalOutline, IoGameControllerOutline } from 'react-icons/io5';
+import { IoArrowBack, IoCarOutline, IoFastFoodOutline, IoMedicalOutline, IoCardOutline, IoSwapHorizontalOutline, IoGameControllerOutline, IoReceiptOutline } from 'react-icons/io5';
 import { accountsAPI } from '../../src/utils/api';
 import { useTheme } from '../../src/context/ThemeContext';
 
@@ -38,51 +38,30 @@ export default function Operations() {
   const loadTransactions = async () => {
     try {
       setLoading(true);
-      // Сначала получаем счета
       const accounts = await accountsAPI.getAccounts().catch(() => null);
       if (!accounts || accounts.length === 0) {
         setData([]);
         return;
       }
 
-      // Получаем транзакции для первого счёта
-      const transactions = await accountsAPI.getAccountHistory(accounts[0].id).catch(() => null);
-      
-      if (transactions && transactions.length > 0) {
-        setData(transactions.map(tx => ({
-          id: tx.id,
-          title: tx.description || tx.title || 'Операция',
-          subtitle: tx.category || 'Прочее',
-          amount: `${tx.amount >= 0 ? '+' : ''}${tx.amount.toLocaleString('ru-RU')} ₽`,
-          type: tx.amount >= 0 ? 'income' : 'expense',
-          date: new Date(tx.date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' }),
-          time: new Date(tx.date).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
-          category: tx.category || 'transfer'
-        })));
-      } else {
-        setData([
-          { id: '1', title: 'BMW Motors', subtitle: 'Покупка', amount: '-14 743 211 ₽', type: 'expense', date: '20 окт 2024', time: '14:30', category: 'transport' },
-          { id: '2', title: 'Перевод от Петя', subtitle: 'Перевод', amount: '+8 700 ₽', type: 'income', date: '13 сент 2024', time: '11:15', category: 'transfer' },
-          { id: '3', title: 'Вкусно — и точка', subtitle: 'Еда', amount: '-538 ₽', type: 'expense', date: '12 сент 2024', time: '18:45', category: 'food' },
-          { id: '4', title: 'Аптека', subtitle: 'Здоровье', amount: '-1 240 ₽', type: 'expense', date: '11 сент 2024', time: '09:20', category: 'health' },
-          { id: '5', title: 'Зарплата', subtitle: 'Начисление', amount: '+45 000 ₽', type: 'income', date: '10 сент 2024', time: '08:00', category: 'salary' },
-          { id: '6', title: 'Такси', subtitle: 'Транспорт', amount: '-320 ₽', type: 'expense', date: '9 сент 2024', time: '22:10', category: 'transport' },
-          { id: '7', title: 'Супермаркет', subtitle: 'Продукты', amount: '-2 150 ₽', type: 'expense', date: '8 сент 2024', time: '16:30', category: 'food' },
-          { id: '8', title: 'Кино', subtitle: 'Развлечения', amount: '-800 ₽', type: 'expense', date: '7 сент 2024', time: '20:15', category: 'entertainment' },
-        ]);
-      }
+      const allHistory = await Promise.all(
+        accounts.map(acc => accountsAPI.getAccountHistory(acc.id).catch(() => []))
+      );
+      const transactions = allHistory.flat();
+
+      setData(transactions.map(tx => ({
+        id: tx.id,
+        title: tx.description || 'Операция',
+        subtitle: tx.category || 'Прочее',
+        amount: `${tx.amount >= 0 ? '+' : ''}${Number(tx.amount).toLocaleString('ru-RU')} ₽`,
+        type: tx.amount >= 0 ? 'income' : 'expense',
+        date: new Date(tx.date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' }),
+        time: new Date(tx.date).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
+        category: tx.category || 'transfer'
+      })));
     } catch (error) {
       console.error('Error loading transactions:', error);
-      setData([
-        { id: '1', title: 'BMW Motors', subtitle: 'Покупка', amount: '-14 743 211 ₽', type: 'expense', date: '20 окт 2024', time: '14:30', category: 'transport' },
-        { id: '2', title: 'Перевод от Петя', subtitle: 'Перевод', amount: '+8 700 ₽', type: 'income', date: '13 сент 2024', time: '11:15', category: 'transfer' },
-        { id: '3', title: 'Вкусно — и точка', subtitle: 'Еда', amount: '-538 ₽', type: 'expense', date: '12 сент 2024', time: '18:45', category: 'food' },
-        { id: '4', title: 'Аптека', subtitle: 'Здоровье', amount: '-1 240 ₽', type: 'expense', date: '11 сент 2024', time: '09:20', category: 'health' },
-        { id: '5', title: 'Зарплата', subtitle: 'Начисление', amount: '+45 000 ₽', type: 'income', date: '10 сент 2024', time: '08:00', category: 'salary' },
-        { id: '6', title: 'Такси', subtitle: 'Транспорт', amount: '-320 ₽', type: 'expense', date: '9 сент 2024', time: '22:10', category: 'transport' },
-        { id: '7', title: 'Супермаркет', subtitle: 'Продукты', amount: '-2 150 ₽', type: 'expense', date: '8 сент 2024', time: '16:30', category: 'food' },
-        { id: '8', title: 'Кино', subtitle: 'Развлечения', amount: '-800 ₽', type: 'expense', date: '7 сент 2024', time: '20:15', category: 'entertainment' },
-      ]);
+      setData([]);
     } finally {
       setLoading(false);
     }
@@ -175,31 +154,39 @@ export default function Operations() {
                 <h2 className={`text-lg font-semibold mb-4 ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>
                   {filter === 'all' ? 'Все операции' : filter === 'income' ? 'Доходы' : 'Расходы'} ({filtered.length})
                 </h2>
-                {filtered.map((item) => {
-                  const Icon = categoryIcons[item.category];
-                  return (
-                    <div key={item.id} className={`rounded-xl p-4 mb-2 shadow-sm ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white'}`}>
-                      <div className="flex items-center">
-                        <div
-                          className="w-10 h-10 rounded-full flex items-center justify-center mr-3"
-                          style={{ backgroundColor: categoryColors[item.category] }}
-                        >
-                          {Icon && <Icon size={18} color="#fff" />}
-                        </div>
-                        <div className="flex-1">
-                          <p className={`text-base font-semibold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>{item.title}</p>
-                          <p className={`text-sm ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>{item.subtitle}</p>
-                          <p className={`text-xs ${isDarkMode ? 'text-[#666]' : 'text-[#999]'}`}>{item.date} в {item.time}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className={`text-base font-bold ${item.type === 'income' ? 'text-success' : 'text-danger'}`}>
-                            {item.amount}
-                          </p>
+                {filtered.length === 0 ? (
+                  <div className={`rounded-xl p-8 text-center ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white'}`}>
+                    <IoReceiptOutline size={40} color={isDarkMode ? '#666' : '#999'} className="mx-auto mb-3" />
+                    <p className={`text-base font-semibold mb-1 ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Операций пока нет</p>
+                    <p className={`text-sm ${isDarkMode ? 'text-[#666]' : 'text-[#999]'}`}>Совершите перевод, чтобы увидеть историю</p>
+                  </div>
+                ) : (
+                  filtered.map((item) => {
+                    const Icon = categoryIcons[item.category];
+                    return (
+                      <div key={item.id} className={`rounded-xl p-4 mb-2 shadow-sm ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white'}`}>
+                        <div className="flex items-center">
+                          <div
+                            className="w-10 h-10 rounded-full flex items-center justify-center mr-3"
+                            style={{ backgroundColor: categoryColors[item.category] }}
+                          >
+                            {Icon && <Icon size={18} color="#fff" />}
+                          </div>
+                          <div className="flex-1">
+                            <p className={`text-base font-semibold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>{item.title}</p>
+                            <p className={`text-sm ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>{item.subtitle}</p>
+                            <p className={`text-xs ${isDarkMode ? 'text-[#666]' : 'text-[#999]'}`}>{item.date} в {item.time}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className={`text-base font-bold ${item.type === 'income' ? 'text-success' : 'text-danger'}`}>
+                              {item.amount}
+                            </p>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })
+                )}
               </div>
             </>
           ) : (
@@ -224,15 +211,15 @@ export default function Operations() {
               <h2 className={`text-lg font-semibold mb-4 ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>Статистика за месяц</h2>
               <div className={`flex rounded-2xl p-5 shadow-sm ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white'}`}>
                 <div className="flex-1 text-center">
-                  <p className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>24</p>
+                  <p className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>{data.length}</p>
                   <p className={`text-xs ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Операций</p>
                 </div>
                 <div className="flex-1 text-center">
-                  <p className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>8 740 ₽</p>
+                  <p className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>{data.length > 0 ? Math.round(Math.abs(totals.expenses / data.filter(d => d.type === 'expense').length)).toLocaleString('ru-RU') : 0} ₽</p>
                   <p className={`text-xs ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Средний чек</p>
                 </div>
                 <div className="flex-1 text-center">
-                  <p className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>12</p>
+                  <p className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>{new Set(data.map(d => d.date)).size}</p>
                   <p className={`text-xs ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Дней с тратами</p>
                 </div>
               </div>
