@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import MainLayout from '../../src/components/MainLayout';
+import AccountSlider from '../../src/components/AccountSlider';
 import { accountsAPI, transfersAPI } from '../../src/utils/api';
 import { useTheme } from '../../src/context/ThemeContext';
 
@@ -134,34 +135,10 @@ export default function TransferPhone() {
           <div className="w-8" />
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 pb-6">
-          {/* Счёт слайдером */}
-          {accounts.length > 0 && (
-            <div className="mb-4">
-              <label className={`text-sm font-semibold mb-2 block ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Счёт списания</label>
-              <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
-                {accounts.map(acc => (
-                  <button
-                    key={acc.id}
-                    className={`flex-shrink-0 px-4 py-3 rounded-xl border-2 transition-all ${
-                      selectedAccountId === acc.id
-                        ? 'border-primary shadow-sm'
-                        : (isDarkMode ? 'border-[#4d4d4d]' : 'border-[#E5E5E5]')
-                    } ${isDarkMode ? 'bg-[#181818]' : 'bg-white'}`}
-                    onClick={() => { setSelectedAccountId(acc.id); setAmount(''); setErrors({}); }}
-                  >
-                    <div className="flex items-center mb-1">
-                      <div className="w-2.5 h-2.5 rounded-full mr-2" style={{ backgroundColor: acc.color }} />
-                      <span className={`text-sm font-semibold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>{acc.symbol}</span>
-                    </div>
-                    <p className={`text-base font-bold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>
-                      {acc.balance.toLocaleString('ru-RU', { minimumFractionDigits: 2 })} {acc.symbol}
-                    </p>
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
+        <div className="flex-1 overflow-y-auto pb-6">
+          <AccountSlider accounts={accounts} selectedId={selectedAccountId} onSelect={(id) => { setSelectedAccountId(id); setAmount(''); setErrors({}); }} label="Счёт списания" />
+
+          <div className="px-4">
 
           <div className={`p-4 rounded-xl shadow-sm mb-4 ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white'}`}>
             <label className={`text-sm font-semibold mb-2 block ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Номер телефона</label>
@@ -230,6 +207,7 @@ export default function TransferPhone() {
           >
             Перевести {amount ? `${parseFloat(amount).toFixed(2)} ${selectedAccount?.symbol || '₽'}` : ''}
           </button>
+          </div>
         </div>
       </div>
     </MainLayout>

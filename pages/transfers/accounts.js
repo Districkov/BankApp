@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import MainLayout from '../../src/components/MainLayout';
+import AccountSlider from '../../src/components/AccountSlider';
 import { IoClose, IoSwapVertical } from 'react-icons/io5';
 import { accountsAPI, transfersAPI } from '../../src/utils/api';
 import { useTheme } from '../../src/context/ThemeContext';
@@ -134,8 +135,8 @@ export default function TransferAccounts() {
           <div className="w-8" />
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4 pb-6">
-          <AccountSlider label="Списать с" selectedId={fromAccountId} onSelect={setFromAccountId} excludeId={toAccountId} />
+        <div className="flex-1 overflow-y-auto pb-6">
+          <AccountSlider accounts={accounts} selectedId={fromAccountId} onSelect={(id) => { setFromAccountId(id); setAmount(''); }} label="Списать с" excludeId={toAccountId} />
 
           <div className="flex justify-center my-2">
             <button
@@ -146,7 +147,9 @@ export default function TransferAccounts() {
             </button>
           </div>
 
-          <AccountSlider label="Зачислить на" selectedId={toAccountId} onSelect={setToAccountId} excludeId={fromAccountId} />
+          <AccountSlider accounts={accounts} selectedId={toAccountId} onSelect={setToAccountId} label="Зачислить на" excludeId={fromAccountId} />
+
+          <div className="px-4">
 
           {fromAcc && (
             <div className={`p-4 rounded-xl shadow-sm mb-4 ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white'}`}>
@@ -188,6 +191,7 @@ export default function TransferAccounts() {
           >
             Перевести {amount ? `${parseFloat(amount).toFixed(2)} ${fromAcc?.symbol || '₽'}` : ''}
           </button>
+          </div>
         </div>
       </div>
     </MainLayout>
