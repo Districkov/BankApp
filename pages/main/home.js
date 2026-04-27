@@ -85,7 +85,7 @@ export default function Home() {
         // Подсчитываем расходы за текущий месяц
         if (transactionsData && transactionsData.length > 0) {
           const expenses = transactionsData.reduce((sum, tx) => {
-            const val = parseFloat(tx.amount || tx.value || 0);
+            const val = parseFloat(tx.amountChange ?? tx.amount ?? tx.value ?? 0);
             return sum + (val < 0 ? Math.abs(val) : 0);
           }, 0);
           setMonthlyExpenses(expenses);

@@ -67,21 +67,33 @@ export default function TransactionHistory() {
       });
 
       const mapped = rawTransactions.map(tx => {
-        const amount = parseFloat(tx.amount || tx.value || 0);
-        const txDate = tx.date || tx.createdAt || tx.timestamp || '';
+        const amount = parseFloat(tx.amountChange ?? tx.amount ?? tx.value ?? 0);
+        const txDate = tx.createdAt || tx.date || tx.timestamp || '';
         const parsedDate = txDate ? new Date(txDate) : null;
         const isValidDate = parsedDate && !isNaN(parsedDate.getTime());
         const accInfo = accountMap[tx.accountId] || {};
         const recipientAccInfo = accountMap[tx.recipientAccountId] || {};
         const currencySymbol = accInfo.symbol || '₽';
 
-        const isOwnTransfer = tx.transferType === 'OWN' || tx.type === 'OWN';
+        const reason = tx.reason || tx.transferType || '';
+        const isTransferIn = reason === 'TRANSFER_IN';
+        const isTransferOut = reason === 'TRANSFER_OUT';
+        const isOwnTransfer = reason === 'OWN' || tx.transferType === 'OWN';
+
         let title = tx.description || 'Операция';
-        let category = tx.category || tx.transferType || 'Прочее';
+        let category = 'Прочее';
         let displayAmount = Math.abs(amount);
         let type = amount >= 0 ? 'income' : 'expense';
 
-        if (isOwnTransfer) {
+        if (isTransferIn) {
+          title = 'Перевод';
+          category = 'Входящий';
+          type = 'income';
+        } else if (isTransferOut) {
+          title = 'Перевод';
+          category = 'Исходящий';
+          type = 'expense';
+        } else if (isOwnTransfer) {
           if (amount < 0) {
             title = `Перевод на счёт ${recipientAccInfo.symbol || currencySymbol}`;
             category = 'Между счетами';
@@ -89,16 +101,6 @@ export default function TransactionHistory() {
           } else {
             title = 'Перевод';
             category = 'На основной счёт';
-            type = 'income';
-          }
-        } else if (tx.transferType === 'SBP' || tx.type === 'SBP') {
-          if (amount < 0) {
-            title = tx.description || 'Перевод по телефону';
-            category = 'Исходящий';
-            type = 'expense';
-          } else {
-            title = tx.description || 'Перевод по телефону';
-            category = 'Входящий';
             type = 'income';
           }
         }
