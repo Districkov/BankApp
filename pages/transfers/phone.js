@@ -31,8 +31,8 @@ export default function TransferPhone() {
       const accountsData = await accountsAPI.getAccounts().catch(() => []);
       
       if (accountsData && accountsData.length > 0) {
-        const balance = accountsData.reduce((sum, acc) => sum + parseFloat(acc.balance || 0), 0);
-        setUserBalance(balance);
+        const rubAccount = accountsData.find(acc => (acc.currency?.currencyCode || 'RUB') === 'RUB');
+        setUserBalance(rubAccount ? parseFloat(rubAccount.balance || 0) : 0);
       }
       
       setAllContacts([]);
