@@ -204,11 +204,10 @@ export default function TransferAccounts() {
                     }
                     setAmount(raw);
                   }}
-                  className={`text-[32px] font-bold bg-transparent focus:outline-none w-auto min-w-[40px] ${isDarkMode ? 'text-white placeholder-[#666]' : 'text-[#000]'}`}
+                  className={`text-[32px] font-bold bg-transparent focus:outline-none w-fit min-w-[40px] ${isDarkMode ? 'text-white placeholder-[#666]' : 'text-[#000]'}`}
                   placeholder="0"
-                  size={amount ? Math.max(amount.length, 1) : 1}
                 />
-                <span className={`text-[32px] font-bold ml-1 ${amount ? (isDarkMode ? 'text-white' : 'text-[#000]') : (isDarkMode ? 'text-[#666]' : 'text-[#999]')}`}>
+                <span className={`text-[32px] font-bold ${amount ? (isDarkMode ? 'text-white' : 'text-[#000]') : (isDarkMode ? 'text-[#666]' : 'text-[#999]')}`}>
                   {fromAcc.symbol}
                 </span>
               </div>
