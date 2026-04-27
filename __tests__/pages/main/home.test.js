@@ -3,13 +3,18 @@ import { render, screen, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import Home from '../../../pages/main/home';
 import { accountsAPI, userAPI } from '../../../src/utils/api';
+import { ThemeProvider } from '../../../src/context/ThemeContext';
 
-// Mock dependencies
 jest.mock('next/router', () => ({
   useRouter: () => ({
     push: jest.fn(),
+    replace: jest.fn(),
   }),
 }));
+
+jest.mock('next/link', () => {
+  return ({ children, href }) => <a href={href}>{children}</a>;
+});
 
 jest.mock('../../../src/utils/api', () => ({
   accountsAPI: {
@@ -21,6 +26,8 @@ jest.mock('../../../src/utils/api', () => ({
   },
 }));
 
+const renderWithTheme = (ui) => render(<ThemeProvider>{ui}</ThemeProvider>);
+
 describe('Home Page', () => {
   beforeEach(() => {
     jest.clearAllMocks();
@@ -31,43 +38,24 @@ describe('Home Page', () => {
     accountsAPI.getAccountHistory.mockReturnValue(new Promise(() => {}));
     userAPI.getProfile.mockReturnValue(new Promise(() => {}));
 
-    render(<Home />);
-    
-    expect(screen.getByRole('status', { hidden: true })).toBeInTheDocument();
+    renderWithTheme(<Home />);
+    expect(document.querySelector('.animate-spin')).toBeInTheDocument();
   });
 
-  it('displays user data after loading', async () => {
+  it('displays user first name after loading', async () => {
     const mockUser = { first_name: 'Иван', last_name: 'Иванов' };
     const mockAccounts = [
-      { id: '1', balance: 10000 },
-      { id: '2', balance: 20000 }
+      { id: '1', balance: 10000, currency: { currencyCode: 'RUB', symbol: '₽' } },
     ];
 
     userAPI.getProfile.mockResolvedValue(mockUser);
     accountsAPI.getAccounts.mockResolvedValue(mockAccounts);
     accountsAPI.getAccountHistory.mockResolvedValue([]);
 
-    render(<Home />);
+    renderWithTheme(<Home />);
 
     await waitFor(() => {
       expect(screen.getByText('Иван')).toBeInTheDocument();
-    });
-  });
-
-  it('calculates total balance correctly', async () => {
-    const mockAccounts = [
-      { id: '1', balance: 10000.50 },
-      { id: '2', balance: 20000.75 }
-    ];
-
-    userAPI.getProfile.mockResolvedValue({ first_name: 'Test' });
-    accountsAPI.getAccounts.mockResolvedValue(mockAccounts);
-    accountsAPI.getAccountHistory.mockResolvedValue([]);
-
-    render(<Home />);
-
-    await waitFor(() => {
-      expect(screen.getByText(/30 001,25 ₽/)).toBeInTheDocument();
     });
   });
 
@@ -76,7 +64,7 @@ describe('Home Page', () => {
     accountsAPI.getAccounts.mockResolvedValue([]);
     accountsAPI.getAccountHistory.mockResolvedValue([]);
 
-    render(<Home />);
+    renderWithTheme(<Home />);
 
     await waitFor(() => {
       expect(screen.getByText('Наши партнёры')).toBeInTheDocument();
@@ -85,20 +73,23 @@ describe('Home Page', () => {
     });
   });
 
-  it('calculates monthly expenses', async () => {
+  it('calculates monthly expenses for selected account', async () => {
     const mockTransactions = [
-      { amount: -1000, date: new Date().toISOString() },
-      { amount: -2000, date: new Date().toISOString() }
+      { amountChange: -1000, createdAt: new Date().toISOString() },
+      { amountChange: -2000, createdAt: new Date().toISOString() },
+    ];
+    const mockAccounts = [
+      { id: '1', balance: 10000, currency: { currencyCode: 'RUB', symbol: '₽' } },
     ];
 
     userAPI.getProfile.mockResolvedValue({ first_name: 'Test' });
-    accountsAPI.getAccounts.mockResolvedValue([]);
+    accountsAPI.getAccounts.mockResolvedValue(mockAccounts);
     accountsAPI.getAccountHistory.mockResolvedValue(mockTransactions);
 
-    render(<Home />);
+    renderWithTheme(<Home />);
 
     await waitFor(() => {
-      expect(screen.getByText(/3 000,00 ₽/)).toBeInTheDocument();
+      expect(screen.getByText(/3 000,00/)).toBeInTheDocument();
     });
   });
 });

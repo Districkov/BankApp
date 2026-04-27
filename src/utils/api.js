@@ -154,6 +154,14 @@ export const authAPI = {
       });
   },
 
+  login: async (phone_number, password) => {
+    return post(API_BASE_URLS.AUTH, '/login', { phone_number, password });
+  },
+
+  changePassword: async (oldPassword, newPassword) => {
+    return patch(API_BASE_URLS.AUTH, '/password', { oldPassword, newPassword });
+  },
+
   whoami: async () => {
     const res = await fetch(`${API_BASE_URLS.AUTH}/whoami`, {
       method: 'GET',

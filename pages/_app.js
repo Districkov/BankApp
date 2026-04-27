@@ -4,7 +4,7 @@ import { ThemeProvider } from '../src/context/ThemeContext'
 import { useRouter } from 'next/router'
 import { useEffect } from 'react'
 
-const PUBLIC_PATHS = ['/', '/auth/yandex', '/auth/callback', '/auth/session-limit', '/auth/code-input', '/code', '/code/callback', '/dev/test-auth', '/404']
+const PUBLIC_PATHS = ['/', '/auth/yandex', '/auth/callback', '/auth/session-limit', '/code', '/code/callback', '/dev/test-auth', '/404']
 
 function AuthGuard({ children }) {
   const { isAuthenticated, isLoading } = useAuth();

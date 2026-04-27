@@ -1,7 +1,7 @@
 import React from 'react';
 import { useRouter } from 'next/router';
 import MainLayout from '../../src/components/MainLayout';
-import { IoArrowBack, IoLanguageOutline, IoMoonOutline } from 'react-icons/io5';
+import { IoArrowBack, IoLanguageOutline, IoMoonOutline, IoLockClosedOutline } from 'react-icons/io5';
 import { useTheme } from '../../src/context/ThemeContext';
 
 export default function Settings() {
@@ -9,6 +9,17 @@ export default function Settings() {
   const { isDarkMode, toggleTheme } = useTheme();
 
   const settingsSections = [
+    {
+      title: 'Безопасность',
+      items: [
+        {
+          icon: IoLockClosedOutline,
+          title: 'Смена пароля',
+          description: 'Изменить пароль от аккаунта',
+          screen: '/profile/change-password'
+        }
+      ]
+    },
     {
       title: 'Основные',
       items: [

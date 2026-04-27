@@ -1,8 +1,8 @@
-import { 
-  get, 
-  post, 
-  transfersAPI, 
-  accountsAPI 
+import {
+  get,
+  post,
+  transfersAPI,
+  accountsAPI
 } from '../../src/utils/api';
 
 global.fetch = jest.fn();
@@ -21,10 +21,10 @@ describe('API Utils', () => {
         json: async () => mockResponse,
       });
 
-      const result = await get('/api/test', '/endpoint');
+      const result = await get('https://bank.korzik.space/api/test', '/endpoint');
 
       expect(global.fetch).toHaveBeenCalledWith(
-        '/api/test/endpoint',
+        'https://bank.korzik.space/api/test/endpoint',
         expect.objectContaining({
           method: 'GET',
           headers: expect.objectContaining({
@@ -42,7 +42,7 @@ describe('API Utils', () => {
         json: async () => ({ message: 'Forbidden' }),
       });
 
-      await expect(get('/api/test', '/endpoint')).rejects.toEqual({
+      await expect(get('https://bank.korzik.space/api/test', '/endpoint')).rejects.toEqual({
         status: 403,
         message: 'Forbidden',
       });
@@ -53,16 +53,16 @@ describe('API Utils', () => {
     it('makes POST request with body', async () => {
       const mockResponse = { success: true };
       const requestBody = { amount: 1000 };
-      
+
       global.fetch.mockResolvedValue({
         ok: true,
         json: async () => mockResponse,
       });
 
-      const result = await post('/api/test', '/endpoint', requestBody);
+      const result = await post('https://bank.korzik.space/api/test', '/endpoint', requestBody);
 
       expect(global.fetch).toHaveBeenCalledWith(
-        '/api/test/endpoint',
+        'https://bank.korzik.space/api/test/endpoint',
         expect.objectContaining({
           method: 'POST',
           body: JSON.stringify(requestBody),
@@ -120,7 +120,7 @@ describe('API Utils', () => {
         { id: '1', name: 'Основной', balance: 10000 },
         { id: '2', name: 'Накопительный', balance: 50000 }
       ];
-      
+
       global.fetch.mockResolvedValue({
         ok: true,
         json: async () => mockAccounts,
@@ -129,7 +129,7 @@ describe('API Utils', () => {
       const result = await accountsAPI.getAccounts();
 
       expect(global.fetch).toHaveBeenCalledWith(
-        expect.stringContaining('/api/accounts/v1'),
+        expect.stringContaining('bank.korzik.space/api/accounts/v1'),
         expect.any(Object)
       );
       expect(result).toEqual(mockAccounts);

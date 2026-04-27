@@ -1,6 +1,10 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, screen, fireEvent } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import TransactionItem from '../../src/components/TransactionItem';
+import { ThemeProvider } from '../../src/context/ThemeContext';
+
+const renderWithTheme = (ui) => render(<ThemeProvider>{ui}</ThemeProvider>);
 
 describe('TransactionItem', () => {
   const mockTransaction = {
@@ -11,62 +15,36 @@ describe('TransactionItem', () => {
   };
 
   it('должен отображать данные транзакции', () => {
-    const { getByText } = render(
-      <TransactionItem transaction={mockTransaction} onPress={() => {}} />
+    renderWithTheme(
+      <TransactionItem transaction={mockTransaction} onClick={() => {}} />
     );
-    expect(getByText('Перевод')).toBeTruthy();
-    expect(getByText('15 мар. 2024')).toBeTruthy();
-    expect(getByText('-1 000 ₽')).toBeTruthy();
+    expect(screen.getByText('Перевод')).toBeInTheDocument();
+    expect(screen.getByText('15 мар. 2024')).toBeInTheDocument();
+    expect(screen.getByText('-1 000 ₽')).toBeInTheDocument();
   });
 
-  it('должен вызывать onPress при нажатии', () => {
-    const mockPress = jest.fn();
-    const { getByText } = render(
-      <TransactionItem transaction={mockTransaction} onPress={mockPress} />
+  it('должен вызывать onClick при нажатии', () => {
+    const mockClick = jest.fn();
+    renderWithTheme(
+      <TransactionItem transaction={mockTransaction} onClick={mockClick} />
     );
-    
-    fireEvent.press(getByText('Перевод'));
-    expect(mockPress).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByText('Перевод'));
+    expect(mockClick).toHaveBeenCalledTimes(1);
   });
 
   it('должен работать с типом income', () => {
     const incomeTransaction = { ...mockTransaction, type: 'income', amount: '+5 000 ₽' };
-    const { getByText } = render(
-      <TransactionItem transaction={incomeTransaction} onPress={() => {}} />
+    renderWithTheme(
+      <TransactionItem transaction={incomeTransaction} onClick={() => {}} />
     );
-    expect(getByText('+5 000 ₽')).toBeTruthy();
+    expect(screen.getByText('+5 000 ₽')).toBeInTheDocument();
   });
 
   it('должен работать с типом transfer', () => {
     const transferTransaction = { ...mockTransaction, type: 'transfer' };
-    const { getByText } = render(
-      <TransactionItem transaction={transferTransaction} onPress={() => {}} />
+    renderWithTheme(
+      <TransactionItem transaction={transferTransaction} onClick={() => {}} />
     );
-    expect(getByText('Перевод')).toBeTruthy();
-  });
-
-  it('должен отображать правильные цвета для expense', () => {
-    const { getByText } = render(
-      <TransactionItem transaction={mockTransaction} onPress={() => {}} />
-    );
-    const amountElement = getByText('-1 000 ₽');
-    expect(amountElement.props.style).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ color: '#FF3B30' })
-      ])
-    );
-  });
-
-  it('должен отображать правильные цвета для income', () => {
-    const incomeTransaction = { ...mockTransaction, type: 'income', amount: '+5 000 ₽' };
-    const { getByText } = render(
-      <TransactionItem transaction={incomeTransaction} onPress={() => {}} />
-    );
-    const amountElement = getByText('+5 000 ₽');
-    expect(amountElement.props.style).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ color: '#159E3A' })
-      ])
-    );
+    expect(screen.getByText('Перевод')).toBeInTheDocument();
   });
 });

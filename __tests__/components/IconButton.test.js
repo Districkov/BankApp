@@ -1,55 +1,39 @@
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
+import { render, screen, fireEvent } from '@testing-library/react';
+import '@testing-library/jest-dom';
 import IconButton from '../../src/components/IconButton';
-import { Ionicons } from '@expo/vector-icons';
+import { ThemeProvider } from '../../src/context/ThemeContext';
+
+const renderWithTheme = (ui) => render(<ThemeProvider>{ui}</ThemeProvider>);
 
 describe('IconButton', () => {
-  it('должен отображать иконку и текст', () => {
-    const { getByText } = render(
-      <IconButton 
-        icon={<Ionicons name="home" size={24} color="#000" />} 
-        label="Главная" 
-        onPress={() => {}} 
-      />
+  it('должен отображать текст кнопки', () => {
+    renderWithTheme(
+      <IconButton icon={<span>icon</span>} label="Главная" onClick={() => {}} />
     );
-    expect(getByText('Главная')).toBeTruthy();
+    expect(screen.getByText('Главная')).toBeInTheDocument();
   });
 
-  it('должен вызывать onPress при нажатии', () => {
-    const mockPress = jest.fn();
-    const { getByText } = render(
-      <IconButton 
-        icon={<Ionicons name="home" size={24} color="#000" />} 
-        label="Главная" 
-        onPress={mockPress} 
-      />
+  it('должен вызывать onClick при нажатии', () => {
+    const mockClick = jest.fn();
+    renderWithTheme(
+      <IconButton icon={<span>icon</span>} label="Главная" onClick={mockClick} />
     );
-    
-    fireEvent.press(getByText('Главная'));
-    expect(mockPress).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByText('Главная'));
+    expect(mockClick).toHaveBeenCalledTimes(1);
   });
 
-  it('должен применять дополнительные стили', () => {
-    const { getByTestId } = render(
-      <IconButton 
-        testID="btn"
-        icon={<Ionicons name="home" size={24} color="#000" />} 
-        label="Главная" 
-        onPress={() => {}}
-        style={{ width: 100 }}
-      />
+  it('должен отображать иконку', () => {
+    renderWithTheme(
+      <IconButton icon={<span data-testid="custom-icon">icon</span>} label="Главная" onClick={() => {}} />
     );
-    expect(getByTestId('btn')).toBeTruthy();
+    expect(screen.getByTestId('custom-icon')).toBeInTheDocument();
   });
 
-  it('должен отображать разные иконки', () => {
-    const { getByText } = render(
-      <IconButton 
-        icon={<Ionicons name="settings" size={24} color="#000" />} 
-        label="Настройки" 
-        onPress={() => {}} 
-      />
+  it('должен отображать разные кнопки', () => {
+    renderWithTheme(
+      <IconButton icon={<span>icon</span>} label="Настройки" onClick={() => {}} />
     );
-    expect(getByText('Настройки')).toBeTruthy();
+    expect(screen.getByText('Настройки')).toBeInTheDocument();
   });
 });

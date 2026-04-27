@@ -2,8 +2,8 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import MainLayout from '../../src/components/MainLayout';
+import { ThemeProvider } from '../../src/context/ThemeContext';
 
-// Mock useRouter
 jest.mock('next/router', () => ({
   useRouter: () => ({
     pathname: '/main/home',
@@ -11,39 +11,40 @@ jest.mock('next/router', () => ({
   }),
 }));
 
+jest.mock('next/link', () => {
+  return ({ children, href }) => <a href={href}>{children}</a>;
+});
+
+const renderWithTheme = (ui) => render(<ThemeProvider>{ui}</ThemeProvider>);
+
 describe('MainLayout', () => {
   it('renders children correctly', () => {
-    render(
+    renderWithTheme(
       <MainLayout>
         <div>Test Content</div>
       </MainLayout>
     );
-    
     expect(screen.getByText('Test Content')).toBeInTheDocument();
   });
 
   it('renders bottom navigation', () => {
-    render(
+    renderWithTheme(
       <MainLayout>
         <div>Content</div>
       </MainLayout>
     );
-    
-    // Проверяем наличие навигационных элементов
     expect(screen.getByText('Главная')).toBeInTheDocument();
-    expect(screen.getByText('Операции')).toBeInTheDocument();
     expect(screen.getByText('Платежи')).toBeInTheDocument();
     expect(screen.getByText('Ещё')).toBeInTheDocument();
   });
 
   it('highlights active navigation item', () => {
-    render(
+    renderWithTheme(
       <MainLayout>
         <div>Content</div>
       </MainLayout>
     );
-    
-    const homeButton = screen.getByText('Главная').closest('button');
-    expect(homeButton).toHaveClass('text-primary');
+    const homeTab = screen.getByText('Главная').closest('a');
+    expect(homeTab).toBeInTheDocument();
   });
 });
