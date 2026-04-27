@@ -49,16 +49,23 @@ export default function Operations() {
       );
       const transactions = allHistory.flat();
 
-      setData(transactions.map(tx => ({
-        id: tx.id,
-        title: tx.description || 'Операция',
-        subtitle: tx.category || 'Прочее',
-        amount: `${tx.amount >= 0 ? '+' : ''}${Number(tx.amount).toLocaleString('ru-RU')} ₽`,
-        type: tx.amount >= 0 ? 'income' : 'expense',
-        date: new Date(tx.date).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' }),
-        time: new Date(tx.date).toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }),
-        category: tx.category || 'transfer'
-      })));
+      setData(transactions.map(tx => {
+        const amount = parseFloat(tx.amount || tx.value || 0);
+        const txDate = tx.date || tx.createdAt || tx.timestamp || '';
+        const parsedDate = txDate ? new Date(txDate) : null;
+        const isValidDate = parsedDate && !isNaN(parsedDate.getTime());
+        return {
+          id: tx.id,
+          title: tx.description || tx.type || 'Операция',
+          subtitle: tx.category || tx.transferType || 'Прочее',
+          amountRaw: amount,
+          amount: `${amount >= 0 ? '+' : ''}${Math.abs(amount).toLocaleString('ru-RU', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ₽`,
+          type: amount >= 0 ? 'income' : 'expense',
+          date: isValidDate ? parsedDate.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
+          time: isValidDate ? parsedDate.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) : '',
+          category: tx.category || 'transfer'
+        };
+      }));
     } catch (error) {
       console.error('Error loading transactions:', error);
       setData([]);
@@ -73,9 +80,9 @@ export default function Operations() {
 
   const getTotalAmount = () => {
     const expenses = data.filter(d => d.type === 'expense')
-      .reduce((sum, item) => sum + parseFloat(item.amount.replace(/[^\d.-]/g, '')), 0);
+      .reduce((sum, item) => sum + (item.amountRaw || 0), 0);
     const incomes = data.filter(d => d.type === 'income')
-      .reduce((sum, item) => sum + parseFloat(item.amount.replace(/[^\d.-]/g, '')), 0);
+      .reduce((sum, item) => sum + (item.amountRaw || 0), 0);
     return { expenses, incomes, total: incomes - expenses };
   };
 

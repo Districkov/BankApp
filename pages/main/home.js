@@ -46,13 +46,25 @@ export default function Home() {
       setAccounts(accountsData || []);
       
       if (accountsData && accountsData.length > 0) {
-        let rates = {};
+        let ratesMap = {};
         try {
-          const ratesData = await accountsAPI.getExchangeRates();
+          const [currenciesData, ratesData] = await Promise.all([
+            accountsAPI.getCurrencies().catch(() => []),
+            accountsAPI.getExchangeRates().catch(() => []),
+          ]);
+          
+          const idToCode = {};
+          if (Array.isArray(currenciesData)) {
+            currenciesData.forEach(c => { idToCode[c.id] = c.currencyCode; });
+          }
+
           if (Array.isArray(ratesData)) {
-            ratesData.forEach(r => { rates[r.from || r.source] = rates[r.from || r.source] || {}; rates[r.from || r.source][r.to || r.target] = parseFloat(r.rate || r.value || 1); });
-          } else if (ratesData && typeof ratesData === 'object') {
-            rates = ratesData;
+            ratesData.forEach(r => {
+              const fromCode = idToCode[r.fromCurrencyId] || r.fromCurrencyId;
+              const toCode = idToCode[r.toCurrencyId] || r.toCurrencyId;
+              ratesMap[`${fromCode}->${toCode}`] = parseFloat(r.rate);
+              ratesMap[`${toCode}->${fromCode}`] = parseFloat(r.inverseRate || (1 / parseFloat(r.rate)));
+            });
           }
         } catch {}
 
@@ -60,7 +72,7 @@ export default function Home() {
           const balance = parseFloat(acc.balance || 0);
           const code = acc.currency?.currencyCode || 'RUB';
           if (code === 'RUB') return sum + balance;
-          const rate = rates[code]?.RUB || rates[code]?.rub || 1;
+          const rate = ratesMap[`${code}->RUB`] || 1;
           return sum + balance * rate;
         }, 0);
         setTotalBalance(total);
@@ -73,7 +85,8 @@ export default function Home() {
         // Подсчитываем расходы за текущий месяц
         if (transactionsData && transactionsData.length > 0) {
           const expenses = transactionsData.reduce((sum, tx) => {
-            return sum + Math.abs(parseFloat(tx.amount || 0));
+            const val = parseFloat(tx.amount || tx.value || 0);
+            return sum + (val < 0 ? Math.abs(val) : 0);
           }, 0);
           setMonthlyExpenses(expenses);
           
