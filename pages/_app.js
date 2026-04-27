@@ -36,6 +36,12 @@ function AuthGuard({ children }) {
 }
 
 export default function App({ Component, pageProps }) {
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    }
+  }, []);
+
   return (
     <ThemeProvider>
       <AuthProvider>
