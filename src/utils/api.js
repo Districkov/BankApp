@@ -104,9 +104,7 @@ export const patch = async (baseUrl, endpoint, body) => {
 // ==================== Auth API ====================
 
 export const authAPI = {
-  ping: async () => {
-    return get(API_BASE_URLS.AUTH, '/ping');
-  },
+
 
   getYandexAuthUrl: async () => {
     const response = await fetch(`${API_BASE_URLS.AUTH}/simple/yandex/url`, {
@@ -121,8 +119,6 @@ export const authAPI = {
   },
 
   verifyCode: async (code) => {
-    console.log('verifyCode called with code:', code);
-
     return fetch(`${API_BASE_URLS.AUTH}/simple/yandex/callback`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -130,8 +126,6 @@ export const authAPI = {
       body: JSON.stringify({ code }),
     })
       .then(async res => {
-        console.log('verifyCode response status:', res.status);
-
         if (res.status === 300) {
           const data = await res.json();
           const err = new Error('HTTP 300');
