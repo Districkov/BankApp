@@ -28,7 +28,7 @@ export default function TransferAccounts() {
       const accountsData = await accountsAPI.getAccounts().catch(() => null);
 
       if (accountsData && accountsData.length > 0) {
-        setAccounts(accountsData.map(acc => {
+        const mapped = accountsData.map(acc => {
           const code = acc.currency?.currencyCode || 'RUB';
           const rawSymbol = acc.currency?.symbol;
           return {
@@ -38,16 +38,18 @@ export default function TransferAccounts() {
             color: CURRENCY_COLORS[code] || '#1A889F',
             symbol: (rawSymbol && rawSymbol !== '?') ? rawSymbol : CURRENCY_SYMBOLS[code] || '₽',
           };
-        }));
+        });
+        setAccounts(mapped);
 
-        if (accountsData.length >= 2) {
-          setFromAccountId(accountsData[0].id);
-          setToAccountId(accountsData[1].id);
-        } else if (accountsData.length === 1) {
-          setFromAccountId(accountsData[0].id);
+        if (mapped.length >= 2) {
+          setFromAccountId(mapped[0].id);
+          setToAccountId(mapped[1].id);
+        } else if (mapped.length === 1) {
+          setFromAccountId(mapped[0].id);
         }
       }
     } catch (error) {
+      console.error('Error loading accounts:', error);
     } finally {
       setLoading(false);
     }
@@ -59,12 +61,21 @@ export default function TransferAccounts() {
     setToAccountId(temp);
   };
 
+  const fromAccount = accounts.find(a => a.id === fromAccountId);
+  const toAccount = accounts.find(a => a.id === toAccountId);
+
   const handleTransfer = async () => {
-    if (!amount || parseFloat(amount) <= 0) return;
+    if (!amount || parseFloat(amount) <= 0) {
+      alert('Введите сумму');
+      return;
+    }
 
     const amountNum = parseFloat(amount);
-    const fromAcc = accounts.find(a => a.id === fromAccountId);
-    if (!fromAcc || amountNum > fromAcc.balance) return;
+
+    if (fromAccount && amountNum > fromAccount.balance) {
+      alert('Недостаточно средств');
+      return;
+    }
 
     try {
       await transfersAPI.transferBetweenAccounts({
@@ -75,17 +86,16 @@ export default function TransferAccounts() {
 
       router.push(`/main/success?amount=${amountNum.toFixed(2)}&type=Перевод между счетами`);
     } catch (error) {
-      const errorMessage = error.message || 'Операция отклонена системой безопасности';
-
+      const errorMessage = error.message || 'Операция отклонена';
       if (error.status === 400 || error.status === 403 || error.status === 429) {
         router.push(`/main/failed?amount=${amountNum.toFixed(2)}&type=Перевод между счетами&reason=${encodeURIComponent(errorMessage)}`);
+      } else {
+        alert(errorMessage);
       }
     }
   };
 
-  const fromAcc = accounts.find(a => a.id === fromAccountId);
-  const toAcc = accounts.find(a => a.id === toAccountId);
-  const isFormValid = fromAccountId && toAccountId && fromAccountId !== toAccountId && amount && parseFloat(amount) > 0 && fromAcc && parseFloat(amount) <= fromAcc.balance;
+  const isFormValid = amount && parseFloat(amount) > 0 && fromAccountId && toAccountId && fromAccountId !== toAccountId;
 
   if (loading) {
     return (
@@ -97,101 +107,73 @@ export default function TransferAccounts() {
     );
   }
 
-  const AccountSlider = ({ label, selectedId, onSelect, excludeId }) => (
-    <div className="mb-4">
-      <label className={`text-sm font-semibold mb-2 block ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>{label}</label>
-      <div className="flex gap-3 overflow-x-auto pb-2 -mx-1 px-1">
-        {accounts.filter(a => a.id !== excludeId).map(acc => (
-          <button
-            key={acc.id}
-            className={`flex-shrink-0 px-4 py-3 rounded-xl border-2 transition-all ${
-              selectedId === acc.id
-                ? 'border-primary shadow-sm'
-                : (isDarkMode ? 'border-[#4d4d4d]' : 'border-[#E5E5E5]')
-            } ${isDarkMode ? 'bg-[#181818]' : 'bg-white'}`}
-            onClick={() => { onSelect(acc.id); setAmount(''); }}
-          >
-            <div className="flex items-center mb-1">
-              <div className="w-2.5 h-2.5 rounded-full mr-2" style={{ backgroundColor: acc.color }} />
-              <span className={`text-sm font-semibold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>{acc.symbol}</span>
-            </div>
-            <p className={`text-base font-bold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>
-              {acc.balance.toLocaleString('ru-RU', { minimumFractionDigits: 2 })} {acc.symbol}
-            </p>
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-
   return (
     <MainLayout>
       <div className={`flex flex-col flex-1 ${isDarkMode ? 'bg-[#121212]' : 'bg-[#F7F7FB]'}`}>
-        <div className={`px-4 py-3 border-b flex justify-between items-center ${isDarkMode ? 'bg-[#181818] border-[#4d4d4d]' : 'bg-white border-[#E5E5E5]'}`}>
-          <button className="w-8 h-8 flex items-center justify-center" onClick={() => router.back()}>
-            <IoClose size={24} className={isDarkMode ? 'text-white' : 'text-[#000]'} />
-          </button>
+        <div className={`px-5 py-4 border-b flex justify-between items-center ${isDarkMode ? 'bg-[#181818] border-[#4d4d4d]' : 'bg-white border-[#E5E5E5]'}`}>
           <h1 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>Между счетами</h1>
-          <div className="w-8" />
+          <button onClick={() => router.back()}>
+            <IoClose size={24} color={isDarkMode ? '#fff' : '#000'} />
+          </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto pb-6">
-          <AccountSlider accounts={accounts} selectedId={fromAccountId} onSelect={(id) => { setFromAccountId(id); setAmount(''); }} label="Списать с" excludeId={toAccountId} />
+        <div className="flex-1 overflow-y-auto p-4 pb-5">
+          <AccountSlider
+            accounts={accounts}
+            selectedId={fromAccountId}
+            onSelect={setFromAccountId}
+            label="Списать с"
+            excludeId={toAccountId}
+          />
 
-          <div className="flex justify-center my-2">
+          <div className="flex justify-center my-4">
             <button
-              className={`w-10 h-10 rounded-full flex items-center justify-center ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white border border-[#E5E5E5] shadow-sm'}`}
               onClick={swapAccounts}
+              className="w-12 h-12 rounded-full bg-primary flex items-center justify-center shadow-lg active:scale-90 transition-transform"
             >
-              <IoSwapVertical size={20} className={isDarkMode ? 'text-white' : 'text-[#000]'} />
+              <IoSwapVertical size={24} color="#fff" />
             </button>
           </div>
 
-          <AccountSlider accounts={accounts} selectedId={toAccountId} onSelect={setToAccountId} label="Зачислить на" excludeId={fromAccountId} />
+          <AccountSlider
+            accounts={accounts}
+            selectedId={toAccountId}
+            onSelect={setToAccountId}
+            label="Зачислить на"
+            excludeId={fromAccountId}
+          />
 
-          <div className="px-4">
-
-          {fromAcc && (
-            <div className={`p-4 rounded-xl shadow-sm mb-4 ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white'}`}>
-              <label className={`text-sm font-semibold mb-2 block ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Сумма</label>
-              <div className="flex items-center">
-                <input
-                  type="text"
-                  inputMode="decimal"
-                  value={amount}
-                  onChange={(e) => {
-                    let raw = e.target.value.replace(/[^\d,.]/g, '');
-                    raw = raw.replace(',', '.');
-                    const parts = raw.split('.');
-                    if (parts.length > 2) raw = parts[0] + '.' + parts[1];
-                    setAmount(raw);
-                  }}
-                  style={{ width: `${Math.max(amount.length, 1)}ch` }}
-                  className={`text-[32px] font-bold bg-transparent focus:outline-none ${isDarkMode ? 'text-white placeholder-[#666]' : 'text-[#000]'}`}
-                  placeholder="0"
-                />
-                <span className={`text-[32px] font-bold ${amount ? (isDarkMode ? 'text-white' : 'text-[#000]') : (isDarkMode ? 'text-[#666]' : 'text-[#999]')}`}>
-                  {fromAcc.symbol}
-                </span>
-              </div>
-              <div className={`text-sm mt-2 ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>
-                Доступно: {fromAcc.balance.toLocaleString('ru-RU', { minimumFractionDigits: 2 })} {fromAcc.symbol}
-              </div>
+          <div className={`mt-4 p-4 rounded-xl shadow-sm ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white'}`}>
+            <label className={`text-sm font-semibold mb-2 block ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Сумма</label>
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={amount}
+                onChange={(e) => {
+                  let cleaned = e.target.value.replace(/[^\d,.]/g, '');
+                  cleaned = cleaned.replace(',', '.');
+                  const parts = cleaned.split('.');
+                  if (parts.length > 2) cleaned = parts[0] + '.' + parts[1];
+                  setAmount(cleaned);
+                }}
+                className={`flex-1 text-[32px] font-bold bg-transparent focus:outline-none ${isDarkMode ? 'text-white placeholder-[#666]' : 'text-[#000]'} placeholder-[#ccc]`}
+                placeholder="0"
+              />
+              <span className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>
+                {fromAccount?.symbol || '₽'}
+              </span>
             </div>
-          )}
+          </div>
 
           <button
-            className={`w-full py-4 rounded-xl font-semibold text-base ${
-              isFormValid
-                ? 'bg-primary text-white'
-                : (isDarkMode ? 'bg-[#4d4d4d] text-[#999] cursor-not-allowed' : 'bg-[#E5E5E5] text-[#999] cursor-not-allowed')
+            className={`w-full mt-4 p-4 rounded-xl text-base font-bold text-white ${
+              isFormValid ? 'bg-primary' : (isDarkMode ? 'bg-[#4d4d4d] cursor-not-allowed' : 'bg-[#B9B6FF] cursor-not-allowed')
             }`}
-            onClick={handleTransfer}
             disabled={!isFormValid}
+            onClick={handleTransfer}
           >
-            Перевести {amount ? `${parseFloat(amount).toFixed(2)} ${fromAcc?.symbol || '₽'}` : ''}
+            Перевести {amount ? parseFloat(amount).toFixed(2) : ''} {fromAccount?.symbol || '₽'}
           </button>
-          </div>
         </div>
       </div>
     </MainLayout>

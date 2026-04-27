@@ -57,7 +57,7 @@ export default function Operations() {
         };
       });
 
-      setData(transactions.map(tx => {
+      const mapped = transactions.map(tx => {
         const amount = parseFloat(tx.amountChange ?? tx.amount ?? tx.value ?? 0);
         const txDate = tx.createdAt || tx.date || tx.timestamp || '';
         const parsedDate = txDate ? new Date(txDate) : null;
@@ -106,9 +106,13 @@ export default function Operations() {
           type,
           date: isValidDate ? parsedDate.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' }) : '',
           time: isValidDate ? parsedDate.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' }) : '',
+          dateObj: isValidDate ? parsedDate.getTime() : 0,
           category: 'transfer'
         };
-      }));
+      });
+
+      mapped.sort((a, b) => b.dateObj - a.dateObj);
+      setData(mapped);
     } catch (error) {
       console.error('Error loading transactions:', error);
       setData([]);
@@ -204,74 +208,68 @@ export default function Operations() {
                 <h2 className={`text-lg font-semibold mb-4 ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>
                   {filter === 'all' ? 'Все операции' : filter === 'income' ? 'Доходы' : 'Расходы'} ({filtered.length})
                 </h2>
-                {filtered.length === 0 ? (
-                  <div className={`rounded-xl p-8 text-center ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white'}`}>
-                    <IoReceiptOutline size={40} color={isDarkMode ? '#666' : '#999'} className="mx-auto mb-3" />
-                    <p className={`text-base font-semibold mb-1 ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Операций пока нет</p>
-                    <p className={`text-sm ${isDarkMode ? 'text-[#666]' : 'text-[#999]'}`}>Совершите перевод, чтобы увидеть историю</p>
-                  </div>
-                ) : (
-                  filtered.map((item) => {
-                    const Icon = categoryIcons[item.category];
-                    return (
-                      <div key={item.id} className={`rounded-xl p-4 mb-2 shadow-sm ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white'}`}>
-                        <div className="flex items-center">
-                          <div
-                            className="w-10 h-10 rounded-full flex items-center justify-center mr-3"
-                            style={{ backgroundColor: categoryColors[item.category] }}
-                          >
-                            {Icon && <Icon size={18} color="#fff" />}
-                          </div>
-                          <div className="flex-1">
-                            <p className={`text-base font-semibold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>{item.title}</p>
-                            <p className={`text-sm ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>{item.subtitle}</p>
-                            <p className={`text-xs ${isDarkMode ? 'text-[#666]' : 'text-[#999]'}`}>{item.date} в {item.time}</p>
-                          </div>
-                          <div className="text-right">
-                            <p className={`text-base font-bold ${item.type === 'income' ? 'text-success' : 'text-danger'}`}>
-                              {item.amount}
-                            </p>
-                          </div>
+                {filtered.map((item) => {
+                  const IconComponent = categoryIcons[item.category] || IoReceiptOutline;
+                  const iconColor = categoryColors[item.category] || '#666';
+
+                  return (
+                    <div
+                      key={item.id}
+                      className={`p-4 rounded-2xl mb-3 flex flex-row justify-between items-center ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white border border-[#F0F0F5]'} shadow-sm`}
+                    >
+                      <div className="flex flex-row items-center gap-3">
+                        <div className="w-12 h-12 rounded-xl flex items-center justify-center" style={{ backgroundColor: iconColor + '20' }}>
+                          <IconComponent size={24} color={iconColor} />
+                        </div>
+                        <div>
+                          <p className={`text-base font-semibold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>{item.title}</p>
+                          <p className={`text-sm ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>{item.subtitle} · {item.date} {item.time}</p>
                         </div>
                       </div>
-                    );
-                  })
+                      <span className={`text-base font-bold ${item.type === 'income' ? 'text-success' : 'text-danger'}`}>
+                        {item.amount}
+                      </span>
+                    </div>
+                  );
+                })}
+
+                {filtered.length === 0 && (
+                  <div className={`p-8 text-center rounded-2xl ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white'}`}>
+                    <p className={`text-base ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Нет операций</p>
+                  </div>
                 )}
               </div>
             </>
           ) : (
-            <div className="px-4 mb-5">
-              <div className={`flex rounded-2xl p-5 mb-5 shadow-sm ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white'}`}>
-                <div className="flex-1 text-center">
-                  <p className={`text-base font-bold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>+{totals.incomes.toLocaleString()} ₽</p>
-                  <p className={`text-xs ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Доходы</p>
+            <div className="p-4">
+              <div className={`p-5 rounded-2xl mb-4 ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white border border-[#F0F0F5]'} shadow-sm`}>
+                <h3 className={`text-lg font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>Обзор</h3>
+                <div className="flex flex-row justify-between items-center mb-3">
+                  <span className={`text-sm ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Доходы</span>
+                  <span className="text-base font-bold text-success">{totals.incomes.toLocaleString('ru-RU', { minimumFractionDigits: 2 })} ₽</span>
                 </div>
-                <div className="flex-1 text-center">
-                  <p className={`text-base font-bold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>-{totals.expenses.toLocaleString()} ₽</p>
-                  <p className={`text-xs ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Расходы</p>
+                <div className="flex flex-row justify-between items-center mb-3">
+                  <span className={`text-sm ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Расходы</span>
+                  <span className="text-base font-bold text-danger">{totals.expenses.toLocaleString('ru-RU', { minimumFractionDigits: 2 })} ₽</span>
                 </div>
-                <div className="flex-1 text-center">
-                  <p className={`text-base font-bold ${totals.total >= 0 ? 'text-success' : 'text-danger'}`}>
-                    {totals.total >= 0 ? '+' : ''}{totals.total.toLocaleString()} ₽
-                  </p>
-                  <p className={`text-xs ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Итого</p>
+                <div className={`border-t pt-3 ${isDarkMode ? 'border-[#4d4d4d]' : 'border-[#E5E5E5]'}`}>
+                  <div className="flex flex-row justify-between items-center">
+                    <span className={`text-sm font-semibold ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>Итого</span>
+                    <span className={`text-base font-bold ${totals.total >= 0 ? 'text-success' : 'text-danger'}`}>
+                      {totals.total >= 0 ? '+' : ''}{totals.total.toLocaleString('ru-RU', { minimumFractionDigits: 2 })} ₽
+                    </span>
+                  </div>
                 </div>
               </div>
 
-              <h2 className={`text-lg font-semibold mb-4 ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>Статистика за месяц</h2>
-              <div className={`flex rounded-2xl p-5 shadow-sm ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white'}`}>
-                <div className="flex-1 text-center">
-                  <p className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>{data.length}</p>
-                  <p className={`text-xs ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Операций</p>
-                </div>
-                <div className="flex-1 text-center">
-                  <p className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>{data.length > 0 ? Math.round(Math.abs(totals.expenses / data.filter(d => d.type === 'expense').length)).toLocaleString('ru-RU') : 0} ₽</p>
-                  <p className={`text-xs ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Средний чек</p>
-                </div>
-                <div className="flex-1 text-center">
-                  <p className={`text-lg font-bold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>{new Set(data.map(d => d.date)).size}</p>
-                  <p className={`text-xs ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Дней с тратами</p>
-                </div>
+              <div className={`p-5 rounded-2xl ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white border border-[#F0F0F5]'} shadow-sm`}>
+                <h3 className={`text-lg font-bold mb-4 ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>Распределение расходов</h3>
+                {data.filter(d => d.type === 'expense').map((item) => (
+                  <div key={item.id} className="flex flex-row justify-between items-center py-2">
+                    <span className={`text-sm ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>{item.title}</span>
+                    <span className="text-sm font-semibold text-danger">{item.amount}</span>
+                  </div>
+                ))}
               </div>
             </div>
           )}

@@ -1,11 +1,12 @@
 import React, { useRef, useState } from 'react';
+import { IoEyeOutline, IoEyeOffOutline } from 'react-icons/io5';
 import { useTheme } from '../context/ThemeContext';
 
 const CURRENCY_COLORS = { RUB: '#1A889F', USD: '#159E3A', EUR: '#E5A100' };
+const CURRENCY_SYMBOLS = { RUB: '₽', USD: '$', EUR: '€' };
 
-export default function AccountSlider({ accounts, selectedId, onSelect, label, excludeId }) {
+export default function AccountSlider({ accounts, selectedId, onSelect, label, excludeId, showBalanceToggle, isBalanceHidden, onToggleBalance }) {
   const { isDarkMode } = useTheme();
-  const containerRef = useRef(null);
   const touchStartX = useRef(0);
   const touchDeltaX = useRef(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -43,13 +44,23 @@ export default function AccountSlider({ accounts, selectedId, onSelect, label, e
 
   if (visibleAccounts.length === 0) return null;
 
+  const currentAcc = visibleAccounts[selectedIdx] || visibleAccounts[0];
+  const symbol = currentAcc?.symbol || CURRENCY_SYMBOLS[currentAcc?.currency] || '₽';
+  const color = currentAcc?.color || CURRENCY_COLORS[currentAcc?.currency] || '#1A889F';
+
+  const formatBalance = (balance) => {
+    return new Intl.NumberFormat('ru-RU', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    }).format(balance);
+  };
+
   return (
-    <div className="mb-4 -mx-4">
+    <div className="mb-4">
       {label && (
-        <label className={`text-sm font-semibold mb-2 block px-4 ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>{label}</label>
+        <label className={`text-sm font-semibold mb-2 block px-5 ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>{label}</label>
       )}
       <div
-        ref={containerRef}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
         onTouchEnd={onTouchEnd}
@@ -57,65 +68,41 @@ export default function AccountSlider({ accounts, selectedId, onSelect, label, e
         style={{ touchAction: 'pan-y' }}
       >
         <div
-          className="flex transition-transform duration-300"
-          style={{
-            transform: isDragging
-              ? `translateX(calc(-${selectedIdx * 33.333}vw + ${touchDeltaX.current}px))`
-              : `translateX(-${selectedIdx * 33.333}vw)`,
-            width: `${visibleAccounts.length * 33.333}vw`,
-          }}
+          className={`mx-5 p-6 rounded-[20px] shadow-lg border-2 ${isDarkMode ? 'bg-[#181818] border-primary' : 'bg-white border-primary'}`}
         >
-          {visibleAccounts.map(acc => {
-            const isActive = selectedId === acc.id;
-            return (
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: color }} />
+              <span className={`text-base font-bold ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>
+                {currentAcc?.currency || 'RUB'}
+              </span>
+            </div>
+            {showBalanceToggle && (
+              <button onClick={onToggleBalance}>
+                {isBalanceHidden ? <IoEyeOffOutline size={18} color={isDarkMode ? '#b3b3b3' : '#666'} /> : <IoEyeOutline size={18} color={isDarkMode ? '#b3b3b3' : '#666'} />}
+              </button>
+            )}
+          </div>
+          <p className={`text-[28px] font-extrabold ${isDarkMode ? 'text-white' : 'text-[#1A1A1A]'}`}>
+            {(showBalanceToggle && isBalanceHidden) ? '•••••••' : `${formatBalance(currentAcc?.balance || 0)} ${symbol}`}
+          </p>
+        </div>
+
+        {visibleAccounts.length > 1 && (
+          <div className="flex justify-center gap-2 mt-3">
+            {visibleAccounts.map((_, index) => (
               <div
-                key={acc.id}
-                className="flex-shrink-0 flex items-center justify-center"
-                style={{ width: '33.333vw' }}
-              >
-                <div
-                  className={`w-[calc(33.333vw-16px)] mx-2 p-4 rounded-2xl border-2 transition-all cursor-pointer ${
-                    isActive
-                      ? 'border-primary shadow-md'
-                      : (isDarkMode ? 'border-[#4d4d4d]' : 'border-[#E5E5E5]')
-                  } ${isDarkMode ? 'bg-[#181818]' : 'bg-white'}`}
-                  onClick={() => onSelect(acc.id)}
-                >
-                  <div className="flex items-center mb-2">
-                    <div
-                      className="w-3 h-3 rounded-full mr-2"
-                      style={{ backgroundColor: acc.color || CURRENCY_COLORS[acc.currency] || '#1A889F' }}
-                    />
-                    <span className={`text-base font-bold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>
-                      {acc.symbol}
-                    </span>
-                  </div>
-                  <p className={`text-xl font-bold ${isDarkMode ? 'text-white' : 'text-[#000]'}`}>
-                    {acc.balance.toLocaleString('ru-RU', { minimumFractionDigits: 2 })}
-                  </p>
-                  <p className={`text-sm mt-0.5 ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>
-                    {acc.symbol}
-                  </p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
+                key={index}
+                className={`h-2 rounded-full transition-all ${
+                  index === selectedIdx
+                    ? 'w-6 bg-primary'
+                    : (isDarkMode ? 'w-2 bg-[#4d4d4d]' : 'w-2 bg-[#E5E5E5]')
+                }`}
+              />
+            ))}
+          </div>
+        )}
       </div>
-      {visibleAccounts.length > 1 && (
-        <div className="flex justify-center gap-1.5 mt-2">
-          {visibleAccounts.map((acc, i) => (
-            <div
-              key={acc.id}
-              className={`h-1.5 rounded-full transition-all ${
-                i === selectedIdx
-                  ? 'w-6 bg-primary'
-                  : 'w-1.5 ' + (isDarkMode ? 'bg-[#4d4d4d]' : 'bg-[#ccc]')
-              }`}
-            />
-          ))}
-        </div>
-      )}
     </div>
   );
 }

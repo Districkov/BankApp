@@ -47,16 +47,18 @@ export default function TransferPhone() {
           };
         });
         setAccounts(mapped);
-        setSelectedAccountId(mapped[0].id);
+        setSelectedAccountId(accountsData[0].id);
       }
     } catch (error) {
-      setAccounts([]);
+      console.error('Error loading data:', error);
     } finally {
       setLoading(false);
     }
   };
 
   const selectedAccount = accounts.find(a => a.id === selectedAccountId);
+  const userBalance = selectedAccount?.balance || 0;
+  const currencySymbol = selectedAccount?.symbol || '₽';
 
   const formatPhone = (text) => {
     let cleaned = text.replace(/\D/g, '');
@@ -75,7 +77,7 @@ export default function TransferPhone() {
 
   const validateAmount = (amount) => {
     const num = parseFloat(amount);
-    return !isNaN(num) && num > 0 && selectedAccount && num <= selectedAccount.balance;
+    return !isNaN(num) && num > 0 && num <= userBalance;
   };
 
   const handleTransfer = async () => {
@@ -86,7 +88,7 @@ export default function TransferPhone() {
     }
 
     if (!validateAmount(amount)) {
-      e.amount = 'Недостаточно средств';
+      e.amount = 'Введите сумму > 0';
     }
 
     setErrors(e);
@@ -101,7 +103,7 @@ export default function TransferPhone() {
 
         router.push(`/main/success?amount=${parseFloat(amount).toFixed(2)}&type=Перевод`);
       } catch (error) {
-        const errorMessage = error.message || 'Операция отклонена системой безопасности';
+        const errorMessage = error.message || 'Операция отклонена';
 
         if (error.status === 400 || error.status === 403 || error.status === 429) {
           router.push(`/main/failed?amount=${parseFloat(amount).toFixed(2)}&type=Перевод&reason=${encodeURIComponent(errorMessage)}`);
@@ -135,17 +137,19 @@ export default function TransferPhone() {
           <div className="w-8" />
         </div>
 
-        <div className="flex-1 overflow-y-auto pb-6">
-          <AccountSlider accounts={accounts} selectedId={selectedAccountId} onSelect={(id) => { setSelectedAccountId(id); setAmount(''); setErrors({}); }} label="Счёт списания" />
-
-          <div className="px-4">
+        <div className="flex-1 overflow-y-auto p-4 pb-6">
+          <AccountSlider
+            accounts={accounts}
+            selectedId={selectedAccountId}
+            onSelect={setSelectedAccountId}
+          />
 
           <div className={`p-4 rounded-xl shadow-sm mb-4 ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white'}`}>
             <label className={`text-sm font-semibold mb-2 block ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Номер телефона</label>
             <input
               type="tel"
               placeholder="+7 ___ ___-__-__"
-              className={`w-full text-lg font-semibold py-2 bg-transparent focus:outline-none ${isDarkMode ? 'text-white placeholder-[#666]' : 'text-[#000]'}`}
+              className={`w-full text-lg font-semibold py-2 bg-transparent ${isDarkMode ? 'text-white placeholder-[#666]' : 'text-[#000]'}`}
               value={phone}
               onChange={(e) => {
                 setPhone(formatPhone(e.target.value));
@@ -157,29 +161,19 @@ export default function TransferPhone() {
 
           <div className={`p-4 rounded-xl shadow-sm mb-4 ${isDarkMode ? 'bg-[#181818] border border-[#4d4d4d]' : 'bg-white'}`}>
             <label className={`text-sm font-semibold mb-2 block ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Сумма</label>
-            <div className="flex items-center">
-              <input
-                type="text"
-                inputMode="decimal"
-                value={amount}
-                onChange={(e) => {
-                  let raw = e.target.value.replace(/[^\d,.]/g, '');
-                  raw = raw.replace(',', '.');
-                  const parts = raw.split('.');
-                  if (parts.length > 2) raw = parts[0] + '.' + parts[1];
-                  setAmount(raw);
-                  setErrors({ ...errors, amount: '' });
-                }}
-                style={{ width: `${Math.max(amount.length, 1)}ch` }}
-                className={`text-[32px] font-bold bg-transparent focus:outline-none ${isDarkMode ? 'text-white placeholder-[#666]' : 'text-[#000]'}`}
-                placeholder="0"
-              />
-              <span className={`text-[32px] font-bold ${amount ? (isDarkMode ? 'text-white' : 'text-[#000]') : (isDarkMode ? 'text-[#666]' : 'text-[#999]')}`}>
-                {selectedAccount?.symbol || '₽'}
-              </span>
-            </div>
+            <input
+              type="number"
+              inputMode="decimal"
+              placeholder="0.00"
+              className={`w-full text-3xl font-bold py-2 bg-transparent ${isDarkMode ? 'text-white placeholder-[#666]' : 'text-[#000]'}`}
+              value={amount}
+              onChange={(e) => {
+                setAmount(e.target.value);
+                setErrors({ ...errors, amount: '' });
+              }}
+            />
             <div className={`text-sm mt-2 ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>
-              Доступно: {selectedAccount?.balance.toLocaleString('ru-RU', { minimumFractionDigits: 2 })} {selectedAccount?.symbol || '₽'}
+              Доступно: {userBalance.toLocaleString('ru-RU', { minimumFractionDigits: 2 })} {currencySymbol}
             </div>
             {errors.amount && <p className="text-danger text-sm mt-1">{errors.amount}</p>}
           </div>
@@ -189,7 +183,7 @@ export default function TransferPhone() {
             <input
               type="text"
               placeholder="Комментарий к переводу"
-              className={`w-full text-base py-2 bg-transparent focus:outline-none ${isDarkMode ? 'text-white placeholder-[#666]' : 'text-[#000]'}`}
+              className={`w-full text-base py-2 bg-transparent ${isDarkMode ? 'text-white placeholder-[#666]' : 'text-[#000]'}`}
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               maxLength={100}
@@ -205,9 +199,8 @@ export default function TransferPhone() {
             onClick={handleTransfer}
             disabled={!isFormValid}
           >
-            Перевести {amount ? `${parseFloat(amount).toFixed(2)} ${selectedAccount?.symbol || '₽'}` : ''}
+            Перевести
           </button>
-          </div>
         </div>
       </div>
     </MainLayout>
