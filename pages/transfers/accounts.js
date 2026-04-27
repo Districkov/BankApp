@@ -191,13 +191,12 @@ export default function TransferAccounts() {
             <label className={`text-base font-medium mb-3 block px-1 ${isDarkMode ? 'text-[#b3b3b3]' : 'text-[#666]'}`}>Списать с</label>
             <AccountCard acc={fromAcc} onClick={() => setShowFromPicker(true)} />
             {fromAcc && (
-              <div className="mt-3">
+              <div className="mt-3 flex items-center">
                 <input
                   type="text"
-                  value={amount ? `${amount} ${fromAcc.symbol}` : ''}
+                  value={amount}
                   onChange={(e) => {
-                    let raw = e.target.value.replace(new RegExp(`\\s*${fromAcc.symbol.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`), '');
-                    raw = raw.replace(/[^\d,.]/g, '');
+                    let raw = e.target.value.replace(/[^\d,.]/g, '');
                     raw = raw.replace(',', '.');
                     const parts = raw.split('.');
                     if (parts.length > 2) {
@@ -205,9 +204,13 @@ export default function TransferAccounts() {
                     }
                     setAmount(raw);
                   }}
-                  className={`w-full text-[32px] font-bold bg-transparent focus:outline-none ${isDarkMode ? 'text-white placeholder-[#666]' : 'text-[#000]'}`}
-                  placeholder={fromAcc.symbol}
+                  className={`text-[32px] font-bold bg-transparent focus:outline-none w-auto min-w-[40px] ${isDarkMode ? 'text-white placeholder-[#666]' : 'text-[#000]'}`}
+                  placeholder="0"
+                  size={amount ? Math.max(amount.length, 1) : 1}
                 />
+                <span className={`text-[32px] font-bold ml-1 ${amount ? (isDarkMode ? 'text-white' : 'text-[#000]') : (isDarkMode ? 'text-[#666]' : 'text-[#999]')}`}>
+                  {fromAcc.symbol}
+                </span>
               </div>
             )}
           </div>
