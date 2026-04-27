@@ -282,9 +282,10 @@ export const transfersAPI = {
   transferToPhone: async ({ phone, amount, message }) => {
     const cleanPhone = phone.replace(/\D/g, '');
     const recipient = await get(API_BASE_URLS.AUTH, `/users/phone/${cleanPhone}`);
+    const recipientUserId = String(recipient.id || recipient.data?.id || recipient.userId || '');
     return post(API_BASE_URLS.TRANSFERS, '', {
       idempotencyKey: crypto.randomUUID(),
-      recipientUserId: recipient.id,
+      recipientUserId,
       amount,
       description: message,
       transferType: 'SBP',
